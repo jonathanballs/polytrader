@@ -1,0 +1,28 @@
+html { 
+  background: url(/static/images/index-background.png) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
+.navbar h1.logo {
+    font-size: 2.5em;
+    font-weight: 500;
+    color: #eee;
+    display: inline-block;
+}
+
+.navbar .nav-links {
+    float: right;
+    list-style-type: none;
+    display: inline-block;
+    color: #eee;
+    line-height: 4.5em;
+    font-size: 1.5em;
+}
+
+.navbar .nav-links li {
+    display: inline;
+    padding-left: 1em;
+}

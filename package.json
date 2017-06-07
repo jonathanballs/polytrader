@@ -1,0 +1,25 @@
+{
+  "name": "pollytrader",
+  "version": "1.0.0",
+  "description": "Poloniex trading history visualiser",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc --watch src/*.ts --outDir comp",
+    "dev": "tsc --watch src/*.ts --outDir comp",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jonathan Balls",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.3",
+    "socketio": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/debug": "0.0.29",
+    "@types/express": "^4.0.35",
+    "@types/node": "^6.0.46",
+    "@types/socket.io": "^1.4.29",
+    "typescript": "^2.2.2"
+  }
+}
+
