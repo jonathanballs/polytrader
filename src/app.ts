@@ -6,6 +6,9 @@ import * as socketio from 'socket.io';
 import * as poloniex from 'poloniex.js';
 import * as bodyParser from 'body-parser';
 
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/test');
+
 var verbose = false;
 var port = 8080;
 var app = express();
@@ -26,7 +29,7 @@ var p = new poloniex("DQ4HLF00-AKHKVSSI-P758MKYO-2BT9BJBE",
 
 // Serve the index file
 app.get('/', function(req, res) {
-    res.sendFile('index.html', { root: __dirname + "/../"});
+    res.render('index')
 });
 
 // Get poloniex data
@@ -35,9 +38,9 @@ app.get('/portfolio', (req, res) => {
         var balances = []
         for (var key in data) {
             if (data.hasOwnProperty(key)) {
-                if (data[key] > 0.0) {
+                //if (data[key] > 0.0) {
                     balances.push({currency: key, balance: data[key]})
-                }
+                //}
             }
         }
         console.log(balances);
@@ -46,9 +49,13 @@ app.get('/portfolio', (req, res) => {
 });
 
 app.post('/signup', (req, res) => {
-    console.log(req.body.email);
-    console.log(req.body.password1);
-    console.log(req.body.password2);
+    var email = req.body.email;
+    var password1 = req.body.password1;
+    var password2 = req.body.password2;
+
+    if (password1 != password2) {
+        console.log("passwords are not the same");
+    }
 
     res.send("Thanks for your details :D");
 });

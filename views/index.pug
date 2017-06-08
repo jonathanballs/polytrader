@@ -1,0 +1,314 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    // The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags
+    meta(name='keywords', content='meeting room, meeting room template, conference venue, venue, meeting html template')
+    meta(name='description', content='Book small meeting space in minutes and get a quote a free. For larger conferences let venues book online.')
+    title Pollytrader | Cryptocurrency trading analytics
+    // Bootstrap
+    link(href='/static/css/bootstrap.min.css', rel='stylesheet')
+    // style sheet
+    link(href='/static/css/style.css', rel='stylesheet')
+    // datepick
+    link(href='/static/css/jquery.datepick.css', rel='stylesheet')
+    // flaticon
+    link(href='/static/css/flaticon.css', rel='stylesheet')
+    // flaticon
+    link(href='/static/css/owl.carousel.css', rel='stylesheet')
+    link(href='https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500italic,500,700,700italic,100italic,100', rel='stylesheet', type='text/css')
+    // Font awesome icon
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css')
+    // HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries
+    // WARNING: Respond.js doesn't work if you view the page via file://
+    //if lt IE 9
+      script(src='https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js')
+      script(src='https://oss.maxcdn.com/respond/1.4.2/respond.min.js')
+  body
+    .navigation
+      // navigation
+      nav.navbar.navbar-default.navbar-fixed-top
+        .container
+          // Brand and toggle get grouped for better mobile display
+          .navbar-header
+            button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#main-navigation', aria-expanded='false')
+              span.sr-only Toggle navigation
+              span.icon-bar
+              span.icon-bar
+              span.icon-bar
+            a.navbar-brand.page-scroll(href='/')
+              img(src='/static/images/logo.png', alt='')
+          // Collect the nav links, forms, and other content for toggling
+          #main-navigation.collapse.navbar-collapse
+            ul.nav.navbar-nav.navbar-right
+              li
+                a.page-scroll(href='/') Home
+              li
+                a.page-scroll(href='#bookingform') Demo
+              li
+                a.page-scroll(href='#signup') Sign up
+              li
+                a.page-scroll(href='#aboutus') About
+              li
+                a.page-scroll(href='#contactus') Contact us
+          // /.navbar-collapse
+        // /.container-fluid
+    // /.navigation
+    #home.hero-slide
+      // hero slide
+      .container
+        .row
+          .col-md-offset-1.col-md-10.hero-section
+            h1.hero-title Visualise your trading history & increase your performance
+            p
+              | Get personalised analysis of your cryptocurrency trading history and tips to increase your returns.
+            a.btn.btn-default.btn-lg.page-scroll(href='#signup') Sign up now
+    // /.hero slide
+    #signup.section-color.booking-section
+      .container
+        .row
+          .col-md-6
+            .form-block
+              h1 Sign up and connect your poloniex account
+              form(method='post', action='/signup')
+                .form-group
+                  label.sr-only(for='name') Email
+                  input#email.form-control(type='email', name='email', placeholder='Email', required='')
+                .form-group
+                  label.sr-only(for='password1') Password
+                  input#password1.form-control(type='password', name='password1', placeholder='Password', required='')
+                .form-group
+                  label.sr-only(for='password2') Confirm Password
+                  input#password2.form-control(type='password', name='password2', placeholder='Confirm Password', required='')
+                .form-group
+                  button.btn.btn-block.btn-default.btn-big(type='submit', value='submit') Get Started
+          .col-md-offset-1.col-md-5.form-content
+            h1 Analyse your trading in five minutes.
+            p
+              | Simply sign up and entered your poloniex API key and you will have access to a wide arrange of analytical tools and graphs to help you understand your trading capabilities.
+            p Elaborate features.
+      #whyus.section-space.why-choose-section
+        // section space
+        .container
+          .row
+            .col-md-offset-1.col-md-10.section-title
+              h1  Why book online meeting rooms ?
+          .row
+            .col-md-4.feature-block
+              // feature-block
+              .feature-icon.mbtm3
+                i.flaticon-wirelessinternet11.flat-icon-medium
+              .feature-desc
+                h2 WiFi/wired broadband 
+                p Free Wi-Fi the most important hotel amenities among guests rooms and Conference.
+            // /.feature-block
+            .col-md-4.feature-block
+              // feature-block
+              .feature-icon
+                i.flaticon-user144.flat-icon-medium
+              .feature-desc
+                h2 Meeting Advisors
+                p Meeting Advisorwho you’ll receive customized space, schedule & food.
+            // /.feature-block
+            .col-md-4.feature-block
+              // feature-block
+              .feature-icon
+                i.flaticon-square160.flat-icon-medium
+              .feature-desc
+                h2 Group Reservation Solutions
+                p Great food keeps attendees focused, engaged and energized lorem ipsum simple.
+            // /.feature-block
+            .col-md-4.feature-block
+              // feature-block
+              .feature-icon
+                i.flaticon-expand25.flat-icon-medium
+              .feature-desc
+                h2 Flexible Meeting Spaces
+                p Maecenas efficitur risus eu velit porttitor lacinia. Integer eget turpis purus.
+            // /.feature-block
+            .col-md-4.feature-block
+              // feature-block
+              .feature-icon
+                i.flaticon-sunrise3.flat-icon-medium
+              .feature-desc
+                h2 Exceptional Catering
+                p Nullam orci quam bibendum eget lorem id simple tempor eleifend el mpus libero. 
+            // /.feature-block
+            .col-md-4.feature-block
+              // feature-block
+              .feature-icon
+                i.flaticon-weekly14.flat-icon-medium
+              .feature-desc
+                h2 All kind of Event Type
+                p
+                  | Smart and professional business meeting spaces.
+                  | Board meetings and Conference meetings
+            // /.feature-block
+      #aboutus.section-space.section-color
+        .container
+          .row
+            .col-md-6
+              h1 Overview Meetings & Conference
+              p.lead
+                | We believe in the power of the meeting because nothing is quite so personal, quite so human, as meeting in person.
+              p
+                | We believe that working together is more genuine - real people, in real time, in a real place. And together is how we can create, inspire and solve virtually anything. Find a hotel with the guest rooms or event space you need, then submit a pricing request for detailed information.
+              .well-block-small.about-counter
+                h1 259
+                small Guest Rooms
+              .well-block-small.about-counter
+                h1 2240
+                small Space sq. ft. 
+            .col-md-6.thumbnail-slider-block
+              #sync1.owl-carousel
+                .item
+                  img(src='/static/images//big-image.jpg', alt='')
+                .item
+                  img(src='/static/images//big-image.jpg', alt='')
+                .item
+                  img(src='/static/images//big-image.jpg', alt='')
+                .item
+                  img(src='/static/images//big-image.jpg', alt='')
+                .item
+                  img(src='/static/images//big-image.jpg', alt='')
+                .item
+                  img(src='/static/images//big-image.jpg', alt='')
+              #sync2.owl-carousel
+                .item
+                  img(src='/static/images//thumb-image.jpg', alt='')
+                .item
+                  img(src='/static/images//thumb-image-2.jpg', alt='')
+                .item
+                  img(src='/static/images//thumb-image.jpg', alt='')
+                .item
+                  img(src='/static/images//thumb-image-2.jpg', alt='')
+                .item
+                  img(src='/static/images//thumb-image-2.jpg', alt='')
+      .parallax-cta.parallax.parallax-2
+        // parallax cta
+        .container
+          .col-md-9.feature-point-block
+            h1 Accomodations & Facilities
+            .row
+              .col-md-7.feature-point-list
+                ul.listnone.check-circle
+                  li 259 spacious guest rooms
+                  li Sales and catering team
+                  li Business meeting, large conference, or presentation
+                  li Spacious dining area, bedroom and marble bathroom
+              .col-md-5.feature-point-list
+                ul.listnone.check-circle
+                  li Each room is equipped with phone 
+                  li High Speed Internet Access lines
+                  li Audio-visual services
+                  li 24-hour Services
+          .col-md-3
+            .well-block-small.download-pdf
+              .feature-icon
+                i.flaticon-text150.flat-icon-large
+              p Download pdf & get details about accomodations & Facilities
+              a.btn.btn-default(href='#') Download PDF
+      #testimonial.section-space
+        // section space
+        .container
+          .row
+            .col-md-12.section-title
+              .testimonial-icon
+                i.flaticon-chat51.flat-icon-large
+              h1 Happy Customer
+          .row
+            .col-md-12
+              .testimonial.testimonial-block
+                // testimonial block
+                .item
+                  .testimonial-desc
+                    | “I was very impressed with the speed & efficiency of the service provided it was very helpful and it will persuade me to consider using the service again in the future. lorem ipsum simple dummuy simple happy with our meetings and services.”
+                  .testimonial-name
+                    | - Macky John 
+                    small Manager
+                .item
+                  .testimonial-desc
+                    | “I was more than happy with the Conference options offered and hope that at some point in future we will be able to do business, Extreme professional and polite, will definitely use this service again.”
+                  .testimonial-name
+                    | - Jerry Cowan 
+                    small (CEO)
+                .item
+                  .testimonial-desc
+                    | “Morbi non gravida nulla. Nam id dolor quis velit laoreet blandit. Aliquam facilisis nisi non orci convallis, sit amet consectetur lacus facilisis. Fusce dapibus dictum lacus.”
+                  .testimonial-name
+                    | - Adam John 
+                    small Manager
+                .item
+                  .testimonial-desc
+                    | “Morbi non gravida nulla. Nam id dolor quis velit laoreet blandit. Aliquam facilisis nisi non orci convallis, sit amet consectetur lacus facilisis. Fusce dapibus dictum lacus.”
+                  .testimonial-name
+                    | - Milly 
+                    small Manager
+              // /.testimonial block
+      // /.section space
+      .section-space.section-color.call-to-action
+        .container
+          .row
+            .col-md-12
+              h1 Planning a successful meeting
+              p
+                | Find a hotel with the guest rooms or event space you need, then submit a pricing request for detailed information.
+              a.btn.btn-default.btn-big.page-scroll(href='#bookingform')  Check availability
+      // /.section-space
+      #contactus.footer
+        // footer
+        .container
+          .row
+            .col-md-12.footer-block.address-block
+              // footer block
+              i.fa.fa-map-marker
+              address
+                | 493 High Harbour, 
+                br
+                |         Surprise Valley, 
+                br
+                |         Alaska, US
+            // /.footer block
+            .col-md-offset-2.col-md-3.footer-block.call-block
+              // footer block
+              ul.listnone
+                li
+                  i.fa.fa-phone-square
+                  |  +1 800 325 4569
+            // /.footer block
+            .col-md-3.footer-block.mail-block
+              // footer block
+              p
+                i.fa.fa-envelope
+                |  info@hotelmeeting.com
+            .col-md-offset-1.col-md-2
+              a.ft-social(href='#')
+                i.fa.fa-twitter-square
+              a.ft-social(href='#')
+                i.fa.fa-facebook-square
+              a.ft-social(href='#')
+                i.fa.fa-google-plus-square
+            // /.footer block
+          .tiny-footer
+            // tiny footer
+            .row
+              .col-md-12.copyright  MeetingRooms @ 2015 copyrights all reserved 
+            // /.tiny footer
+      // /.footer
+      // jQuery (necessary for Bootstrap's JavaScript plugins)
+      script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
+      // Include all compiled plugins (below), or include individual files as needed
+      script(src='/static/js/bootstrap.min.js')
+      script(src='/static/js/jquery.sticky.js')
+      script(src='/static/js/sticky-header.js')
+      script(src='/static/js/jquery.easing.min.js')
+      script(src='/static/js/scrolling-nav.js')
+      script(src='/static/js/owl.carousel.min.js')
+      script(src='/static/js/thumbnail-slider.js')
+      script(src='/static/js/testimonial.js')
+      script(src='/static/js/form.js')
+      script(src='/static/js/jquery.plugin.js')
+      script(src='/static/js/jquery.datepick.js')
+
