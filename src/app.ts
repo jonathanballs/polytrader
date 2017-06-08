@@ -8,6 +8,8 @@ import * as bodyParser from 'body-parser';
 import * as expressValidator from 'express-validator';
 import * as passwordHasher from 'password-hash';
 import * as session from 'express-session';
+import * as ms from 'connect-mongo';
+var MongoStore = ms(session);
 
 import * as passport from 'passport'
 import * as LocalStrategy from 'passport-local'
@@ -64,7 +66,12 @@ console.log(':: Listening on port ' + port);
 
 app.set('view engine', 'pug')
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use(session({secret: 'TODO: make a secret key'}));
+app.use(session(
+    {
+        secret: 'TODO: make a secret key',
+        store: new MongoStore({ mongooseConnection: mongoose.connection})
+    }
+));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -82,11 +89,23 @@ var p = new poloniex("DQ4HLF00-AKHKVSSI-P758MKYO-2BT9BJBE",
 
 // Serve the index file
 app.get('/', (req, res) => {
-    res.render('index')
+    if (req.user) {
+        // Logged in users get redirected to their portfolios
+        res.redirect('/portfolio');
+    }
+    else {
+        res.render('index')
+    }
+
 });
 
 app.get('/login', (req, res) => {
     res.render('login')
+});
+
+// Account settings for choosing an api key
+app.get('/account', (req, res) => {
+    res.render('account')
 });
 
 app.post('/login', passport.authenticate(

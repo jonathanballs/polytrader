@@ -1,0 +1,23 @@
+extends base.pug
+
+block content
+  .container
+    .row
+      .form-block
+        h1 Your Account
+        form(method='post', action='/login')
+          .form-group
+            label.sr-only(for='name') Email
+            input#email.form-control(type='email', name='email', placeholder='Email', required='')
+
+          .form-group
+            label.sr-only(for='apiKey') Poloniex API Key
+            input#apiKey.form-control(type='text', name='apiKey', placeholder='Poloniex API Key', required='')
+
+          .form-group
+            label.sr-only(for='apiKey') Poloniex API Secret
+            input#apiSecret.form-control(type='text', name='apiKey', placeholder='Poloniex API Secret', required='')
+
+          .form-group
+            button.btn.btn-block.btn-default.btn-big(type='submit', value='submit') Update
+
