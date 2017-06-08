@@ -15,6 +15,11 @@
               - var email_val = err[0].value ? err[0].value : "";
               input#email.form-control(type='email', name='email', placeholder='Email', required='', value=email_val)
 
+          else
+            .form-group
+              label.sr-only(for='name') Email
+              input#email.form-control(type='email', name='email', placeholder='Email', required='')
+
           if formErrors
             - var err = formErrors.filter((x) => x.param == 'password1')
             if err.length != 0 && err[0].msg
