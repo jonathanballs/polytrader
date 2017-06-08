@@ -3,8 +3,7 @@
 import * as express from 'express';
 import * as http from 'http';
 import * as socketio from 'socket.io';
-import {Player, Projectile, Spectator, User} from './player';
-import {consts} from './consts';
+import * as poloniex from 'poloniex.js';
 
 var verbose = false;
 var port = 8080;
@@ -16,9 +15,32 @@ server.listen(port);
 console.log("Polotrader running :)");
 console.log(':: Listening on port ' + port);
 
+app.set('view engine', 'pug')
+
+// API key and secret
+var p = new poloniex("DQ4HLF00-AKHKVSSI-P758MKYO-2BT9BJBE",
+    "8dff019f2c5e5823af13d490e12310f1308fd758f8edd3041f665088997cfdc135e41ab2c911fcc7c90a8a90174ea4a314179a59e6b57450a6848ed3ba9bfc50");
+
+
 // Serve the index file
 app.get('/', function(req, res) {
     res.sendFile('index.html', { root: __dirname + "/../"});
+});
+
+// Get poloniex data
+app.get('/portfolio', (req, res) => {
+    p.returnCompleteBalances((err, data) => {
+        var balances = []
+        for (var key in data) {
+            if (data.hasOwnProperty(key)) {
+                if (data[key] > 0.0) {
+                    balances.push({currency: key, balance: data[key]})
+                }
+            }
+        }
+        console.log(balances);
+        res.render('portfolio', {balances: balances})
+    });
 });
 
 // Serve static files at /static

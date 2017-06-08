@@ -1,0 +1,16 @@
+extends base.pug
+
+block content
+  h1 Your Portfolio
+  p=JSON.stringify(data)
+  table.table
+    thead
+      tr
+        th Currency
+        th Balance
+    tbody
+      each b in balances
+        tr
+          td=b["currency"]
+          td=b["balance"]
+
