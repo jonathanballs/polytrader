@@ -7,6 +7,7 @@ import * as poloniex from 'poloniex.js';
 import * as bodyParser from 'body-parser';
 import * as expressValidator from 'express-validator';
 import * as passwordHasher from 'password-hash';
+import * as session from 'express-session';
 
 import * as passport from 'passport'
 import * as LocalStrategy from 'passport-local'
@@ -24,7 +25,11 @@ var userSchema = new mongoose.Schema({
 });
 var User = mongoose.model('User', userSchema);
 
-passport.use(new LocalStrategy((email, password, done) => {
+var LOCAL_STRATEGY_CONFIG = {
+    usernameField: 'email',
+};
+
+passport.use(new LocalStrategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
     User.findOne({email: email}, (err, user) => {
         if (err)
             return done(err)
@@ -32,13 +37,20 @@ passport.use(new LocalStrategy((email, password, done) => {
         if (!user)
             return done(null, false, { message: 'Incorrect username.' });
 
-        if (!user.validPassword(password))
+        if (!passwordHasher.verify(password, user.passwordHash))
             return done(null, false, { message: 'Incorrect password.' });
 
         return done(null, user);
     });
 }));
 
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  done(null, user);
+});
 
 var verbose = false;
 var port = 8080;
@@ -52,6 +64,9 @@ console.log(':: Listening on port ' + port);
 
 app.set('view engine', 'pug')
 app.use(bodyParser.urlencoded({ extended: true }))
+app.use(session({secret: 'TODO: make a secret key'}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Serve static files at /static
 app.use(express.static('lib'))
@@ -66,9 +81,16 @@ var p = new poloniex("DQ4HLF00-AKHKVSSI-P758MKYO-2BT9BJBE",
 
 
 // Serve the index file
-app.get('/', function(req, res) {
+app.get('/', (req, res) => {
     res.render('index')
 });
+
+app.get('/login', (req, res) => {
+    res.render('login')
+});
+
+app.post('/login', passport.authenticate(
+    'local', { successRedirect: '/', failureRedirect: '/login' }));
 
 // Get poloniex data
 app.get('/portfolio', (req, res) => {
