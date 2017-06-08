@@ -2,6 +2,8 @@ extends base.pug
 
 block content
   h1 Your Portfolio
+  if err
+    p=err
   p=JSON.stringify(data)
   table.table
     thead

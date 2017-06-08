@@ -4,6 +4,7 @@ import * as express from 'express';
 import * as http from 'http';
 import * as socketio from 'socket.io';
 import * as poloniex from 'poloniex.js';
+import * as bodyParser from 'body-parser';
 
 var verbose = false;
 var port = 8080;
@@ -16,6 +17,7 @@ console.log("Polotrader running :)");
 console.log(':: Listening on port ' + port);
 
 app.set('view engine', 'pug')
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // API key and secret
 var p = new poloniex("DQ4HLF00-AKHKVSSI-P758MKYO-2BT9BJBE",
@@ -39,8 +41,16 @@ app.get('/portfolio', (req, res) => {
             }
         }
         console.log(balances);
-        res.render('portfolio', {balances: balances})
+        res.render('portfolio', {err: err, balances: balances})
     });
+});
+
+app.post('/signup', (req, res) => {
+    console.log(req.body.email);
+    console.log(req.body.password1);
+    console.log(req.body.password2);
+
+    res.send("Thanks for your details :D");
 });
 
 // Serve static files at /static
