@@ -5,9 +5,40 @@ import * as http from 'http';
 import * as socketio from 'socket.io';
 import * as poloniex from 'poloniex.js';
 import * as bodyParser from 'body-parser';
+import * as expressValidator from 'express-validator';
+import * as passwordHasher from 'password-hash';
 
-var mongoose = require('mongoose');
+import * as passport from 'passport'
+import * as LocalStrategy from 'passport-local'
+
+import * as mongoose from 'mongoose';
 mongoose.connect('mongodb://localhost/test');
+
+var userSchema = new mongoose.Schema({
+    email: String,
+    loginTimestamp: Date,
+    signupTimestamp: Date,
+    poloniexAPIKey: String,
+    poloniexAPISecret: String,
+    passwordHash: String
+});
+var User = mongoose.model('User', userSchema);
+
+passport.use(new LocalStrategy((email, password, done) => {
+    User.findOne({email: email}, (err, user) => {
+        if (err)
+            return done(err)
+
+        if (!user)
+            return done(null, false, { message: 'Incorrect username.' });
+
+        if (!user.validPassword(password))
+            return done(null, false, { message: 'Incorrect password.' });
+
+        return done(null, user);
+    });
+}));
+
 
 var verbose = false;
 var port = 8080;
@@ -20,7 +51,14 @@ console.log("Polotrader running :)");
 console.log(':: Listening on port ' + port);
 
 app.set('view engine', 'pug')
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }))
+
+// Serve static files at /static
+app.use(express.static('lib'))
+app.use(express.static('comp'))
+app.use('/static', express.static('static'))
+
+app.use(expressValidator())
 
 // API key and secret
 var p = new poloniex("DQ4HLF00-AKHKVSSI-P758MKYO-2BT9BJBE",
@@ -49,19 +87,57 @@ app.get('/portfolio', (req, res) => {
 });
 
 app.post('/signup', (req, res) => {
+
+    // Check passwords are the same
     var email = req.body.email;
     var password1 = req.body.password1;
     var password2 = req.body.password2;
-
     if (password1 != password2) {
-        console.log("passwords are not the same");
+        console.log(`User signed up with ${email} but passwords don't match`);
+        res.render('index',
+            {formErrors: [
+                    {param: 'password1', msg: 'Passwords do not match', value: ''},
+                    {param: 'email', value: email}
+                ]
+            }
+        );
+
+        return;
     }
 
-    res.send("Thanks for your details :D");
-});
+    // Check for other errors
+    req.checkBody('email', 'Invalid email address').isEmail();
+    req.checkBody('password1', 'Your password is too short').len(6, 100);
+    var errors = req.validationErrors();
+    if (errors) {
+        console.log(`User signed up with ${email} but there were validation errors`);
+        res.render('index', {formErrors: errors} );
+        return;
+    }
 
-// Serve static files at /static
-app.use(express.static('lib'))
-app.use(express.static('comp'))
-app.use('/static', express.static('static'))
+    // Check if user already exists otherwise create it.
+    User.findOne({email: email}, (err, user) => {
+        if (!user) {
+            var u = new User({
+                email: email,
+                passwordHash: passwordHasher.generate(password1),
+                signupTimestamp: Date.now(),
+                loginTimestamp: Date.now()
+            })
+            u.save((err, u) => {
+                res.redirect('/portfolio');
+                return;
+            });
+        }
+
+        else {
+            console.log(`User tried to sign up with ${email} but it is already in use`);
+            var errors = [
+                {param: 'email', msg: 'A user with this email already exists', value: ''}
+            ]
+            res.render('index', {formErrors: errors} );
+            return;
+        }
+    });
+});
 
