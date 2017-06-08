@@ -94,7 +94,7 @@ app.post('/signup', (req, res) => {
     var password2 = req.body.password2;
     if (password1 != password2) {
         console.log(`User signed up with ${email} but passwords don't match`);
-        res.render('index',
+        res.render('signup',
             {formErrors: [
                     {param: 'password1', msg: 'Passwords do not match', value: ''},
                     {param: 'email', value: email}
@@ -111,7 +111,7 @@ app.post('/signup', (req, res) => {
     var errors = req.validationErrors();
     if (errors) {
         console.log(`User signed up with ${email} but there were validation errors`);
-        res.render('index', {formErrors: errors} );
+        res.render('signup', {formErrors: errors} );
         return;
     }
 
@@ -133,9 +133,9 @@ app.post('/signup', (req, res) => {
         else {
             console.log(`User tried to sign up with ${email} but it is already in use`);
             var errors = [
-                {param: 'email', msg: 'A user with this email already exists', value: ''}
+                {param: 'email', msg: 'A user with this email already exists', value: email}
             ]
-            res.render('index', {formErrors: errors} );
+            res.render('signup', {formErrors: errors} );
             return;
         }
     });
