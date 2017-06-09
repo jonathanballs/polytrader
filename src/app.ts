@@ -113,15 +113,29 @@ app.post('/login', passport.authenticate(
 
 // Get poloniex data
 app.get('/portfolio', (req, res) => {
+    p.returnBalances((err, data) => console.log(data["ETH"]))
     p.returnCompleteBalances((err, data) => {
-        var balances = []
+
+        var balances = new Array()
         for (var key in data) {
             if (data.hasOwnProperty(key)) {
-                //if (data[key] > 0.0) {
-                    balances.push({currency: key, balance: data[key]})
-                //}
+                var amountHave : float = parseFloat(data[key]["available"]) \
+                    + parseFloat(data[key]["onOrders"])
+
+                if (amountHave > 0.0) {
+
+                    if (key == "ETH")
+                        console.log(data[key])
+
+                    balances.push( {
+                        currency: key,
+                        balance: amountHave,
+                        btcValue: data[key]["btcValue"]
+                    );
+                }
             }
         }
+
         console.log(balances);
         res.render('portfolio', {err: err, balances: balances})
     });

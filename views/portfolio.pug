@@ -1,18 +1,24 @@
 extends base.pug
 
 block content
-  h1 Your Portfolio
+  - var portfolioValueBTC = balances.map((b) => parseFloat(b["btcValue"])).reduce((a, b)=>a+b, 0)
+
+  h1 Your Portfolio - #{portfolioValueBTC.toString().substr(0, 7)} BTC
+
   if err
     p=err
+
   p=JSON.stringify(data)
   table.table
     thead
       tr
         th Currency
         th Balance
+        th Bitcoin Value
     tbody
-      each b in balances
+      each b in balances.sort((a, b) => b["btcValue"] - a["btcValue"])
         tr
           td=b["currency"]
           td=b["balance"]
+          td=b["btcValue"]
 
