@@ -82,11 +82,6 @@ app.use('/static', express.static('static'))
 
 app.use(expressValidator())
 
-// API key and secret
-var p = new poloniex("DQ4HLF00-AKHKVSSI-P758MKYO-2BT9BJBE",
-    "8dff019f2c5e5823af13d490e12310f1308fd758f8edd3041f665088997cfdc135e41ab2c911fcc7c90a8a90174ea4a314179a59e6b57450a6848ed3ba9bfc50");
-
-
 // Serve the index file
 app.get('/', (req, res) => {
     if (req.user) {
@@ -120,8 +115,8 @@ app.post('/account', (req, res) => {
 
     User.update({email: req.user.email}, {
         email: email,
-        apiKey: apiKey,
-        apiSecret: apiSecret
+        poloniexAPIKey: apiKey,
+        poloniexAPISecret: apiSecret
     }, (err, numAffected, rawResponse) => {
         req.login(req.user, () => res.redirect('/account'));
     });
@@ -131,6 +126,10 @@ app.post('/account', (req, res) => {
 
 // Get poloniex data
 app.get('/portfolio', (req, res) => {
+
+    // Create a new connection to poloniex api
+    var p = new poloniex(req.user.poloniexAPIKey, req.user.poloniexAPISecret);
+
     p.returnCompleteBalances((err, data) => {
         var balances = new Array()
         for (var key in data) {
