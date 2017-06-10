@@ -8,17 +8,25 @@ block content
   if err
     p=err
 
-  p=JSON.stringify(data)
-  table.table
-    thead
-      tr
-        th Currency
-        th Balance
-        th Bitcoin Value
-    tbody
-      each b in balances.sort((a, b) => b["btcValue"] - a["btcValue"])
-        tr
-          td=b["currency"]
-          td=b["balance"]
-          td=b["btcValue"]
+  .row
+    .col-md-9
+      table.table
+        thead
+          tr
+            th Currency
+            th Balance
+            th Bitcoin Value
+        tbody
+          each b in balances.sort((a, b) => b["btcValue"] - a["btcValue"])
+            tr
+              td=b["currency"]
+              td=b["balance"]
+              td=b["btcValue"]
+    .col-md-3
+      canvas#portfolio-pie
+
+  // Set variables and include code for charting
+  script.
+    var cryptoBalances = !{JSON.stringify(balances)}
+  script(src='/static/js/portfolio.js')
 
