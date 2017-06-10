@@ -46,12 +46,12 @@ passport.use(new LocalStrategy(LOCAL_STRATEGY_CONFIG, (email, password, done) =>
     });
 }));
 
-passport.serializeUser(function(user, done) {
-  done(null, user);
+passport.serializeUser((user, done) => {
+    done(null, user._id);
 });
 
-passport.deserializeUser(function(user, done) {
-  done(null, user);
+passport.deserializeUser((id, done) => {
+    User.findById(id, (err, u) => done(null, u));
 });
 
 var verbose = false;
@@ -103,40 +103,50 @@ app.get('/login', (req, res) => {
     res.render('login')
 });
 
-// Account settings for choosing an api key
-app.get('/account', (req, res) => {
-    res.render('account')
-});
-
 app.post('/login', passport.authenticate(
     'local', { successRedirect: '/', failureRedirect: '/login' }));
 
+// Account settings for choosing an api key
+app.get('/account', (req, res) => {
+    console.log(req.user._id);
+    res.render('account', {user: req.user})
+});
+
+app.post('/account', (req, res) => {
+
+    var email = req.body.email;
+    var apiKey = req.body.apiKey;
+    var apiSecret = req.body.apiSecret;
+
+    User.update({email: req.user.email}, {
+        email: email,
+        apiKey: apiKey,
+        apiSecret: apiSecret
+    }, (err, numAffected, rawResponse) => {
+        req.login(req.user, () => res.redirect('/account'));
+    });
+
+    return;
+});
+
 // Get poloniex data
 app.get('/portfolio', (req, res) => {
-    p.returnBalances((err, data) => console.log(data["ETH"]))
     p.returnCompleteBalances((err, data) => {
-
         var balances = new Array()
         for (var key in data) {
             if (data.hasOwnProperty(key)) {
-                var amountHave : float = parseFloat(data[key]["available"]) \
-                    + parseFloat(data[key]["onOrders"])
+                var amountHave = parseFloat(data[key]["available"]) + parseFloat(data[key]["onOrders"])
 
                 if (amountHave > 0.0) {
-
-                    if (key == "ETH")
-                        console.log(data[key])
-
                     balances.push( {
                         currency: key,
                         balance: amountHave,
-                        btcValue: data[key]["btcValue"]
+                        btcValue: data[key]["btcValue"]}
                     );
                 }
             }
         }
 
-        console.log(balances);
         res.render('portfolio', {err: err, balances: balances})
     });
 });
