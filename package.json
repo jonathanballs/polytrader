@@ -4,7 +4,9 @@
   "description": "Poloniex trading history visualiser",
   "main": "index.js",
   "scripts": {
-    "start": "tsc --watch src/*.ts --outDir comp",
+    "prestart": "sudo systemctl start mongod",
+    "start": "tsc src/*.ts --outDir comp",
+    "poststart": "node comp/app.js",
     "dev": "tsc --watch src/*.ts --outDir comp",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
