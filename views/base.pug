@@ -32,63 +32,64 @@ html(lang='en')
     script(src='/static/js/Chart.bundle.min.js')
 
   body
-    .navigation
-      // navigation
-      nav.navbar.navbar-default.navbar-fixed-top(style="background-color: #242b33")
+    .body
+      .navigation
+        // navigation
+        nav.navbar.navbar-default.navbar-fixed-top(style="background-color: #242b33")
+          .container
+            // Brand and toggle get grouped for better mobile display
+            .navbar-header
+              button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#main-navigation', aria-expanded='false')
+                span.sr-only Toggle navigation
+                span.icon-bar
+                span.icon-bar
+                span.icon-bar
+              a.navbar-brand.page-scroll(href='/')
+                img(src='/static/images/logo.png', alt='')
+            // Collect the nav links, forms, and other content for toggling
+            #main-navigation.collapse.navbar-collapse
+              ul.nav.navbar-nav.navbar-right
+                li
+                  a.page-scroll(href='/') Home
+                li
+                  a(href='/portfolio') Porfolio
+                li
+                  a.page-scroll(href='#whyus') History
+                li
+                  a.page-scroll(href='#aboutus') Tips
+                li
+                  a(href='/account') Account
+            // /.navbar-collapse
+          // /.container-fluid
+      #div(style="padding-top: 120px;")
+        #div.container
+          block content
+      #contactus.footer
+        // footer
         .container
-          // Brand and toggle get grouped for better mobile display
-          .navbar-header
-            button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#main-navigation', aria-expanded='false')
-              span.sr-only Toggle navigation
-              span.icon-bar
-              span.icon-bar
-              span.icon-bar
-            a.navbar-brand.page-scroll(href='/')
-              img(src='/static/images/logo.png', alt='')
-          // Collect the nav links, forms, and other content for toggling
-          #main-navigation.collapse.navbar-collapse
-            ul.nav.navbar-nav.navbar-right
-              li
-                a.page-scroll(href='/') Home
-              li
-                a(href='/portfolio') Porfolio
-              li
-                a.page-scroll(href='#whyus') History
-              li
-                a.page-scroll(href='#aboutus') Tips
-              li
-                a(href='/account') Account
-          // /.navbar-collapse
-        // /.container-fluid
-    #div(style="padding-top: 120px;")
-      #div.container
-        block content
-    #contactus.footer
-      // footer
-      .container
-        .row
-          .col-md-offset-2.col-md-3.footer-block.call-block
-            p
-              i.fa.fa-phone-square
-              |  +44 77512 62801
-          // /.footer block
-          .col-md-3.footer-block.mail-block
-            // footer block
-            p
-              i.fa.fa-envelope
-              |  info@pollytrader.io
-          .col-md-offset-1.col-md-2
-            a.ft-social(href='#')
-              i.fa.fa-twitter-square
-            a.ft-social(href='#')
-              i.fa.fa-facebook-square
-            a.ft-social(href='#')
-              i.fa.fa-google-plus-square
-          // /.footer block
-        .tiny-footer
-          // tiny footer
           .row
-            .col-md-12.copyright  Pollytrader @ 2017 copyrights all reserved
+            .col-md-offset-2.col-md-3.footer-block.call-block
+              p
+                i.fa.fa-phone-square
+                |  +44 77512 62801
+            // /.footer block
+            .col-md-3.footer-block.mail-block
+              // footer block
+              p
+                i.fa.fa-envelope
+                |  info@pollytrader.io
+            .col-md-offset-1.col-md-2
+              a.ft-social(href='#')
+                i.fa.fa-twitter-square
+              a.ft-social(href='#')
+                i.fa.fa-facebook-square
+              a.ft-social(href='#')
+                i.fa.fa-google-plus-square
+            // /.footer block
+          .tiny-footer
+            // tiny footer
+            .row
+              .col-md-12.copyright  Pollytrader @ 2017 copyrights all reserved
           // /.tiny footer
     // /.footer
     // jQuery (necessary for Bootstrap's JavaScript plugins)

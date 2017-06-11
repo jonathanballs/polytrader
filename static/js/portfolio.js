@@ -28,3 +28,33 @@ var portfolioPieChart = new Chart(ctx, {
     options: {}
 })
 
+var historyCtx = document.getElementById("portfolio-value-history");
+
+var historyData = {
+    labels: portfolioHistory.map((x) => x.timestamp),
+    datasets: [{
+        data: portfolioHistory.map((x) => {
+            return {x: x.timestamp, y: x.balances[0].amount}
+        })
+    }]
+}
+
+var historyOptions = {
+    scales: {
+        xAxes: 'time',
+        unit: 'day',
+        unitStepSize: 1,
+        time: {
+            displayFormats: {
+                'day': 'MMM DD'
+            }
+        }
+    }
+}
+
+var portfolioPriceHistoryChart = new Chart(historyCtx, {
+    type: 'line',
+    data: historyData,
+    options: {}
+});
+

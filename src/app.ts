@@ -9,6 +9,7 @@ import * as expressValidator from 'express-validator';
 import * as passwordHasher from 'password-hash';
 import * as session from 'express-session';
 import * as ms from 'connect-mongo';
+import * as clone from 'clone';
 var MongoStore = ms(session);
 
 import * as passport from 'passport'
@@ -42,13 +43,25 @@ class Balance {
     }
 }
 
-class Portolio {
+class Portfolio {
     timestamp: Date;
     balances: [Balance];
 
     constructor(balances: [Balance], timestamp: Date) {
         this.timestamp = timestamp;
         this.balances = balances;
+    }
+
+    balanceOf(currency: string) : Balance {
+        var b = this.balances.filter((x) => x.currency == currency);
+
+        if (b.length)
+            return b[0];
+
+        var newBalance = new Balance(currency, 0.0);
+        this.balances.push(newBalance);
+
+        return newBalance;
     }
 
     getValue() : number {
@@ -210,10 +223,10 @@ app.get('/portfolio', (req, res) => {
                     var currTo = key.split('_')[1];
 
                     tradeHistoryRaw[key].forEach((t) => {
-                        t.currFrom = currFrom;
-                        t.currTo = currTo;
-                        t.timestamp = Date.parse(t.date);
-                        t.eventType = eventTypes.Trade;
+                        t["currFrom"] = currFrom;
+                        t["currTo"] = currTo;
+                        t["timestamp"] = Date.parse(t.date);
+                        t["eventType"] = eventTypes.Trade;
 
                         portfolioEvents.push(t);
                     });
@@ -224,15 +237,51 @@ app.get('/portfolio', (req, res) => {
                 var portfolioHistory : [Portfolio] = new Array();
 
                 portfolioEvents.forEach((e) => {
+
+                    // We assume that the first event is a deposit. The program
+                    // will break if it's not but it should be always true :/
                     if (!portfolioHistory.length) {
-                        var balance = new Balance(e.currency, e.amount);
+                        var balance = new Balance(e["currency"], parseFloat(e["amount"]))
                         var portfolio = new Portfolio([balance], new Date(e.timestamp));
                         portfolioHistory.push(portfolio);
                         return;
                     }
 
                     // Clone the last portfolio. Kinda cancerous - I'm sorry
-                    var portfolio = JSON.parse(JSON.stringify(portfolioHistory[portfolioHistory.length - 1]));
+                    var portfolio = clone(portfolioHistory[portfolioHistory.length-1]);
+                    portfolio.timestamp = new Date(e.timestamp);
+
+                    switch(e.eventType) {
+                        case eventTypes.Withdrawal:
+                            // Assume that balance already exists
+                            var b = portfolio.balanceOf(e["currency"]);
+                            b.amount -= parseFloat(e["amount"])
+                            break;
+                        case eventTypes.Deposit:
+                            var b = portfolio.balanceOf(e["currency"]);
+                            b.amount += parseFloat(e["amount"]);
+                            console.log(b.amount);
+                            break;
+
+                        case eventTypes.Trade:
+                            var b1 = portfolio.balanceOf(e["currFrom"]);
+                            var b2 = portfolio.balanceOf(e["currTo"]);
+
+                            if (e["type"] == "buy") {
+                                b1.amount -= parseFloat(e["total"]);
+                                b1.amount -= parseFloat(e["fee"]);
+                                b2.amount += parseFloat(e["amount"]);
+                            }
+                            else {
+                                b1.amount += parseFloat(e["total"]);
+                                b1.amount -= parseFloat(e["fee"]);
+                                b2.amount -= parseFloat(e["amount"]);
+                            }
+
+                            break;
+                    }
+
+                    portfolioHistory.push(portfolio);
                 });
 
                 res.render('portfolio', {err: err, balances: balances, portfolioHistory: portfolioHistory});

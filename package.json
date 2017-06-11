@@ -11,6 +11,7 @@
   "author": "Jonathan Balls",
   "license": "ISC",
   "dependencies": {
+    "clone": "^2.1.1",
     "express": "^4.15.3",
     "socketio": "^1.0.0"
   },
