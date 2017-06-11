@@ -15,9 +15,6 @@
   "dependencies": {
     "clone": "^2.1.1",
     "express": "^4.15.3",
-    "socketio": "^1.0.0"
-  },
-  "devDependencies": {
     "@types/debug": "0.0.29",
     "@types/express": "^4.0.35",
     "@types/node": "^6.0.46",
@@ -34,6 +31,7 @@
     "password-hash": "^1.2.2",
     "poloniex.js": "0.0.7",
     "pug": "^2.0.0-rc.2",
+    "socketio": "^1.0.0",
     "typescript": "^2.2.2"
   }
 }
