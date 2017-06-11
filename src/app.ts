@@ -5,7 +5,7 @@ import * as http from 'http';
 import * as socketio from 'socket.io';
 import * as poloniex from 'poloniex.js';
 import * as bodyParser from 'body-parser';
-import * as expressValidator from 'express-validator';
+import expressValidator = require('express-validator');
 import * as passwordHasher from 'password-hash';
 import * as session from 'express-session';
 import * as ms from 'connect-mongo';
@@ -13,7 +13,7 @@ import * as clone from 'clone';
 var MongoStore = ms(session);
 
 import * as passport from 'passport'
-import * as LocalStrategy from 'passport-local'
+import {Strategy} from 'passport-local'
 
 import * as mongoose from 'mongoose';
 mongoose.connect('mongodb://localhost/test');
@@ -71,23 +71,23 @@ class Portfolio {
     }
 
 }
+passport.use(new Strategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
+        User.findOne({email: email}, (err, user) => {
+            if (err)
+                return done(err)
 
-passport.use(new LocalStrategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
-    User.findOne({email: email}, (err, user) => {
-        if (err)
-            return done(err)
+            if (!user)
+                return done(null, false, { message: 'Incorrect username.' });
 
-        if (!user)
-            return done(null, false, { message: 'Incorrect username.' });
+            if (!passwordHasher.verify(password, user.passwordHash))
+                return done(null, false, { message: 'Incorrect password.' });
 
-        if (!passwordHasher.verify(password, user.passwordHash))
-            return done(null, false, { message: 'Incorrect password.' });
+            return done(null, user);
+        });
+    })
+);
 
-        return done(null, user);
-    });
-}));
-
-passport.serializeUser((user, done) => {
+passport.serializeUser((user:any, done) => {
     done(null, user._id);
 });
 
@@ -203,8 +203,8 @@ app.get('/portfolio', (req, res) => {
                 var portfolioEvents = new Array();
                 enum eventTypes {
                     Withdrawal,
-                    Deposit,
-                    Trade
+                        Deposit,
+                        Trade
                 }
 
                 // Create a list of all portfolio events
@@ -234,7 +234,7 @@ app.get('/portfolio', (req, res) => {
 
                 portfolioEvents.sort((a, b) => a.timestamp - b.timestamp);
 
-                var portfolioHistory : [Portfolio] = new Array();
+                var portfolioHistory : Portfolio[] = new Array();
 
                 portfolioEvents.forEach((e) => {
 
@@ -301,9 +301,9 @@ app.post('/signup', (req, res) => {
         console.log(`User signed up with ${email} but passwords don't match`);
         res.render('signup',
             {formErrors: [
-                    {param: 'password1', msg: 'Passwords do not match', value: ''},
-                    {param: 'email', value: email}
-                ]
+                {param: 'password1', msg: 'Passwords do not match', value: ''},
+                {param: 'email', value: email}
+            ]
             }
         );
 
@@ -312,7 +312,7 @@ app.post('/signup', (req, res) => {
 
     // Check for other errors
     req.checkBody('email', 'Invalid email address').isEmail();
-    req.checkBody('password1', 'Your password is too short').len(6, 100);
+    req.checkBody('password1', 'Your password is too short').len(6);
     var errors = req.validationErrors();
     if (errors) {
         console.log(`User signed up with ${email} but there were validation errors`);
