@@ -31,6 +31,34 @@ var LOCAL_STRATEGY_CONFIG = {
     usernameField: 'email',
 };
 
+class Balance {
+    currency: string;
+    amount: number;
+    btcValue: number;
+
+    constructor(currency: string, amount: number) {
+        this.currency = currency;
+        this.amount = amount;
+    }
+}
+
+class Portolio {
+    timestamp: Date;
+    balances: [Balance];
+
+    constructor(balances: [Balance], timestamp: Date) {
+        this.timestamp = timestamp;
+        this.balances = balances;
+    }
+
+    getValue() : number {
+        return this.balances
+            .map((b) => b.btcValue)
+            .reduce((a, b)=>a+b, 0);
+    }
+
+}
+
 passport.use(new LocalStrategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
     User.findOne({email: email}, (err, user) => {
         if (err)
@@ -130,23 +158,87 @@ app.get('/portfolio', (req, res) => {
     // Create a new connection to poloniex api
     var p = new poloniex(req.user.poloniexAPIKey, req.user.poloniexAPISecret);
 
-    p.returnCompleteBalances((err, data) => {
-        var balances = new Array()
-        for (var key in data) {
-            if (data.hasOwnProperty(key)) {
-                var amountHave = parseFloat(data[key]["available"]) + parseFloat(data[key]["onOrders"])
+    p.returnCompleteBalances((err, rawBalances) => {
 
-                if (amountHave > 0.0) {
-                    balances.push( {
-                        currency: key,
-                        balance: amountHave,
-                        btcValue: data[key]["btcValue"]}
-                    );
-                }
-            }
+        // Return the trade history
+        var returnTradeHistoryParams = {
+            currencyPair: 'all',
+            start: 0,
+            end: +new Date()
         }
 
-        res.render('portfolio', {err: err, balances: balances})
+        p._private('returnTradeHistory', returnTradeHistoryParams, (err, tradeHistoryRaw) => {
+            p.returnDepositsWithdrawals(0, +new Date(), (err, depositsWithdrawalsRaw) => {
+
+                // Get current balances
+                var balances = new Array()
+                for (var key in rawBalances) {
+                    if (rawBalances.hasOwnProperty(key)) {
+                        var amountHave = parseFloat(rawBalances[key]["available"]) + parseFloat(rawBalances[key]["onOrders"])
+
+                        if (amountHave > 0.0) {
+                            balances.push( {
+                                currency: key,
+                                balance: amountHave,
+                                btcValue: rawBalances[key]["btcValue"]}
+                            );
+                        }
+                    }
+                }
+
+                // Events stores all buy/sell/widthdraw/deposits events
+                var portfolioEvents = new Array();
+                enum eventTypes {
+                    Withdrawal,
+                    Deposit,
+                    Trade
+                }
+
+                // Create a list of all portfolio events
+                depositsWithdrawalsRaw["withdrawals"].forEach((w) => {
+                    w.timestamp *= 1000;
+                    w.eventType = eventTypes.Withdrawal;
+                    portfolioEvents.push(w);
+                })
+                depositsWithdrawalsRaw["deposits"].forEach((d) => {
+                    d.timestamp *= 1000;
+                    d.eventType = eventTypes.Deposit;
+                    portfolioEvents.push(d);
+                })
+                for (var key in tradeHistoryRaw) {
+                    var currFrom = key.split('_')[0];
+                    var currTo = key.split('_')[1];
+
+                    tradeHistoryRaw[key].forEach((t) => {
+                        t.currFrom = currFrom;
+                        t.currTo = currTo;
+                        t.timestamp = Date.parse(t.date);
+                        t.eventType = eventTypes.Trade;
+
+                        portfolioEvents.push(t);
+                    });
+                }
+
+                portfolioEvents.sort((a, b) => a.timestamp - b.timestamp);
+
+                var portfolioHistory : [Portfolio] = new Array();
+
+                portfolioEvents.forEach((e) => {
+                    if (!portfolioHistory.length) {
+                        var balance = new Balance(e.currency, e.amount);
+                        var portfolio = new Portfolio([balance], new Date(e.timestamp));
+                        portfolioHistory.push(portfolio);
+                        return;
+                    }
+
+                    // Clone the last portfolio. Kinda cancerous - I'm sorry
+                    var portfolio = JSON.parse(JSON.stringify(portfolioHistory[portfolioHistory.length - 1]));
+                });
+
+                res.render('portfolio', {err: err, balances: balances, portfolioHistory: portfolioHistory});
+
+            });
+        });
     });
 });
 

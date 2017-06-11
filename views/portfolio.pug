@@ -24,9 +24,14 @@ block content
               td=b["btcValue"]
     .col-md-3
       canvas#portfolio-pie
+  .row
+    .col-md-12
+      h1 Value History
+      p Here goes that mad chart :DDDD
 
   // Set variables and include code for charting
   script.
     var cryptoBalances = !{JSON.stringify(balances)}
+    var portfolioEvents = !{JSON.stringify(portfolioHistory)}
   script(src='/static/js/portfolio.js')
 

@@ -23,7 +23,8 @@ var data = {
 };
 
 var portfolioPieChart = new Chart(ctx, {
-  type: 'pie',
-  data: data,
-  options: {}
+    type: 'pie',
+    data: data,
+    options: {}
 })
+
