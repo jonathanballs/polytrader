@@ -40,21 +40,35 @@ var historyData = {
 }
 
 var historyOptions = {
+    title:{
+        text: "Bitcoin balance over time"
+    },
     scales: {
-        xAxes: 'time',
-        unit: 'day',
-        unitStepSize: 1,
-        time: {
-            displayFormats: {
-                'day': 'MMM DD'
+        xAxes: [{
+            type: "time",
+            time: {
+                //format: 'MM/DD/YYYY HH:mm',
+                // round: 'day'
+                tooltipFormat: 'll HH:mm'
+            },
+            scaleLabel: {
+                display: true,
+                labelString: 'Date'
             }
-        }
-    }
+        }, ],
+        yAxes: [{
+            scaleLabel: {
+                display: true,
+                labelString: 'value'
+            }
+        }]
+    },
 }
+
 
 var portfolioPriceHistoryChart = new Chart(historyCtx, {
     type: 'line',
     data: historyData,
-    options: {}
+    options: historyOptions
 });
 
