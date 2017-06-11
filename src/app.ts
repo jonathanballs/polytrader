@@ -16,7 +16,7 @@ import * as passport from 'passport'
 import {Strategy} from 'passport-local'
 
 import * as mongoose from 'mongoose';
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect('mongodb://localhost/pollytrader');
 
 var userSchema = new mongoose.Schema({
     email: String,
