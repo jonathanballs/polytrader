@@ -167,6 +167,10 @@ app.post('/account', (req, res) => {
 
 // Get poloniex data
 app.get('/portfolio', (req, res) => {
+    //Redirect to account in case of API key not setup
+    if(!req.user.poloniexAPIKey && !req.user.poloniexAPISecret){
+        res.redirect('/account')
+    }
 
     // Create a new connection to poloniex api
     var p = new poloniex(req.user.poloniexAPIKey, req.user.poloniexAPISecret);
@@ -345,4 +349,7 @@ app.post('/signup', (req, res) => {
         }
     });
 });
-
+app.get('/logout', (req, res) => {
+    req.logout()
+    res.redirect('/')
+})
