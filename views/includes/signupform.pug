@@ -12,7 +12,7 @@
                 span=err[0].msg
             .form-group
               label.sr-only(for='name') Email
-              - var email_val = err[0] ? err[0] : "";
+              - var email_val = err[0] ? err[0].value : "";
               input#email.form-control(type='email', name='email', placeholder='Email', required='', value=email_val)
 
           else
