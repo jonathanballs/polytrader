@@ -17,6 +17,7 @@ import {Strategy} from 'passport-local'
 
 import * as mongoose from 'mongoose';
 mongoose.connect('mongodb://localhost/pollytrader');
+//API routes 
 
 var userSchema = new mongoose.Schema({
     email: String,
@@ -353,3 +354,4 @@ app.get('/logout', (req, res) => {
     req.logout()
     res.redirect('/')
 })
+require('./apiRoutes')(app)
