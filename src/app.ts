@@ -17,16 +17,7 @@ import {Strategy} from 'passport-local'
 
 import * as mongoose from 'mongoose';
 mongoose.connect('mongodb://localhost/test');
-
-var userSchema = new mongoose.Schema({
-    email: String,
-    loginTimestamp: Date,
-    signupTimestamp: Date,
-    poloniexAPIKey: String,
-    poloniexAPISecret: String,
-    passwordHash: String
-});
-var User = mongoose.model('User', userSchema);
+import { User } from "./models";
 
 var LOCAL_STRATEGY_CONFIG = {
     usernameField: 'email',
@@ -45,9 +36,9 @@ class Balance {
 
 class Portfolio {
     timestamp: Date;
-    balances: [Balance];
+    balances: Balance[];
 
-    constructor(balances: [Balance], timestamp: Date) {
+    constructor(balances: Balance[], timestamp: Date) {
         this.timestamp = timestamp;
         this.balances = balances;
     }
@@ -269,12 +260,12 @@ app.get('/portfolio', (req, res) => {
 
                             if (e["type"] == "buy") {
                                 b1.amount -= parseFloat(e["total"]);
-                                b1.amount -= parseFloat(e["fee"]);
+                                //b1.amount -= parseFloat(e["fee"]);
                                 b2.amount += parseFloat(e["amount"]);
                             }
                             else {
                                 b1.amount += parseFloat(e["total"]);
-                                b1.amount -= parseFloat(e["fee"]);
+                                //b1.amount -= parseFloat(e["fee"]);
                                 b2.amount -= parseFloat(e["amount"]);
                             }
 
