@@ -1,9 +1,15 @@
 {
     "compilerOptions": {
-	"module": "commonjs",
-	"target": "es5",
-	"noImplicitAny": false,
-	"sourceMap": false
-    }
+		"module": "commonjs",
+		"removeComments": true,
+		"target": "es5",
+        "outDir": "./comp",
+		"noImplicitAny": false,
+		"sourceMap": true
+    },
+
+	"include": [
+		"src/*"
+	]
 }
 
