@@ -4,7 +4,6 @@
   "description": "Poloniex trading history visualiser",
   "main": "index.js",
   "scripts": {
-    "prestart": "sudo systemctl start mongod",
     "start": "tsc src/*.ts --outDir comp",
     "poststart": "node comp/app.js",
     "dev": "tsc --watch src/*.ts --outDir comp",

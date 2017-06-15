@@ -16,8 +16,9 @@ import * as passport from 'passport'
 import {Strategy} from 'passport-local'
 
 import * as mongoose from 'mongoose';
-mongoose.connect('mongodb://localhost/test');
 import { User } from "./models";
+
+mongoose.connect('mongodb://localhost/pollytrader');
 
 var LOCAL_STRATEGY_CONFIG = {
     usernameField: 'email',
@@ -158,6 +159,10 @@ app.post('/account', (req, res) => {
 
 // Get poloniex data
 app.get('/portfolio', (req, res) => {
+    //Redirect to account in case of API key not setup
+    if(!req.user.poloniexAPIKey && !req.user.poloniexAPISecret){
+        res.redirect('/account')
+    }
 
     // Create a new connection to poloniex api
     var p = new poloniex(req.user.poloniexAPIKey, req.user.poloniexAPISecret);
@@ -251,7 +256,6 @@ app.get('/portfolio', (req, res) => {
                         case eventTypes.Deposit:
                             var b = portfolio.balanceOf(e["currency"]);
                             b.amount += parseFloat(e["amount"]);
-                            console.log(b.amount);
                             break;
 
                         case eventTypes.Trade:
@@ -336,4 +340,7 @@ app.post('/signup', (req, res) => {
         }
     });
 });
-
+app.get('/logout', (req, res) => {
+    req.logout()
+    res.redirect('/')
+})
