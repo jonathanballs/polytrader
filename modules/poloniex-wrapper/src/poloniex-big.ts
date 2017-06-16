@@ -10,6 +10,14 @@ export class OrderBook {
     seq: number
 }
 
+export class Order {
+    orderNumber: number
+    type: string
+    rate: string
+    amount: string
+    total: string
+}
+
 export enum TradeType {
     Buy,
     Sell
@@ -517,20 +525,43 @@ export default class Poloniex {
                     withdrawal.timestamp = new Date(withdrawal.tiemstamp * 1000)
                     withdrawal.isComplete = withdrawal.status.startsWith('COMPLETE')
                 })
-                resolve(depositsWithdrawals)
+               resolve(depositsWithdrawals)
             })
         })
     }
 
     // Return list of users orders for a currency pair or all currencies
+    returnOpenOrders() : Promise<{[currencyPair: string]: Order[]}>
+    returnOpenOrders(currencyPair) : Promise<Order[]>
     returnOpenOrders(currencyPair?: string) {
-        class Order {
-            orderNumber: number
-            type: string
-            rate: string
-            amount: string
-            total: string
-        }
+        return new Promise<any>((resolve, reject) => {
+            var reqOptions = {
+                currencyPair: currencyPair || 'all'
+            }
+
+            function normalizeOrder(order) {
+                order.orderNumber = parseInt(order.orderNumber)
+            }
+
+            this._private('returnOpenOrders', reqOptions, (err, openOrders) => {
+                if (err) {
+                    reject(Error(err))
+                    return
+                }
+
+                // Normalize all orders
+                if (!currencyPair) {
+                    for (var key in openOrders) {
+                        openOrders[key].forEach(o => normalizeOrder(o))
+                    }
+                }
+                else {
+                    openOrders.forEach(o => normalizeOrder(o))
+                }
+
+                resolve(openOrders)
+            })
+        })
     }
 
     // Returns users historical trades

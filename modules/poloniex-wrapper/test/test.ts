@@ -311,4 +311,36 @@ describe('Poloniex', function() {
             }, err => done(err))
         })
     })
+    
+    describe('returnOpenOrders', () => {
+        it('Return Open Orders for all currencies', done => {
+            p.returnOpenOrders().then(openOrders => {
+                assert.isDefined(openOrders["BTC_ETH"])
+
+                openOrders["BTC_ETH"].forEach(o => {
+                    assert.isNumber(o.orderNumber)
+                    assert.isString(o.type)
+                    assert.isString(o.rate)
+                    assert.isString(o.amount)
+                    assert.isString(o.total)
+                })
+
+                done()
+            }, err => done(err))
+        })
+
+        it('Return Open Orders for BTC_ETH', done => {
+            p.returnOpenOrders('BTC_ETH').then(orders => {
+                orders.forEach(o => {
+                    assert.isNumber(o.orderNumber)
+                    assert.isString(o.type)
+                    assert.isString(o.rate)
+                    assert.isString(o.amount)
+                    assert.isString(o.total)
+                })
+
+                done()
+            }, err => done(err))
+        })
+    })
 });
