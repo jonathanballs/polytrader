@@ -343,4 +343,45 @@ describe('Poloniex', function() {
             }, err => done(err))
         })
     })
+
+    describe('returnUserTradeHistory', () => {
+        it('Returns User Trades For All Currencies', done => {
+            p.returnUserTradeHistory().then(tradeHistory => {
+                assert.isDefined(tradeHistory["BTC_ETH"])
+
+                tradeHistory["BTC_ETH"].forEach(t => {
+                    assert.isNumber(t.globalTradeID)
+                    assert.isNumber(t.tradeID)
+                    assert.isNumber(t.date.getTime())
+                    assert.isString(t.rate)
+                    assert.isString(t.amount)
+                    assert.isString(t.total)
+                    assert.isString(t.fee)
+                    assert.isNumber(t.orderNumber)
+                })
+
+                done()
+            }, err => done(err))
+        })
+
+        it('Returns User Trades For BTC_ETH', done => {
+            p.returnUserTradeHistory('BTC_ETH').then(tradeHistory => {
+                assert.isArray(tradeHistory)
+
+                tradeHistory.forEach(t => {
+                    assert.isNumber(t.globalTradeID)
+                    assert.isNumber(t.tradeID)
+                    assert.isNumber(t.date.getTime())
+                    assert.isString(t.rate)
+                    assert.isString(t.amount)
+                    assert.isString(t.total)
+                    assert.isString(t.fee)
+                    assert.isNumber(t.orderNumber)
+                })
+
+                done()
+            }, err => done(err))
+        })
+    })
+
 });

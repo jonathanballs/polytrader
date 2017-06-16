@@ -23,6 +23,24 @@ export enum TradeType {
     Sell
 }
 
+function tradeStringToType(s: string) : TradeType {
+    return s=="buy" ? TradeType.Buy : TradeType.Sell
+}
+
+export enum AccountType {
+    Exchange,
+    Margin,
+    Lending
+}
+
+function accountStringToType(s: string) : AccountType {
+    if (s == "lending")
+        return AccountType.Lending
+    if (s == "margin")
+        return AccountType.Margin
+    return AccountType.Exchange
+}
+
 export class Deposit {
     currency: string
     address: string
@@ -68,12 +86,6 @@ export class Balances {
     [currency: string]: string
 }
 
-export enum AccountType {
-    Exchange,
-    Margin,
-    Lending
-}
-
 export class Currency {
     txFee: string
     name: string
@@ -106,6 +118,19 @@ export class Trade {
     rate: string
     amount: string
     total: string
+}
+
+export class UserTrade {
+    globalTradeID: number
+    tradeID: number
+    date: Date
+    type: TradeType
+    rate: string
+    amount: string
+    total: string
+    fee: string
+    orderNumber: number
+    category: AccountType
 }
 
 export class Volume {
@@ -380,6 +405,7 @@ export default class Poloniex {
 
                 tradeHistory.forEach(t => {
                     t.date = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate()
+                    t.type = tradeStringToType(t.type)
                 });
 
                 resolve(tradeHistory)
@@ -564,10 +590,43 @@ export default class Poloniex {
         })
     }
 
-    // Returns users historical trades
-    returnUserTradeHistory(currencyPair: string) : Promise<Trade[]> {
-        return new Promise<Trade[]>((resolve, reject) => {
-            return []
+    // Returns users historical trades. For now it returns all trades
+    returnUserTradeHistory() : Promise<{[currencyPair: string]: UserTrade[]}>
+    returnUserTradeHistory(currencyPair) : Promise<UserTrade[]>
+    returnUserTradeHistory(currencyPair?: string) {
+        return new Promise<any>((resolve, reject) => {
+            var reqOptions = {
+                currencyPair: currencyPair || 'all',
+                start: 0,
+                end: Math.floor((new Date).getTime() / 1000)
+            }
+
+            this._private('returnTradeHistory', reqOptions, (err, tradeHistory) => {
+                if (err) {
+                    reject(Error(err))
+                    return
+                }
+
+                function normalizeTrade(t) {
+                    t.tradeID = parseInt(t.tradeID)
+                    t.orderNumber = parseInt(t.orderNumber)
+                    t.date = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate()
+                    t.type = tradeStringToType(t.type)
+                    t.category = accountStringToType(t.category)
+                }
+
+                // Normalize all trades
+                if (!currencyPair) {
+                    for (var key in tradeHistory) {
+                        tradeHistory[key].forEach(t => normalizeTrade(t))
+                    }
+                }
+                else {
+                    tradeHistory.forEach(t => normalizeTrade(t))
+                }
+
+                resolve(tradeHistory)
+            })
         })
     }
 
