@@ -2,6 +2,8 @@
 import * as request from 'request'
 import * as crypto from 'crypto'
 import * as moment from 'moment'
+import * as clone from 'clone'
+import * as Big from 'big.js'
 
 export class OrderBook {
     asks: {price: string, amount: string}[]
@@ -21,6 +23,43 @@ export class Order {
 export enum TradeType {
     Buy,
     Sell
+}
+
+export class Balance {
+    currency: string;
+    amount: string;
+    btcValue: string;
+
+    constructor(currency: string, amount: string) {
+        this.currency = currency;
+        this.amount = amount;
+    }
+}
+
+export class Portfolio {
+    timestamp: Date;
+    balances: Balance[];
+
+    constructor(balances: Balance[], timestamp: Date) {
+        this.timestamp = timestamp;
+        this.balances = balances;
+    }
+
+    balanceOf(currency: string) : Balance {
+        var b = this.balances.filter((x) => x.currency == currency);
+
+        if (b.length)
+            return b[0];
+
+        var newBalance = new Balance(currency, "0.0");
+        this.balances.push(newBalance);
+
+        return newBalance;
+    }
+
+    getValue() : number {
+        return null
+    }
 }
 
 function tradeStringToType(s: string) : TradeType {
@@ -99,7 +138,7 @@ export class LoanOrders {
 }
 
 export class Candlestick {
-    date: Date
+    timestamp: Date
     high: string
     low: string
     open: string
@@ -113,7 +152,7 @@ export class Candlestick {
 export class Trade {
     globalTradeID: number
     tradeID: number
-    date: Date
+    timestamp: Date
     type: TradeType
     rate: string
     amount: string
@@ -123,7 +162,7 @@ export class Trade {
 export class UserTrade {
     globalTradeID: number
     tradeID: number
-    date: Date
+    timestamp: Date
     type: TradeType
     rate: string
     amount: string
@@ -293,8 +332,13 @@ export default class Poloniex {
 
     returnTicker() {
         return new Promise<{[currencyPair: string] : Ticker}>((resolve, reject) => {
-            this._public('returnTicker', {}, (err, data) => {
-                err ? reject(Error(err)) : resolve(data)
+            this._public('returnTicker', {}, (err, ticker) => {
+                if (err = err || ticker.error) {
+                    reject(Error("Error in return24hVolume: " + err))
+                    return;
+                }
+
+                resolve(ticker)
             })
         })
     }
@@ -302,29 +346,28 @@ export default class Poloniex {
     // Returns the 24-hour volume for all markets
     return24hVolume() {
         return new Promise<VolumeList>((resolve, reject) => {
-            this._public('return24hVolume', {}, (err, data) => {
-                if (err) {
-                    reject(Error(err))
+            this._public('return24hVolume', {}, (err, volumeList) => {
+                if (err = err || volumeList.error) {
+                    reject(Error("Error in return24hVolume: " + err))
                     return;
                 }
-                else {
-                    var ret : VolumeList = new VolumeList()
-                    ret.totalBTC = data["totalBTC"];
-                    ret.totalETH = data["totalETH"];
-                    ret.totalUSDT = data["totalUSDT"];
-                    ret.totalXMR = data["totalXMR"];
-                    ret.totalXUSD = data["totalXUSD"];
-                    ret.pair = {}
 
-                    for (var key in data) {
-                        var pair = key.split('_')
-                        if (pair.length != 2)
-                            continue
-                        ret.pair[key] = new Volume(pair[0], pair[1])
-                    }
+                var ret : VolumeList = new VolumeList()
+                ret.totalBTC = volumeList["totalBTC"];
+                ret.totalETH = volumeList["totalETH"];
+                ret.totalUSDT = volumeList["totalUSDT"];
+                ret.totalXMR = volumeList["totalXMR"];
+                ret.totalXUSD = volumeList["totalXUSD"];
+                ret.pair = {}
 
-                    resolve(ret);
+                for (var key in volumeList) {
+                    var pair = key.split('_')
+                    if (pair.length != 2)
+                        continue
+                    ret.pair[key] = new Volume(pair[0], pair[1])
                 }
+
+                resolve(ret);
             })
         })
     }
@@ -363,9 +406,12 @@ export default class Poloniex {
             }
 
             this._public('returnOrderBook', orderBookOptions, (err, data) => {
+                if (err = err || orderBookOptions.error) {
+                    reject(Error("Error in returnOrderBook: " + err))
+                    return;
+                }
 
-                if (err) { reject(Error(err)); return }
-
+                // Resolve complete order book
                 if (typeof currencyPair == 'undefined') {
                     // Normalize all currencies
                     var orderBooks : {[currencyPair: string] : OrderBook} = {}
@@ -374,6 +420,7 @@ export default class Poloniex {
                     }
                     resolve(orderBooks)
                 }
+                // Resolve currency specific order book
                 else {
                     resolve(normalizeOrderBook(data))
                 }
@@ -398,13 +445,14 @@ export default class Poloniex {
             }
 
             this._public('returnTradeHistory', reqOptions, (err, tradeHistory) => {
-                if (err) {
-                    reject(Error(err))
+                if (err = err || tradeHistory.error) {
+                    reject(Error("Error in returnTradeHistory: " + err))
                     return
                 }
 
                 tradeHistory.forEach(t => {
-                    t.date = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate()
+                    t.timestamp = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate()
+                    delete t.date
                     t.type = tradeStringToType(t.type)
                 });
 
@@ -425,13 +473,14 @@ export default class Poloniex {
 
         return new Promise<Candlestick[]>((resolve, reject) => {
             this._public('returnChartData', reqOptions, (err, candlestickData) => {
-                if (err) {
-                    reject(Error(err))
+                if (err = err || candlestickData.error) {
+                    reject(Error("Error in returnChartData: " + err))
                     return
                 }
 
                 candlestickData.forEach(c => {
-                    c.date = new Date(c.date * 1000)
+                    c.timestamp = new Date(c.date * 1000)
+                    delete c.date
                     c.high = String(c.high)
                     c.low = String(c.low)
                     c.open = String(c.open)
@@ -451,6 +500,12 @@ export default class Poloniex {
     returnCurrencies() {
         return new Promise<{[currency: string]: Currency}>((resolve, reject) => {
             this._public('returnCurrencies', {}, (err, currencies) => {
+
+                if (err = err || currencies.error) {
+                    reject(Error("Error in returnCurrencies: " + err))
+                    return
+                }
+
                 for (var currency in currencies) {
                     var c = currencies[currency]
 
@@ -467,7 +522,13 @@ export default class Poloniex {
     returnLoanOrders(currency: string) {
         return new Promise<LoanOrders>((resolve, reject) => {
             this._public('returnLoanOrders', {currency}, (err, loanOrders) => {
-                err ? reject(Error(err)) : resolve(loanOrders)
+
+                if (err = err || loanOrders.error) {
+                    reject(Error("Error in returnLoanOrders: " + err))
+                    return
+                }
+
+                resolve(loanOrders)
             })
         })
     }
@@ -477,12 +538,14 @@ export default class Poloniex {
     // These methods require api keys in order to work
     //
 
-    // TODO check if accepts account param
     returnBalances() {
         return new Promise<Balances>((resolve, reject) => {
             this._private('returnBalances', {}, (err, balances) => {
-                if(err) console.log(err)
-                err ? reject(Error(err)) : resolve(balances)
+                if (err = err || balances.error) {
+                    reject(Error("Error in returnBalances: " + err))
+                }
+
+                resolve(balances)
             })
         })
     }
@@ -493,7 +556,12 @@ export default class Poloniex {
 
         return new Promise<CompleteBalances>((resolve, reject) => {
             this._private('returnCompleteBalances', {account}, (err, balances) => {
-                err ? reject(Error(err)) : resolve(balances)
+                if (err = err || balances.error) {
+                    reject(Error("Error in returnCompleteBalances: " + err))
+                    return
+                }
+
+                resolve(balances)
             })
         })
     }
@@ -505,7 +573,12 @@ export default class Poloniex {
     returnDepositAddresses() {
         return new Promise<DepositAddresses>((resolve, reject) => {
             this._private('returnDepositAddresses', {}, (err, addresses) => {
-                err ? reject(Error(err)) : resolve(addresses)
+                if (err = err || addresses.error) {
+                    reject(Error("Error in returnDepositAddresses: " + err))
+                    return
+                }
+
+                resolve(addresses)
             })
         })
     }
@@ -514,8 +587,8 @@ export default class Poloniex {
     generateNewAddress(currency: string) {
         return new Promise<NewAddress>((resolve, reject) => {
             this._private('generateNewAddress', {currency}, (err, newAddress) => {
-                if (err) {
-                    reject(Error(err))
+                if (err = err || newAddress.error) {
+                    reject(Error("Error in generateNewAddress: " + err))
                     return
                 }
                 
@@ -537,8 +610,8 @@ export default class Poloniex {
 
         return new Promise<DepositsAndWithdrawals>((resolve, reject) => {
             this._private('returnDepositsWithdrawals', reqOptions, (err, depositsWithdrawals) => {
-                if (err) {
-                    reject(Error(err))
+                if (err = err || depositsWithdrawals.error) {
+                    reject(Error("Error in returnDepositsWithdrawals: " + err))
                     return
                 }
 
@@ -548,10 +621,11 @@ export default class Poloniex {
                 });
 
                 depositsWithdrawals.withdrawals.forEach(withdrawal => {
-                    withdrawal.timestamp = new Date(withdrawal.tiemstamp * 1000)
+                    withdrawal.timestamp = new Date(withdrawal.timestamp * 1000)
                     withdrawal.isComplete = withdrawal.status.startsWith('COMPLETE')
                 })
-               resolve(depositsWithdrawals)
+
+                resolve(depositsWithdrawals)
             })
         })
     }
@@ -570,8 +644,8 @@ export default class Poloniex {
             }
 
             this._private('returnOpenOrders', reqOptions, (err, openOrders) => {
-                if (err) {
-                    reject(Error(err))
+                if (err = err || openOrders.error) {
+                    reject(Error("Error in returnOpenOrders: " + err))
                     return
                 }
 
@@ -592,7 +666,7 @@ export default class Poloniex {
 
     // Returns users historical trades. For now it returns all trades
     returnUserTradeHistory() : Promise<{[currencyPair: string]: UserTrade[]}>
-    returnUserTradeHistory(currencyPair) : Promise<UserTrade[]>
+    returnUserTradeHistory(currencyPair: string) : Promise<UserTrade[]>
     returnUserTradeHistory(currencyPair?: string) {
         return new Promise<any>((resolve, reject) => {
             var reqOptions = {
@@ -602,15 +676,16 @@ export default class Poloniex {
             }
 
             this._private('returnTradeHistory', reqOptions, (err, tradeHistory) => {
-                if (err) {
-                    reject(Error(err))
+                if (err = err || tradeHistory.error) {
+                    reject(Error("Error in returnTradeHistory: " + err))
                     return
                 }
 
                 function normalizeTrade(t) {
                     t.tradeID = parseInt(t.tradeID)
                     t.orderNumber = parseInt(t.orderNumber)
-                    t.date = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate()
+                    t.timestamp = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate()
+                    delete t.date
                     t.type = tradeStringToType(t.type)
                     t.category = accountStringToType(t.category)
                 }
@@ -811,4 +886,104 @@ export default class Poloniex {
         }
     }
 
+
+    //
+    // WRAPPER METHODS
+    // These api methods are not implemented by Poloniex but combine
+    // multiple api methods to provide more complex data.
+    //
+
+    // Returns a list of balances after each balance 'event' e.g. a buy,
+    // sell, deposit etc.
+    returnBalanceHistory() {
+
+        return new Promise<Portfolio[]>((resolve, reject) => {
+
+            function isWithdrawal(e: Withdrawal | Deposit | UserTrade) : e is Withdrawal {
+                return (<Withdrawal>e).withdrawalNumber !== undefined
+            }
+
+            function isDeposit(e: Withdrawal | Deposit | UserTrade) : e is Deposit {
+                return (<Deposit>e).confirmations != undefined
+            }
+
+            function is(e: Withdrawal | Deposit | UserTrade) : e is UserTrade {
+                return (<UserTrade>e).globalTradeID != undefined
+            }
+
+            this.returnDepositsWithdrawals(new Date(0), new Date).then(depositsWithdrawals => {
+                this.returnUserTradeHistory().then(userTrades => {
+
+                    var allEvents: (Deposit|Withdrawal|UserTrade)[] = depositsWithdrawals.deposits
+                    allEvents.concat(depositsWithdrawals.withdrawals)
+
+                    for (var key in userTrades) {
+                        userTrades[key].forEach(t => allEvents.push(t))
+                    }
+
+                    allEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+
+                    var portfolioHistory : Portfolio[] = new Array;
+                    allEvents.forEach(e => {
+                        // Add the initial balance
+                        if (!portfolioHistory.length) {
+                            if (isDeposit(e)) {
+                                var balance = new Balance(e.currency, e.amount)
+                                var portfolio = new Portfolio([balance], e.timestamp)
+                                portfolioHistory.push()
+                            }
+                            else {
+                                reject(Error("Unable to find initial deposit"))
+                                return
+                            }
+                        }
+
+                        // Clone the last portfolio
+                        var portfolio = clone(portfolioHistory[portfolioHistory.length-1])
+                        console.log(e)
+                        portfolio.timestamp = e.timestamp
+
+                        if(isDeposit(e)) {
+                            var b = portfolio.balanceOf(e.currency)
+                            b.amount = new Big(b.amount).plus(e.amount).toFixed(10)
+                        }
+
+                        else if (isWithdrawal(e)) {
+                            var b = portfolio.balanceOf(e.currency)
+                            b.amount = new Big(b.amount).minus(e.amount).toFixed(10)
+                        }
+
+                        else {
+                            var b1 = portfolio.balanceOf(e["currFrom"]);
+                            var b2 = portfolio.balanceOf(e["currTo"]);
+
+                            if (e.type == TradeType.Buy) {
+                                b1.amount = new Big(b1.amount).minus(e.total).toFixed(10)
+                                b1.amount = new Big(b2.amount).plus(e.amount).toFixed(10)
+
+                                // TODO calculate fees
+                            }
+                            else {
+                                b1.amount = new Big(b1.amount).plus(e.total).toFixed(10)
+                                b1.amount = new Big(b2.amount).minus(e.amount).toFixed(10)
+                            }
+                        }
+
+                        portfolioHistory.push(portfolio)
+                    })
+
+                    resolve(portfolioHistory)
+                }, err => reject(err))
+            }, err => reject(err))
+
+        })
+    }
+
+    // Return historical balances each date at specific intervals (in seconds)
+    // By default it returns all
+    returnBalanceChart(period: number, start?: Date, end?: Date) {
+    }
+
+    returnFeesHistory() {
+    }
 }

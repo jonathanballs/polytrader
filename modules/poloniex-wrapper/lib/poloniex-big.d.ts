@@ -10,9 +10,34 @@ export declare class OrderBook {
     isFrozen: boolean;
     seq: number;
 }
+export declare class Order {
+    orderNumber: number;
+    type: string;
+    rate: string;
+    amount: string;
+    total: string;
+}
 export declare enum TradeType {
     Buy = 0,
     Sell = 1,
+}
+export declare class Balance {
+    currency: string;
+    amount: string;
+    btcValue: string;
+    constructor(currency: string, amount: string);
+}
+export declare class Portfolio {
+    timestamp: Date;
+    balances: Balance[];
+    constructor(balances: Balance[], timestamp: Date);
+    balanceOf(currency: string): Balance;
+    getValue(): number;
+}
+export declare enum AccountType {
+    Exchange = 0,
+    Margin = 1,
+    Lending = 2,
 }
 export declare class Deposit {
     currency: string;
@@ -56,11 +81,6 @@ export declare class DepositAddresses {
 export declare class Balances {
     [currency: string]: string;
 }
-export declare enum AccountType {
-    Exchange = 0,
-    Margin = 1,
-    Lending = 2,
-}
 export declare class Currency {
     txFee: string;
     name: string;
@@ -82,7 +102,7 @@ export declare class LoanOrders {
     }[];
 }
 export declare class Candlestick {
-    date: Date;
+    timestamp: Date;
     high: string;
     low: string;
     open: string;
@@ -94,11 +114,23 @@ export declare class Candlestick {
 export declare class Trade {
     globalTradeID: number;
     tradeID: number;
-    date: Date;
+    timestamp: Date;
     type: TradeType;
     rate: string;
     amount: string;
     total: string;
+}
+export declare class UserTrade {
+    globalTradeID: number;
+    tradeID: number;
+    timestamp: Date;
+    type: TradeType;
+    rate: string;
+    amount: string;
+    total: string;
+    fee: string;
+    orderNumber: number;
+    category: AccountType;
 }
 export declare class Volume {
     baseCurrency: string;
@@ -165,8 +197,14 @@ export default class Poloniex {
     returnDepositAddresses(): Promise<DepositAddresses>;
     generateNewAddress(currency: string): Promise<NewAddress>;
     returnDepositsWithdrawals(start: Date, end: Date): Promise<DepositsAndWithdrawals>;
-    returnOpenOrders(currencyPair?: string): void;
-    returnUserTradeHistory(currencyPair: string): Promise<Trade[]>;
+    returnOpenOrders(): Promise<{
+        [currencyPair: string]: Order[];
+    }>;
+    returnOpenOrders(currencyPair: any): Promise<Order[]>;
+    returnUserTradeHistory(): Promise<{
+        [currencyPair: string]: UserTrade[];
+    }>;
+    returnUserTradeHistory(currencyPair: string): Promise<UserTrade[]>;
     returnOrderTrades(orderNumber: number): Promise<Trade[]>;
     buy(currencyPair: string, rate: string, amount: string): void;
     sell(currencyPair: string, rate: string, amount: string): void;
@@ -187,4 +225,7 @@ export default class Poloniex {
     returnOpenLoanOffers(): void;
     returnActiveLoans(): void;
     returnLendingHistory(start: Date, end: Date): void;
+    returnBalanceHistory(): Promise<Portfolio[]>;
+    returnBalanceChart(period: number, start?: Date, end?: Date): void;
+    returnFeesHistory(): void;
 }

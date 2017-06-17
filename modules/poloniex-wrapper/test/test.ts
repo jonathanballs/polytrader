@@ -107,7 +107,7 @@ describe('Poloniex', function() {
                 assert.isNumber(th.globalTradeID)
                 assert.isNumber(th.tradeID)
                 assert.isString(th.rate)
-                assert.isTrue(th.date instanceof Date)
+                assert.isTrue(th.timestamp instanceof Date)
 
                 done()
             }, err => done(err))
@@ -120,8 +120,8 @@ describe('Poloniex', function() {
                         thirtySecondsAgo).then(tradeHistory => {
                     
                     tradeHistory.forEach((th) => {
-                        assert.isBelow(th.date.getTime(), thirtySecondsAgo.getTime())
-                        assert.isAbove(th.date.getTime(), sixtySecondsAgo.getTime())
+                        assert.isBelow(th.timestamp.getTime(), thirtySecondsAgo.getTime())
+                        assert.isAbove(th.timestamp.getTime(), sixtySecondsAgo.getTime())
                     })
 
                     done()
@@ -143,7 +143,7 @@ describe('Poloniex', function() {
                 expect(chartData.length).equal(3)
 
                 var candle = chartData[0]
-                assert.isNumber(candle.date.getTime())
+                assert.isNumber(candle.timestamp.getTime())
                 assert.isString(candle.high)
                 assert.isString(candle.low)
                 assert.isString(candle.open)
@@ -153,8 +153,8 @@ describe('Poloniex', function() {
                 assert.isString(candle.weightedAverage)
 
                 chartData.forEach(c => {
-                    assert.isAbove(c.date.getTime(), startTime.getTime())
-                    assert.isBelow(c.date.getTime(), endTime.getTime())
+                    assert.isAbove(c.timestamp.getTime(), startTime.getTime())
+                    assert.isBelow(c.timestamp.getTime(), endTime.getTime())
                 })
 
                 done()
@@ -352,7 +352,7 @@ describe('Poloniex', function() {
                 tradeHistory["BTC_ETH"].forEach(t => {
                     assert.isNumber(t.globalTradeID)
                     assert.isNumber(t.tradeID)
-                    assert.isNumber(t.date.getTime())
+                    assert.isNumber(t.timestamp.getTime())
                     assert.isString(t.rate)
                     assert.isString(t.amount)
                     assert.isString(t.total)
@@ -371,7 +371,7 @@ describe('Poloniex', function() {
                 tradeHistory.forEach(t => {
                     assert.isNumber(t.globalTradeID)
                     assert.isNumber(t.tradeID)
-                    assert.isNumber(t.date.getTime())
+                    assert.isNumber(t.timestamp.getTime())
                     assert.isString(t.rate)
                     assert.isString(t.amount)
                     assert.isString(t.total)
