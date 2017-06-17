@@ -25,7 +25,7 @@ export declare class Balance {
     currency: string;
     amount: string;
     btcValue: string;
-    constructor(currency: string, amount: string);
+    constructor(currency?: any, amount?: any);
 }
 export declare class Portfolio {
     timestamp: Date;
@@ -193,7 +193,7 @@ export default class Poloniex {
     }>;
     returnLoanOrders(currency: string): Promise<LoanOrders>;
     returnBalances(): Promise<Balances>;
-    returnCompleteBalances(account?: string): Promise<CompleteBalances>;
+    returnCompleteBalances(account?: string): Promise<Balance[]>;
     returnDepositAddresses(): Promise<DepositAddresses>;
     generateNewAddress(currency: string): Promise<NewAddress>;
     returnDepositsWithdrawals(start: Date, end: Date): Promise<DepositsAndWithdrawals>;

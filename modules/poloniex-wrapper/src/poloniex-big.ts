@@ -30,9 +30,11 @@ export class Balance {
     amount: string;
     btcValue: string;
 
-    constructor(currency: string, amount: string) {
-        this.currency = currency;
-        this.amount = amount;
+    constructor(currency?, amount?) {
+        if(currency)
+            this.currency = currency
+        if(amount)
+            this.amount = amount
     }
 }
 
@@ -554,11 +556,22 @@ export default class Poloniex {
     returnCompleteBalances(account?: string) {
         account = account || 'all'
 
-        return new Promise<CompleteBalances>((resolve, reject) => {
-            this._private('returnCompleteBalances', {account}, (err, balances) => {
-                if (err = err || balances.error) {
+        return new Promise<Balance[]>((resolve, reject) => {
+            this._private('returnCompleteBalances', {account}, (err, balancesRaw) => {
+                if (err = err || balancesRaw.error) {
                     reject(Error("Error in returnCompleteBalances: " + err))
                     return
+                }
+
+                var balances : Balance[] = []
+                for (var key in balancesRaw) {
+                    var newBalance = new Balance
+                    newBalance.currency = key
+                    newBalance.amount = balancesRaw[key].available
+                    newBalance.btcValue = balancesRaw[key].btcValue
+
+                    if (parseFloat(newBalance.amount) > 0.0)
+                        balances.push(newBalance)
                 }
 
                 resolve(balances)
@@ -907,7 +920,7 @@ export default class Poloniex {
                 return (<Deposit>e).confirmations != undefined
             }
 
-            function is(e: Withdrawal | Deposit | UserTrade) : e is UserTrade {
+            function isUserTrade(e: Withdrawal | Deposit | UserTrade) : e is UserTrade {
                 return (<UserTrade>e).globalTradeID != undefined
             }
 
@@ -930,7 +943,7 @@ export default class Poloniex {
                             if (isDeposit(e)) {
                                 var balance = new Balance(e.currency, e.amount)
                                 var portfolio = new Portfolio([balance], e.timestamp)
-                                portfolioHistory.push()
+                                portfolioHistory.push(portfolio)
                             }
                             else {
                                 reject(Error("Unable to find initial deposit"))
@@ -940,7 +953,6 @@ export default class Poloniex {
 
                         // Clone the last portfolio
                         var portfolio = clone(portfolioHistory[portfolioHistory.length-1])
-                        console.log(e)
                         portfolio.timestamp = e.timestamp
 
                         if(isDeposit(e)) {
@@ -973,9 +985,8 @@ export default class Poloniex {
                     })
 
                     resolve(portfolioHistory)
-                }, err => reject(err))
-            }, err => reject(err))
-
+                }).catch(err => reject(err))
+            }).catch(err => reject(err))
         })
     }
 

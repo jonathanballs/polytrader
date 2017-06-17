@@ -18,8 +18,10 @@ var TradeType;
 })(TradeType = exports.TradeType || (exports.TradeType = {}));
 class Balance {
     constructor(currency, amount) {
-        this.currency = currency;
-        this.amount = amount;
+        if (currency)
+            this.currency = currency;
+        if (amount)
+            this.amount = amount;
     }
 }
 exports.Balance = Balance;
@@ -365,10 +367,19 @@ class Poloniex {
     returnCompleteBalances(account) {
         account = account || 'all';
         return new Promise((resolve, reject) => {
-            this._private('returnCompleteBalances', { account }, (err, balances) => {
-                if (err = err || balances.error) {
+            this._private('returnCompleteBalances', { account }, (err, balancesRaw) => {
+                if (err = err || balancesRaw.error) {
                     reject(Error("Error in returnCompleteBalances: " + err));
                     return;
+                }
+                var balances = [];
+                for (var key in balancesRaw) {
+                    var newBalance = new Balance;
+                    newBalance.currency = key;
+                    newBalance.amount = balancesRaw[key].available;
+                    newBalance.btcValue = balancesRaw[key].btcValue;
+                    if (parseFloat(newBalance.amount) > 0.0)
+                        balances.push(newBalance);
                 }
                 resolve(balances);
             });
@@ -570,7 +581,7 @@ class Poloniex {
             function isDeposit(e) {
                 return e.confirmations != undefined;
             }
-            function is(e) {
+            function isUserTrade(e) {
                 return e.globalTradeID != undefined;
             }
             this.returnDepositsWithdrawals(new Date(0), new Date).then(depositsWithdrawals => {
@@ -587,7 +598,7 @@ class Poloniex {
                             if (isDeposit(e)) {
                                 var balance = new Balance(e.currency, e.amount);
                                 var portfolio = new Portfolio([balance], e.timestamp);
-                                portfolioHistory.push();
+                                portfolioHistory.push(portfolio);
                             }
                             else {
                                 reject(Error("Unable to find initial deposit"));
@@ -595,7 +606,6 @@ class Poloniex {
                             }
                         }
                         var portfolio = clone(portfolioHistory[portfolioHistory.length - 1]);
-                        console.log(e);
                         portfolio.timestamp = e.timestamp;
                         if (isDeposit(e)) {
                             var b = portfolio.balanceOf(e.currency);
@@ -620,8 +630,8 @@ class Poloniex {
                         portfolioHistory.push(portfolio);
                     });
                     resolve(portfolioHistory);
-                }, err => reject(err));
-            }, err => reject(err));
+                }).catch(err => reject(err));
+            }).catch(err => reject(err));
         });
     }
     returnBalanceChart(period, start, end) {
