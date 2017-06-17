@@ -5,7 +5,7 @@ block content
     .row
       .col-md-6
         .form-block
-          h1 Login to your pollytrader account.
+          h1 Login to your polytrader account.
           form(method='post', action='/login')
             if formErrors
               - var err = formErrors.filter((x) => x.param == 'email')

@@ -1,5 +1,5 @@
 {
-  "name": "pollytrader",
+  "name": "polytrader",
   "version": "1.0.0",
   "description": "Poloniex trading history visualiser",
   "main": "index.js",
@@ -12,7 +12,7 @@
   "author": "Jonathan Balls",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bonniejools/pollytrader.git"
+    "url": "https://github.com/bonniejools/polytrader.git"
   },
   "license": "To Make Money",
   "dependencies": {
