@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsc",
     "poststart": "node comp/app.js",
-    "dev": "tsc --watch src/*.ts --outDir comp",
+    "dev": "tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jonathan Balls",
