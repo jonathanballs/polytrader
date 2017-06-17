@@ -2,6 +2,10 @@ extends base.pug
 
 block content
   h1 Your Account
+
+  - if (!user.poloniexAPIKey || !user.poloniexAPISecret)
+    .alert.alert-info
+      p You need to set your Poloniex API key and secret in order to user polytrader
   form(method='post', action='/account')
 
     .form-group
