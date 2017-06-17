@@ -1,37 +1,39 @@
 extends base.pug
 
 block content
-  - var portfolioValueBTC = balances.map((b) => parseFloat(b["btcValue"])).reduce((a, b)=>a+b, 0)
-
-  h1 Your Portfolio - #{portfolioValueBTC.toString().substr(0, 7)} BTC
 
   if err
-    p=err
+    div.alert.alert-danger
+      p=err
 
-  .row
-    .col-md-9
-      table.table
-        thead
-          tr
-            th Currency
-            th Balance
-            th Bitcoin Value
-        tbody
-          each b in balances.sort((a, b) => b["btcValue"] - a["btcValue"])
+  else
+    - var portfolioValueBTC = balances.map((b) => parseFloat(b["btcValue"])).reduce((a, b)=>a+b, 0)
+    h1 Your Portfolio - #{portfolioValueBTC.toString().substr(0, 7)} BTC
+
+    .row
+      .col-md-9
+        table.table
+          thead
             tr
-              td=b["currency"]
-              td=b["balance"]
-              td=b["btcValue"]
-    .col-md-3
-      canvas#portfolio-pie
-  .row
-    .col-md-12
-      h1 Value History
-      canvas#portfolio-value-history
+              th Currency
+              th Balance
+              th Bitcoin Value
+          tbody
+            each b in balances.sort((a, b) => b["btcValue"] - a["btcValue"])
+              tr
+                td=b["currency"]
+                td=b["balance"]
+                td=b["btcValue"]
+      .col-md-3
+        canvas#portfolio-pie
+    .row
+      .col-md-12
+        h1 Value History
+        canvas#portfolio-value-history
 
-  // Set variables and include code for charting
-  script.
-    var cryptoBalances = !{JSON.stringify(balances)}
-    var portfolioHistory = !{JSON.stringify(portfolioHistory)}
-  script(src='/static/js/portfolio.js')
+    // Set variables and include code for charting
+    script.
+      var cryptoBalances = !{JSON.stringify(balances)}
+      var portfolioHistory = !{JSON.stringify(portfolioHistory)}
+    script(src='/static/js/portfolio.js')
 
