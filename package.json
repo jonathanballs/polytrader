@@ -4,7 +4,7 @@
   "description": "Poloniex trading history visualiser",
   "main": "index.js",
   "scripts": {
-    "start": "tsc src/*.ts --outDir comp",
+    "start": "tsc",
     "poststart": "node comp/app.js",
     "dev": "tsc --watch src/*.ts --outDir comp",
     "test": "echo \"Error: no test specified\" && exit 1"
