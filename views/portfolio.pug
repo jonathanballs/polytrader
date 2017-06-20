@@ -22,10 +22,30 @@ block content
             each b in balances.sort((a, b) => b["btcValue"] - a["btcValue"])
               tr
                 td=b["currency"]
-                td=b["balance"]
+                td=b["amount"]
                 td=b["btcValue"]
       .col-md-3
         canvas#portfolio-pie
+    .row
+      .col-md-12
+        table.table
+          thead
+            tr
+              th Statistic
+              th Value
+          tbody
+            tr
+              td Total profit
+              td $348.32
+            tr
+              td Percentage profit
+              td 28.2%
+            tr
+              td Total fees payed
+              td 0.04 BTC
+            tr
+              td Percentage fees
+              td 3.87%
     .row
       .col-md-12
         h1 Value History

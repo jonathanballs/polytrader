@@ -131,6 +131,8 @@ export declare class UserTrade {
     fee: string;
     orderNumber: number;
     category: AccountType;
+    base: string;
+    quote: string;
 }
 export declare class Volume {
     baseCurrency: string;
@@ -201,10 +203,7 @@ export default class Poloniex {
         [currencyPair: string]: Order[];
     }>;
     returnOpenOrders(currencyPair: any): Promise<Order[]>;
-    returnUserTradeHistory(): Promise<{
-        [currencyPair: string]: UserTrade[];
-    }>;
-    returnUserTradeHistory(currencyPair: string): Promise<UserTrade[]>;
+    returnUserTradeHistory(currencyPair?: string): Promise<UserTrade[]>;
     returnOrderTrades(orderNumber: number): Promise<Trade[]>;
     buy(currencyPair: string, rate: string, amount: string): void;
     sell(currencyPair: string, rate: string, amount: string): void;

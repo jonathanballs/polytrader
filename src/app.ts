@@ -68,7 +68,9 @@ app.set('view engine', 'pug')
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(session({
     secret: 'TODO: make a secret key',
-    store: new MongoStore({ mongooseConnection: mongoose.connection})
+    store: new MongoStore({ mongooseConnection: mongoose.connection}),
+    resave: false,
+    saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());

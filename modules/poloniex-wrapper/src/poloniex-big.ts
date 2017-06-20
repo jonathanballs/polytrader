@@ -172,6 +172,8 @@ export class UserTrade {
     fee: string
     orderNumber: number
     category: AccountType
+    base: string
+    quote: string
 }
 
 export class Volume {
@@ -678,9 +680,7 @@ export default class Poloniex {
     }
 
     // Returns users historical trades. For now it returns all trades
-    returnUserTradeHistory() : Promise<{[currencyPair: string]: UserTrade[]}>
-    returnUserTradeHistory(currencyPair: string) : Promise<UserTrade[]>
-    returnUserTradeHistory(currencyPair?: string) {
+    returnUserTradeHistory(currencyPair?: string): Promise<UserTrade[]> {
         return new Promise<any>((resolve, reject) => {
             var reqOptions = {
                 currencyPair: currencyPair || 'all',
@@ -694,26 +694,39 @@ export default class Poloniex {
                     return
                 }
 
-                function normalizeTrade(t) {
+                function normalizeTrade(t, base: string, quote: string) {
                     t.tradeID = parseInt(t.tradeID)
                     t.orderNumber = parseInt(t.orderNumber)
                     t.timestamp = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate()
                     delete t.date
                     t.type = tradeStringToType(t.type)
                     t.category = accountStringToType(t.category)
+
+                    t.base = base
+                    t.quote = quote
                 }
 
                 // Normalize all trades
                 if (!currencyPair) {
+                    var allTrades: UserTrade[] = []
                     for (var key in tradeHistory) {
-                        tradeHistory[key].forEach(t => normalizeTrade(t))
+                        let base: string = key.split('_')[0]
+                        let quote: string = key.split('_')[1]
+                        tradeHistory[key].forEach(t => {
+                            normalizeTrade(t, base, quote)
+                            allTrades.push(t)
+                        })
                     }
+                    allTrades.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+                    resolve(allTrades)
                 }
                 else {
-                    tradeHistory.forEach(t => normalizeTrade(t))
+                    let base: string = currencyPair.split('_')[0]
+                    let quote: string = currencyPair.split('_')[1]
+                    tradeHistory.forEach(t => normalizeTrade(t, base, quote))
+                    tradeHistory.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+                    resolve(tradeHistory)
                 }
-
-                resolve(tradeHistory)
             })
         })
     }
@@ -928,12 +941,7 @@ export default class Poloniex {
                 this.returnUserTradeHistory().then(userTrades => {
 
                     var allEvents: (Deposit|Withdrawal|UserTrade)[] = depositsWithdrawals.deposits
-                    allEvents.concat(depositsWithdrawals.withdrawals)
-
-                    for (var key in userTrades) {
-                        userTrades[key].forEach(t => allEvents.push(t))
-                    }
-
+                    allEvents = allEvents.concat(depositsWithdrawals.withdrawals).concat(userTrades)
                     allEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
 
                     var portfolioHistory : Portfolio[] = new Array;
@@ -944,6 +952,7 @@ export default class Poloniex {
                                 var balance = new Balance(e.currency, e.amount)
                                 var portfolio = new Portfolio([balance], e.timestamp)
                                 portfolioHistory.push(portfolio)
+                                return
                             }
                             else {
                                 reject(Error("Unable to find initial deposit"))
@@ -966,20 +975,22 @@ export default class Poloniex {
                         }
 
                         else {
-                            var b1 = portfolio.balanceOf(e["currFrom"]);
-                            var b2 = portfolio.balanceOf(e["currTo"]);
+                            var base = portfolio.balanceOf(e.base)
+                            var quote = portfolio.balanceOf(e.quote)
 
                             if (e.type == TradeType.Buy) {
-                                b1.amount = new Big(b1.amount).minus(e.total).toFixed(10)
-                                b1.amount = new Big(b2.amount).plus(e.amount).toFixed(10)
-
-                                // TODO calculate fees
+                                base.amount = new Big(base.amount).minus(e.total).toFixed(10)
+                                quote.amount = new Big(quote.amount).plus(e.amount).toFixed(10)
                             }
                             else {
-                                b1.amount = new Big(b1.amount).plus(e.total).toFixed(10)
-                                b1.amount = new Big(b2.amount).minus(e.amount).toFixed(10)
+                                base.amount = new Big(base.amount).plus(e.total).toFixed(10)
+                                quote.amount = new Big(quote.amount).minus(e.amount).toFixed(10)
                             }
                         }
+
+
+                        // Debugging. Attach the event that caused the balance change
+                        (<any>portfolio).event = e
 
                         portfolioHistory.push(portfolio)
                     })
