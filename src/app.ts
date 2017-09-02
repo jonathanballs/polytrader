@@ -26,7 +26,7 @@ var LOCAL_STRATEGY_CONFIG = {
 };
 
 // TODO set redirect url
-function loginRequired(req: Request, res, next) {
+function loginRequired(req, res, next) {
     // req['user'] is the user
     req.user ? next() : res.redirect('/login')
 }
@@ -156,7 +156,7 @@ app.post('/signup', (req, res) => {
 
     // Check for other errors
     req.checkBody('email', 'Invalid email address').isEmail();
-    req.checkBody('password1', 'Your password is too short').len(6);
+    req.checkBody('password1', 'Your password is too short').len({min: 6});
     var errors = req.validationErrors();
     if (errors) {
         console.log(`User signed up with ${email} but there were validation errors`);
