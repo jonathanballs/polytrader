@@ -632,10 +632,14 @@ class Poloniex {
                             if (e.type == TradeType.Buy) {
                                 base.amount = new Big(base.amount).minus(e.total).toFixed(10);
                                 quote.amount = new Big(quote.amount).plus(e.amount).toFixed(10);
+                                var feePercentage = new Big(e.fee).div(1.0 - parseFloat(e.fee));
+                                quote.amount = new Big(quote.amount).minus(feePercentage.times(e.amount)).toFixed(10);
                             }
                             else {
                                 base.amount = new Big(base.amount).plus(e.total).toFixed(10);
                                 quote.amount = new Big(quote.amount).minus(e.amount).toFixed(10);
+                                var feePercentage = new Big(e.fee).div(1.0 - parseFloat(e.fee));
+                                base.amount = new Big(base.amount).minus(feePercentage.times(e.total)).toFixed(10);
                             }
                         }
                         portfolio.event = e;

@@ -27,25 +27,25 @@ var LOCAL_STRATEGY_CONFIG = {
 
 // TODO set redirect url
 function loginRequired(req: Request, res, next) {
+    // req['user'] is the user
     req.user ? next() : res.redirect('/login')
 }
 
 // Local strategy to fetch user from database
 passport.use(new Strategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
-        User.findOne({email: email}, (err, user) => {
-            if (err)
-                return done(err)
+    User.findOne({email: email}, (err, user) => {
+        if (err)
+            return done(err)
 
-            if (!user)
-                return done(null, false, { message: 'Incorrect username.' });
+        if (!user)
+            return done(null, false, { message: 'Incorrect username.' });
 
-            if (!passwordHasher.verify(password, user.passwordHash))
-                return done(null, false, { message: 'Incorrect password.' });
+        if (!passwordHasher.verify(password, user.passwordHash))
+            return done(null, false, { message: 'Incorrect password.' });
 
-            return done(null, user);
-        });
-    })
-);
+        return done(null, user);
+    });
+}));
 
 passport.serializeUser((user:any, done) => {
     done(null, user._id);
