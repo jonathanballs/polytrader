@@ -978,19 +978,20 @@ export default class Poloniex {
                             var base = portfolio.balanceOf(e.base)
                             var quote = portfolio.balanceOf(e.quote)
 
+                            // Calculate new balances
                             if (e.type == TradeType.Buy) {
-                                base.amount = new Big(base.amount).minus(e.total).toFixed(10)
-                                quote.amount = new Big(quote.amount).plus(e.amount).toFixed(10)
+                                base.amount = new Big(base.amount).minus(e.total).toFixed(20)
+                                quote.amount = new Big(quote.amount).plus(e.amount).toFixed(20)
 
-                                var feePercentage = new Big(e.fee).div(1.0-parseFloat(e.fee))
-                                quote.amount = new Big(quote.amount).minus(feePercentage.times(e.amount)).toFixed(10)
+                                var totalFee = new Big(e.amount).times(e.fee)
+                                quote.amount = new Big(quote.amount).minus(totalFee).toFixed(20);
                             }
                             else {
-                                base.amount = new Big(base.amount).plus(e.total).toFixed(10)
-                                quote.amount = new Big(quote.amount).minus(e.amount).toFixed(10)
+                                base.amount = new Big(base.amount).plus(e.total).toFixed(20)
+                                quote.amount = new Big(quote.amount).minus(e.amount).toFixed(20)
 
-                                var feePercentage = new Big(e.fee).div(1.0-parseFloat(e.fee))
-                                base.amount = new Big(base.amount).minus(feePercentage.times(e.total)).toFixed(10)
+                                var totalFee = new Big(e.total).times(e.fee);
+                                base.amount = new Big(base.amount).minus(totalFee).toFixed(20)
                             }
                         }
 
