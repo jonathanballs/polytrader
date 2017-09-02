@@ -32,6 +32,7 @@ export declare class Portfolio {
     balances: Balance[];
     constructor(balances: Balance[], timestamp: Date);
     balanceOf(currency: string): Balance;
+    removeCurrency(currency: string): void;
     getValue(): number;
 }
 export declare enum AccountType {

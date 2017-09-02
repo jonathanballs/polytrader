@@ -38,6 +38,9 @@ class Portfolio {
         this.balances.push(newBalance);
         return newBalance;
     }
+    removeCurrency(currency) {
+        this.balances = this.balances.filter(b => b.currency == currency);
+    }
     getValue() {
         return null;
     }
@@ -620,15 +623,17 @@ class Poloniex {
                         portfolio.timestamp = e.timestamp;
                         if (isDeposit(e)) {
                             var b = portfolio.balanceOf(e.currency);
-                            b.amount = new Big(b.amount).plus(e.amount).toFixed(10);
+                            b.amount = new Big(b.amount).plus(e.amount).toFixed(20);
                         }
                         else if (isWithdrawal(e)) {
                             var b = portfolio.balanceOf(e.currency);
-                            b.amount = new Big(b.amount).minus(e.amount).toFixed(10);
+                            b.amount = new Big(b.amount).minus(e.amount).toFixed(20);
                         }
                         else {
                             var base = portfolio.balanceOf(e.base);
                             var quote = portfolio.balanceOf(e.quote);
+                            if (e.quote == "MAID")
+                                console.log(e);
                             if (e.type == TradeType.Buy) {
                                 base.amount = new Big(base.amount).minus(e.total).toFixed(20);
                                 quote.amount = new Big(quote.amount).plus(e.amount).toFixed(20);
@@ -642,7 +647,12 @@ class Poloniex {
                                 base.amount = new Big(base.amount).minus(totalFee).toFixed(20);
                             }
                         }
-                        portfolio.event = e;
+                        portfolio.balances = portfolio.balances.filter(bal => {
+                            return new Big(bal.amount).abs().gt("0.00001");
+                        });
+                        {
+                            portfolio.event = e;
+                        }
                         portfolioHistory.push(portfolio);
                     });
                     resolve(portfolioHistory);

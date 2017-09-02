@@ -59,6 +59,10 @@ export class Portfolio {
         return newBalance;
     }
 
+    removeCurrency(currency: string) {
+        this.balances = this.balances.filter(b => b.currency == currency);
+    }
+
     getValue() : number {
         return null
     }
@@ -966,17 +970,20 @@ export default class Poloniex {
 
                         if(isDeposit(e)) {
                             var b = portfolio.balanceOf(e.currency)
-                            b.amount = new Big(b.amount).plus(e.amount).toFixed(10)
+                            b.amount = new Big(b.amount).plus(e.amount).toFixed(20)
                         }
 
                         else if (isWithdrawal(e)) {
                             var b = portfolio.balanceOf(e.currency)
-                            b.amount = new Big(b.amount).minus(e.amount).toFixed(10)
+                            b.amount = new Big(b.amount).minus(e.amount).toFixed(20)
                         }
 
                         else {
                             var base = portfolio.balanceOf(e.base)
                             var quote = portfolio.balanceOf(e.quote)
+
+                            if (e.quote == "MAID")
+                                console.log(e);
 
                             // Calculate new balances
                             if (e.type == TradeType.Buy) {
@@ -984,7 +991,7 @@ export default class Poloniex {
                                 quote.amount = new Big(quote.amount).plus(e.amount).toFixed(20)
 
                                 var totalFee = new Big(e.amount).times(e.fee)
-                                quote.amount = new Big(quote.amount).minus(totalFee).toFixed(20);
+                                quote.amount = new Big(quote.amount).minus(totalFee).toFixed(20)
                             }
                             else {
                                 base.amount = new Big(base.amount).plus(e.total).toFixed(20)
@@ -995,8 +1002,13 @@ export default class Poloniex {
                             }
                         }
 
+                        // Purge "rounding error" balances
+                        portfolio.balances = portfolio.balances.filter(bal => {
+                            return new Big(bal.amount).abs().gt("0.00001")
+                        })
+
                         // Debugging. Attach the event that caused the balance change
-                        (<any>portfolio).event = e
+                        { (<any>portfolio).event = e }
 
                         portfolioHistory.push(portfolio)
                     })

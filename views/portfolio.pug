@@ -11,7 +11,7 @@ block content
     h1 Your Portfolio - #{portfolioValueBTC.toString().substr(0, 7)} BTC
 
     .row
-      .col-md-9
+      .col-sm-9
         table.table
           thead
             tr
@@ -24,8 +24,9 @@ block content
                 td=b["currency"]
                 td=b["amount"]
                 td=b["btcValue"]
-      .col-md-3
+      .col-sm-3
         canvas#portfolio-pie
+
     .row
       .col-md-12
         table.table
@@ -57,3 +58,17 @@ block content
       var portfolioHistory = !{JSON.stringify(portfolioHistory)}
     script(src='/static/js/portfolio.js')
 
+
+    .row
+      .col-md-12
+        h1 Your Portfolio according to value history calculations
+        table.table
+          thead
+            tr
+              th Currency
+              th Balance
+          tbody
+            each b in portfolioHistory[portfolioHistory.length-1].balances
+              tr
+                td=b["currency"]
+                td=b["amount"]
