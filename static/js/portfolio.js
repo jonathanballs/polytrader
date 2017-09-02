@@ -34,7 +34,11 @@ var historyData = {
     labels: portfolioHistory.map((x) => x.timestamp),
     datasets: [{
         data: portfolioHistory.map((x) => {
-            return {x: x.timestamp, y: x.balances[0].amount}
+            var btc_balance = x.balances.filter(b => b.currency == "BTC")
+
+            if (btc_balance.length)
+                return {x: x.timestamp, y: btc_balance[0].amount}
+            return {x: x.timestamp, y: 0.0}
         })
     }]
 }
