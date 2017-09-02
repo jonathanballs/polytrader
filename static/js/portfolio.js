@@ -38,6 +38,7 @@ var historyData = {
         })
     }]
 }
+historyData.datasets[0].data.push({x: +Date.now(), y: historyData.datasets[0].data[historyData.datasets[0].data.length-1].y});
 
 var historyOptions = {
     title:{
@@ -49,6 +50,7 @@ var historyOptions = {
             time: {
                 //format: 'MM/DD/YYYY HH:mm',
                 // round: 'day'
+                unit: 'month',
                 tooltipFormat: 'll HH:mm'
             },
             scaleLabel: {
