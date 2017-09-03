@@ -17,4 +17,7 @@ services:
     db:
         image: mongo:3.5
         ports: ['27018:27017']
-
+        environment:
+          - MONGO_DATA_DIR=/data/db
+        volumes:
+            - ./db:/data/db
