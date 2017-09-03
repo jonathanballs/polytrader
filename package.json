@@ -4,9 +4,8 @@
   "description": "Poloniex trading history visualiser",
   "main": "index.js",
   "scripts": {
-    "start": "tsc",
-    "poststart": "node comp/app.js",
-    "dev": "tsc --watch",
+    "start": "nodemon comp/app.js",
+    "grunt": "grunt",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jonathan Balls",
@@ -38,5 +37,10 @@
     "socketio": "^1.0.0",
     "tsc": "^1.20150623.0",
     "typescript": "^2.2.2"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-ts": "^6.0.0-beta.16"
   }
 }

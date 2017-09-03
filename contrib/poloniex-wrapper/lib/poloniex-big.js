@@ -555,7 +555,7 @@ class Poloniex {
         }
     }
     getMarginPosition(currencyPair) {
-        let MarginType;
+        var MarginType;
         (function (MarginType) {
             MarginType[MarginType["short"] = 0] = "short";
             MarginType[MarginType["long"] = 1] = "long";

@@ -31,6 +31,7 @@ function loginRequired(req, res, next) {
     req.user ? next() : res.redirect('/login')
 }
 
+
 // Local strategy to fetch user from database
 passport.use(new Strategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
     User.findOne({email: email}, (err, user) => {
