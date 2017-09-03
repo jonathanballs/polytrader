@@ -79,23 +79,30 @@ if __name__ == '__main__':
             time.sleep(2) # Just to be polite
     
     elif sys.argv[1] == 'load_cache':
-        client = MongoClient('mongodb://localhost:27017/')
+        client = MongoClient('mongodb://db:27017/')
         price_history = client['polytrader']['price_history']
 
         # TODO read the file backwards until we reach where we are
-        for csv_filename in os.listdir(DATA_DIR):
+        for csv_filename in sorted(os.listdir(DATA_DIR)):
             currency_pair = csv_filename[:-4] # Strip file extension
 
-            print("Filling database from {} cache".format(currency_pair))
 
+            # Delete old prices
+            price_history.delete_many({'currency_pair': currency_pair})
             with open(os.path.join(DATA_DIR, csv_filename), 'r') as f:
-                for line in f:
-                    epoch = int(line.split(',')[0])
-                    price = float(line.split(',')[1])
+                prices = []
+                for line in f.readlines():
+                    l_sp = line.split(',')
+                    prices.append({
+                        'date': int(l_sp[0]),
+                        'price': float(l_sp[1]),
+                        'currency_pair': currency_pair
+                    })
 
-                    if not price_history.find_one({'date': epoch}):
-                        price_history.insert({'currency_pair': currency_pair, 'date': epoch, 'price': price})
-    
+                print("Filling database from {} cache ({} records)".format(
+                                        currency_pair.ljust(8), len(prices)))
+                price_history.insert_many(prices)
+
     elif sys.argv[1] == 'start':
         client = MongoClient('mongodb://db:27017/')
         print("Connected to Mongo Database")
@@ -103,3 +110,8 @@ if __name__ == '__main__':
         collection = db['users']
         for u in collection.find():
             pprint.pprint(u)
+    
+    else:
+        print("Error couldn't understand arguments")
+        print_help()
+        exit()

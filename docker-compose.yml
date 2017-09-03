@@ -16,4 +16,5 @@ services:
 
     db:
         image: mongo:3.5
+        ports: ['27018:27017']
 
