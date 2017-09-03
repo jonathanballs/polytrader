@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 
 # Copy package.json and install deps
 COPY package.json .
-COPY modules/ ./modules
+COPY contrib/ ./contrib
 RUN npm install
 
 # Copy application files over
@@ -14,4 +14,3 @@ COPY . .
 # Expose ports
 EXPOSE 8080
 CMD ["npm", "start"]
-

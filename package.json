@@ -41,6 +41,7 @@
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
-    "grunt-ts": "^6.0.0-beta.16"
+    "grunt-ts": "^6.0.0-beta.16",
+    "nodemon": "^1.11.0"
   }
 }
