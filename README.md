@@ -1,14 +1,8 @@
 # pollytrader
 A simple website to analyse poloniex trading history
 
-This requires you to have a mongodb instance running.
+You will need docker and docker-compose installed
 
-    # Install dependencies
-    npm install
+    $ docker-compose up
 
-    # To compile typescript continuously
-    npm run dev
-
-    # Run 
-    nodemon comp/app.js
-
+This will build the necessary containers and launch them.
