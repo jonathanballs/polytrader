@@ -19,7 +19,7 @@ import * as mongoose from 'mongoose';
 import { User } from "./models";
 import Poloniex from 'poloniex-wrapper'
 
-mongoose.connect('mongodb://localhost/polytrader');
+mongoose.connect('mongodb://db/polytrader');
 
 var LOCAL_STRATEGY_CONFIG = {
     usernameField: 'email',
