@@ -32,7 +32,7 @@
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "password-hash": "^1.2.2",
-    "poloniex-wrapper": "file:./modules/poloniex-wrapper",
+    "poloniex-wrapper": "file:./contrib/poloniex-wrapper",
     "poloniex.js": "0.0.7",
     "pug": "^2.0.0-rc.2",
     "socketio": "^1.0.0",
