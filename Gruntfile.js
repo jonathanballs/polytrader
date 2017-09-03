@@ -27,7 +27,7 @@ module.exports = function (grunt) {
             }
         },
         watch: {
-            files: ["src/*ts", "contrib/poloniex-wrapper/contrib/src"],
+            files: ["src/*ts", "contrib/poloniex-wrapper/src/*ts"],
             tasks: ["ts"]
         }
     });
@@ -36,6 +36,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
 
     // Default task(s).
-    grunt.registerTask('default', ['ts']);
+    grunt.registerTask('default', ['ts:poloniex_wrapper', 'ts:default']);
 
 };

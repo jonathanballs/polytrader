@@ -632,8 +632,6 @@ class Poloniex {
                         else {
                             var base = portfolio.balanceOf(e.base);
                             var quote = portfolio.balanceOf(e.quote);
-                            if (e.quote == "MAID")
-                                console.log(e);
                             if (e.type == TradeType.Buy) {
                                 base.amount = new Big(base.amount).minus(e.total).toFixed(20);
                                 quote.amount = new Big(quote.amount).plus(e.amount).toFixed(20);

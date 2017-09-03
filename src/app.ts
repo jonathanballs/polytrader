@@ -86,7 +86,6 @@ app.get('/', (req, res) => {
     else {
         res.render('index')
     }
-
 });
 
 app.get('/login', (req, res) => {
