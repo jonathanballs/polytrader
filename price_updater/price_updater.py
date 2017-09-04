@@ -89,18 +89,35 @@ if __name__ == '__main__':
             # Delete old prices
             price_history.delete_many({'currency_pair': currency_pair})
             with open(os.path.join(DATA_DIR, csv_filename), 'r') as f:
-                prices = []
+                current_date = datetime.fromtimestamp(0)
+                current_record = {}
+                price_records = []
                 for line in f.readlines():
                     l_sp = line.split(',')
-                    prices.append({
-                        'date': datetime.fromtimestamp(int(l_sp[0])),
-                        'price': float(l_sp[1]),
-                        'currency_pair': currency_pair
-                    })
+                    l_date = datetime.fromtimestamp(int(l_sp[0]))
+                    l_price = float(l_sp[1])
+
+                    # Push the old day if necessary and create new record
+                    if l_date.date() != current_date.date():
+                        if current_record:
+                            current_record['daily_average'] = \
+                                float(sum(current_record['price_history'])) \
+                                / len(current_record['price_history'])
+                            price_records.append(current_record)
+
+                        current_record = {
+                            'date': l_date,
+                            'currency_pair': currency_pair,
+                            'daily_average': None,
+                            'period': 300,
+                            'price_history': []
+                        }
+                        current_date = l_date
+                    current_record['price_history'].append(l_price)
 
                 print("Filling database from {} cache ({} records)".format(
-                                        currency_pair.ljust(8), len(prices)))
-                price_history.insert_many(prices)
+                            currency_pair.ljust(8), len(price_records)))
+                price_history.insert_many(price_records)
 
     elif sys.argv[1] == 'start':
         client = MongoClient('mongodb://db:27017/')
