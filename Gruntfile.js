@@ -22,7 +22,8 @@ module.exports = function (grunt) {
                     target: "es2017",
                     module: "commonjs",
                     sourceMap: true,
-                    moduleResolution: "node"
+                    moduleResolution: "node",
+                    declaration: true
                 }
             }
         },

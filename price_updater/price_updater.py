@@ -82,10 +82,9 @@ if __name__ == '__main__':
         client = MongoClient('mongodb://db:27017/')
         price_history = client['polytrader']['price_history']
 
-        # TODO read the file backwards until we reach where we are
+        # TODO multiprocess
         for csv_filename in sorted(os.listdir(DATA_DIR)):
             currency_pair = csv_filename[:-4] # Strip file extension
-
 
             # Delete old prices
             price_history.delete_many({'currency_pair': currency_pair})
@@ -94,7 +93,7 @@ if __name__ == '__main__':
                 for line in f.readlines():
                     l_sp = line.split(',')
                     prices.append({
-                        'date': int(l_sp[0]),
+                        'date': datetime.fromtimestamp(int(l_sp[0])),
                         'price': float(l_sp[1]),
                         'currency_pair': currency_pair
                     })

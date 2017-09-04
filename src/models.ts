@@ -10,3 +10,10 @@ var userSchema = new mongoose.Schema({
     passwordHash: String
 });
 export var User = mongoose.model('User', userSchema);
+
+var priceSchema = new mongoose.Schema({
+    date: Date,
+    currency_pair: String,
+    price: Number
+}, {collection: 'price_history'})
+export var Price = mongoose.model('Price', priceSchema);

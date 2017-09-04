@@ -13,13 +13,13 @@ import * as clone from 'clone';
 var MongoStore = ms(session);
 
 import * as passport from 'passport'
-import {Strategy} from 'passport-local'
+import { Strategy } from 'passport-local'
 
 import * as mongoose from 'mongoose';
-import { User } from "./models";
+import { User, Price } from "./models";
 import Poloniex from 'poloniex-wrapper'
 
-mongoose.connect('mongodb://db/polytrader');
+mongoose.connect('mongodb://db/polytrader', {useMongoClient: true});
 
 var LOCAL_STRATEGY_CONFIG = {
     usernameField: 'email',
@@ -129,7 +129,36 @@ app.get('/portfolio', loginRequired, (req, res) => {
 
     p.returnCompleteBalances().then(balances => {
         p.returnBalanceHistory().then(portfolioHistory => {
-            // Get current balances
+            // Fill in the gaps
+            var startDate = clone(portfolioHistory[0].timestamp)
+            startDate.setMilliseconds(0)
+            startDate.setSeconds(0)
+            startDate.setMinutes(0)
+            startDate.setHours(0)
+            startDate.setDate(startDate.getDate() + 1)
+
+            var portfolioHistoryAnnotated = [];
+
+            // Increment days
+            for (; startDate < new Date(); startDate.setDate(startDate.getDate() + 1)) {
+                var previousPortfolios = portfolioHistory.filter(p => p.timestamp < startDate)
+                var portfolioAtDate = clone(previousPortfolios[previousPortfolios.length - 1])
+
+                portfolioAtDate.balances.forEach(b => {
+                    // Get coin price at this date
+                    var currency_pair = "BTC_" + b.currency
+                    Price.findOne({
+                        'currency_pair': currency_pair
+                        //'time': {$gte: startDate, $lt: startDate}
+                    }, (err, result) => {
+                        console.log(currency_pair)
+                        console.log(result)
+                    })
+                })
+
+                portfolioHistoryAnnotated.push(portfolioAtDate)
+            }
+
             res.render('portfolio', {balances, portfolioHistory});
         }).catch(err => res.render('portfolio', {err}))
     }).catch(err => res.render('portfolio', {err}))
