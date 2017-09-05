@@ -129,37 +129,38 @@ app.get('/portfolio', loginRequired, (req, res) => {
 
     p.returnCompleteBalances().then(balances => {
         p.returnBalanceHistory().then(portfolioHistory => {
-            // Fill in the gaps
-            var startDate = clone(portfolioHistory[0].timestamp)
-            startDate.setMilliseconds(0)
-            startDate.setSeconds(0)
-            startDate.setMinutes(0)
-            startDate.setHours(0)
-            startDate.setDate(startDate.getDate() + 1)
 
-            var portfolioHistoryAnnotated = [];
+            // Find list of all currency pairs
+            var all_pairs = new Set()
+            portfolioHistory.map(p => {
+                p.balances.map(b => { all_pairs.add("BTC_" + b.currency) })
+            })
 
-            // Increment days
-            for (; startDate < new Date(); startDate.setDate(startDate.getDate() + 1)) {
-                var previousPortfolios = portfolioHistory.filter(p => p.timestamp < startDate)
-                var portfolioAtDate = clone(previousPortfolios[previousPortfolios.length - 1])
-
-                portfolioAtDate.balances.forEach(b => {
-                    // Get coin price at this date
-                    var currency_pair = "BTC_" + b.currency
-                    Price.findOne({
-                        'currency_pair': currency_pair
-                        //'time': {$gte: startDate, $lt: startDate}
-                    }, (err, result) => {
-                        console.log(currency_pair)
-                        console.log(result)
-                    })
-                })
-
-                portfolioHistoryAnnotated.push(portfolioAtDate)
-            }
-
-            res.render('portfolio', {balances, portfolioHistory});
+            // Fetch historic prices from database
+            let prices = []
+            Price.aggregate([
+                {$match: {
+                        'currency_pair': {$in : Array.from(all_pairs)},
+                        'date': {$gt : portfolioHistory[0].timestamp}
+                }},
+                {$project: {
+                    yearMonthDay: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+                    currency_pair: "$currency_pair",
+                    daily_average: "$daily_average"
+                }},
+                {$group: {
+                    _id: "$yearMonthDay",
+                    prices: { $push: { currency_pair: "$currency_pair", daily_average: "$daily_average"}}
+                }},
+                {$sort: {
+                    _id: -1
+                }}
+            ]).cursor({}).exec()
+            .on('data', doc => prices.push(doc))
+            .on('end', _ => {
+                console.log(prices)
+                res.render('portfolio', {balances, portfolioHistory});
+            })//.catch(err => res.render('portfolio', {err}))
         }).catch(err => res.render('portfolio', {err}))
     }).catch(err => res.render('portfolio', {err}))
 });
