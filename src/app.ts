@@ -10,6 +10,7 @@ import * as passwordHasher from 'password-hash';
 import * as session from 'express-session';
 import * as ms from 'connect-mongo';
 import * as clone from 'clone';
+import * as Big from 'big.js'
 var MongoStore = ms(session);
 
 import * as passport from 'passport'
@@ -153,13 +154,43 @@ app.get('/portfolio', loginRequired, (req, res) => {
                     prices: { $push: { currency_pair: "$currency_pair", daily_average: "$daily_average"}}
                 }},
                 {$sort: {
-                    _id: -1
+                    _id: 1
                 }}
             ]).cursor({}).exec()
             .on('data', doc => prices.push(doc))
             .on('end', _ => {
-                console.log(prices)
-                res.render('portfolio', {balances, portfolioHistory});
+
+                // Helper function to get the user's portfolio at a certain time
+                var portfolioAtTime = (time: Date) => {
+                    return portfolioHistory.filter(p => p.timestamp < time )
+                        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0]
+                }
+
+                var portfolioHistoryProcessed = prices.map(price => {
+                    // Get users portfolio on date
+                    var pd_sp = price._id.split('-')
+                    var price_date = new Date(pd_sp[0], pd_sp[1]-1, pd_sp[2])
+                    var p = clone(portfolioAtTime(price_date))
+                    p.timestamp = price_date
+
+                    p.balances.forEach(b => {
+                        if (b.currency == "BTC") {
+                            b.btcValue = b.amount
+                            return;
+                        }
+                        else if(b.currency == "USDT") {
+                            b.btcValue = "0.0"
+                            return;
+                        }
+
+                        var b_price = price.prices.filter(p => p.currency_pair == "BTC_" + b.currency)[0]
+                        b.btcValue = new Big(b_price.daily_average).times(b.amount).toFixed(10)
+                    })
+
+                    return p
+                })
+
+                res.render('portfolio', {balances, portfolioHistory: portfolioHistoryProcessed});
             })//.catch(err => res.render('portfolio', {err}))
         }).catch(err => res.render('portfolio', {err}))
     }).catch(err => res.render('portfolio', {err}))
