@@ -33,12 +33,17 @@ var historyCtx = document.getElementById("portfolio-value-history");
 var historyData = {
     labels: portfolioHistory.map((x) => x.timestamp),
     datasets: [{
-        data: portfolioHistory.map((x) => {
-            var btc_balance = x.balances.filter(b => b.currency == "BTC")
+        data: portfolioHistory.map((p) => {
+            if (!p.balances.length)
+                return {x: p.timestamp, y: 0.0}
 
-            if (btc_balance.length)
-                return {x: x.timestamp, y: btc_balance[0].amount}
-            return {x: x.timestamp, y: 0.0}
+            var btc_balance = p.balances
+                .map(b=>parseFloat(b.btcValue))
+                .reduce((a,b)=>a+b,0.0)
+
+            console.log(p.balances)
+            console.log(btc_balance)
+            return {x: p.timestamp, y: btc_balance}
         })
     }]
 }
