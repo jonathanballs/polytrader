@@ -190,6 +190,12 @@ app.get('/portfolio', loginRequired, (req, res) => {
                     return p
                 })
 
+                // Calculate errors in calculation
+                let currenciesSet = new Set()
+                balances.forEach(b => currenciesSet.add(b.currency) )
+                portfolioHistory[portfolioHistory.length-1].balances.forEach(b => currenciesSet.add(b.currency))
+                console.log(currenciesSet)
+
                 res.render('portfolio', {balances, portfolioHistory: portfolioHistoryProcessed});
             })//.catch(err => res.render('portfolio', {err}))
         }).catch(err => res.render('portfolio', {err}))
