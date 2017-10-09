@@ -10,6 +10,7 @@ services:
             - ./comp:/usr/src/app/comp
             - ./static:/usr/src/app/static
             - ./views:/usr/src/app/views
+            - ./contrib:/usr/src/app/contrib
 
     price_updater:
         build: price_updater/

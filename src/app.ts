@@ -184,20 +184,18 @@ app.get('/portfolio', loginRequired, (req, res) => {
                         }
 
                         var b_price = price.prices.filter(p => p.currency_pair == "BTC_" + b.currency)[0]
-                        b.btcValue = new Big(b_price.daily_average).times(b.amount).toFixed(10)
-                    })
 
+                        if(typeof(b_price) != 'undefined') {
+                            b.btcValue = new Big(b_price.daily_average).times(b.amount).toFixed(10)
+                        } else {
+                            b.btcValue = '0.0'
+                        }
+                    })
                     return p
                 })
 
-                // Calculate errors in calculation
-                let currenciesSet = new Set()
-                balances.forEach(b => currenciesSet.add(b.currency) )
-                portfolioHistory[portfolioHistory.length-1].balances.forEach(b => currenciesSet.add(b.currency))
-                console.log(currenciesSet)
-
                 res.render('portfolio', {balances, portfolioHistory: portfolioHistoryProcessed});
-            })//.catch(err => res.render('portfolio', {err}))
+            })
         }).catch(err => res.render('portfolio', {err}))
     }).catch(err => res.render('portfolio', {err}))
 });

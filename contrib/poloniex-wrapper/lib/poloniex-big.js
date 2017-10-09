@@ -602,58 +602,107 @@ class Poloniex {
             }
             this.returnDepositsWithdrawals(new Date(0), new Date).then(depositsWithdrawals => {
                 this.returnUserTradeHistory().then(userTrades => {
-                    var allEvents = depositsWithdrawals.deposits;
-                    allEvents = allEvents.concat(depositsWithdrawals.withdrawals).concat(userTrades);
-                    allEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-                    var portfolioHistory = new Array;
-                    allEvents.forEach(e => {
-                        if (!portfolioHistory.length) {
+                    this.returnCompleteBalances().then(completeBalances => {
+                        var allEvents = depositsWithdrawals.deposits;
+                        allEvents = allEvents.concat(depositsWithdrawals.withdrawals).concat(userTrades);
+                        allEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+                        var portfolioHistory = new Array;
+                        allEvents.forEach(e => {
+                            if (!portfolioHistory.length) {
+                                if (isDeposit(e)) {
+                                    var balance = new Balance(e.currency, e.amount);
+                                    var portfolio = new Portfolio([balance], e.timestamp);
+                                    portfolioHistory.push(portfolio);
+                                    return;
+                                }
+                                else {
+                                    reject(Error("Unable to find initial deposit"));
+                                    return;
+                                }
+                            }
+                            var portfolio = clone(portfolioHistory[portfolioHistory.length - 1]);
+                            portfolio.timestamp = e.timestamp;
                             if (isDeposit(e)) {
-                                var balance = new Balance(e.currency, e.amount);
-                                var portfolio = new Portfolio([balance], e.timestamp);
-                                portfolioHistory.push(portfolio);
-                                return;
+                                var b = portfolio.balanceOf(e.currency);
+                                b.amount = new Big(b.amount).plus(e.amount).toFixed(20);
+                            }
+                            else if (isWithdrawal(e)) {
+                                var b = portfolio.balanceOf(e.currency);
+                                b.amount = new Big(b.amount).minus(e.amount).toFixed(20);
                             }
                             else {
-                                reject(Error("Unable to find initial deposit"));
-                                return;
+                                var base = portfolio.balanceOf(e.base);
+                                var quote = portfolio.balanceOf(e.quote);
+                                if (e.type == TradeType.Buy) {
+                                    base.amount = new Big(base.amount).minus(e.total).toFixed(20);
+                                    quote.amount = new Big(quote.amount).plus(e.amount).toFixed(20);
+                                    var totalFee = new Big(e.amount).times(e.fee);
+                                    quote.amount = new Big(quote.amount).minus(totalFee).toFixed(20);
+                                }
+                                else {
+                                    base.amount = new Big(base.amount).plus(e.total).toFixed(20);
+                                    quote.amount = new Big(quote.amount).minus(e.amount).toFixed(20);
+                                    var totalFee = new Big(e.total).times(e.fee);
+                                    base.amount = new Big(base.amount).minus(totalFee).toFixed(20);
+                                }
                             }
-                        }
-                        var portfolio = clone(portfolioHistory[portfolioHistory.length - 1]);
-                        portfolio.timestamp = e.timestamp;
-                        if (isDeposit(e)) {
-                            var b = portfolio.balanceOf(e.currency);
-                            b.amount = new Big(b.amount).plus(e.amount).toFixed(20);
-                        }
-                        else if (isWithdrawal(e)) {
-                            var b = portfolio.balanceOf(e.currency);
-                            b.amount = new Big(b.amount).minus(e.amount).toFixed(20);
-                        }
-                        else {
-                            var base = portfolio.balanceOf(e.base);
-                            var quote = portfolio.balanceOf(e.quote);
-                            if (e.type == TradeType.Buy) {
-                                base.amount = new Big(base.amount).minus(e.total).toFixed(20);
-                                quote.amount = new Big(quote.amount).plus(e.amount).toFixed(20);
-                                var totalFee = new Big(e.amount).times(e.fee);
-                                quote.amount = new Big(quote.amount).minus(totalFee).toFixed(20);
+                            portfolio.balances = portfolio.balances.filter(bal => {
+                                return new Big(bal.amount).abs().gt("0.00001");
+                            });
+                            {
+                                portfolio.event = e;
                             }
-                            else {
-                                base.amount = new Big(base.amount).plus(e.total).toFixed(20);
-                                quote.amount = new Big(quote.amount).minus(e.amount).toFixed(20);
-                                var totalFee = new Big(e.total).times(e.fee);
-                                base.amount = new Big(base.amount).minus(totalFee).toFixed(20);
-                            }
-                        }
-                        portfolio.balances = portfolio.balances.filter(bal => {
-                            return new Big(bal.amount).abs().gt("0.00001");
+                            portfolioHistory.push(portfolio);
                         });
-                        {
-                            portfolio.event = e;
+                        var portfoliosBeforeSplit = portfolioHistory.filter(p => p.timestamp < new Date(1501593374000));
+                        if (portfoliosBeforeSplit) {
+                            var BCHBalance = completeBalances.filter(b => b.currency == 'BCH')[0];
+                            var BCHBalanceAmount = !!BCHBalance ? Big(BCHBalance.amount) : Big('0.0');
+                            BCHBalanceAmount = BCHBalanceAmount.minus(Big(portfolioHistory[portfolioHistory.length - 1].balanceOf('BCH').amount));
+                            var newPortfolio = clone(portfoliosBeforeSplit[portfoliosBeforeSplit.length - 1]);
+                            newPortfolio.balanceOf('BCH').amount = BCHBalanceAmount.toFixed(20);
+                            newPortfolio.timestamp = new Date(1501593374000);
+                            {
+                                newPortfolio.event = null;
+                            }
+                            portfolioHistory.push(newPortfolio);
+                            portfolioHistory = portfolioHistory.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+                            portfolioHistory.filter(p => p.timestamp > new Date(1501593374000))
+                                .map(p => {
+                                var newBCHBalance = Big(p.balanceOf('BCH').amount).plus(BCHBalanceAmount);
+                                p.balanceOf('BCH').amount = newBCHBalance.toFixed(20);
+                            });
                         }
-                        portfolioHistory.push(portfolio);
-                    });
-                    resolve(portfolioHistory);
+                        let currenciesSet = new Set();
+                        completeBalances.forEach(b => currenciesSet.add(b.currency));
+                        portfolioHistory[portfolioHistory.length - 1].balances.forEach(b => currenciesSet.add(b.currency));
+                        var balanceDiscrepencies = Array.from(currenciesSet).map(c => {
+                            var rb_list = completeBalances.filter(b => b.currency == c);
+                            var rb = parseFloat(rb_list.length == 0 ? '0.0' : rb_list[0].amount);
+                            var cb = parseFloat(portfolioHistory[portfolioHistory.length - 1].balanceOf(c).amount);
+                            return { c, rb, cb, diff: cb - rb };
+                        }).filter(b => Math.abs(b.rb - b.cb) > 0.001);
+                        console.log(balanceDiscrepencies);
+                        outerloop: for (var p of portfolioHistory) {
+                            for (var currency of p.balances) {
+                                if (parseFloat(currency.amount) < 0.0) {
+                                    var newPortfolio = clone(p);
+                                    newPortfolio.timestamp = new Date(newPortfolio.timestamp.getTime() + 1);
+                                    {
+                                        newPortfolio.event = null;
+                                    }
+                                    portfolioHistory.push(newPortfolio);
+                                    portfolioHistory.filter(p => p.timestamp > newPortfolio.timestamp).forEach(p => {
+                                        for (var bDiscrep of balanceDiscrepencies) {
+                                            p.balanceOf(bDiscrep.c).amount = Big(p.balanceOf(bDiscrep.c).amount).minus(bDiscrep.diff).toFixed(20);
+                                        }
+                                    });
+                                    break outerloop;
+                                }
+                            }
+                        }
+                        resolve(portfolioHistory);
+                    }).catch(err => reject(err));
                 }).catch(err => reject(err));
             }).catch(err => reject(err));
         });
