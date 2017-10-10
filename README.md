@@ -1,4 +1,4 @@
-# pollytrader
+# polytrader
 A simple website to analyse poloniex trading history
 
 You will need docker and docker-compose installed
