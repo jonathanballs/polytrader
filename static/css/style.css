@@ -109,17 +109,17 @@ ul.check-circle {margin-bottom: 30px;}
 
 /******* navigation *******/
 
-.is-sticky .navigation .navbar-default {background-color: #242b33;}	
-.navigation {z-index: 9;}
-.navigation .navbar-brand {float: left; height: 50px; padding: 5px 15px; font-size: 18px; line-height: 20px;}
-.navigation .navbar-default {background-color: transparent; border-color: transparent;}
-.navigation .navbar-default {padding-top: 15px; padding-bottom: 15px;}
-.navigation .navbar-default .navbar-nav>li>a {color: #667b90; text-transform: uppercase; font-size: 14px;
+.is-sticky .navbar-default {background-color: #242b33;}	
+{z-index: 9;}
+.navbar-brand {float: left; height: 50px; padding: 5px 15px; font-size: 18px; line-height: 20px;}
+nav {background-color: transparent; border-color: transparent;}
+nav {padding-top: 15px; padding-bottom: 15px;}
+nav .navbar-nav>li>a {color: #667b90; text-transform: uppercase; font-size: 14px;
 	font-weight: 500; letter-spacing: 1px; padding: 20px 14px; line-height: .8;}
-.navigation .navbar-default .navbar-nav>li>a:focus, .navbar-default .navbar-nav>li>a:hover {color: #06c2cd;
+nav .navbar-nav>li>a:focus, nav .navbar-nav>li>a:hover {color: #06c2cd;
 	background-color: transparent;}
-.navigation .navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:focus, .navbar-default.navbar-nav>.active>a:hover {color: #06C2CC; background-color: transparent;}
-.navigation .navbar-default .navbar-nav>.open>a, .navbar-default .navbar-nav>.open>a:focus, .navbar-default .navbar-nav>.open>a:hover {color: #06C2CC; background-color: #fff!important;}
+nav .navbar-nav>.active>a, nav .navbar-nav>.active>a:focus, nav.navbar-nav>.active>a:hover {color: #06C2CC; background-color: transparent;}
+nav .navbar-nav>.open>a, nav .navbar-nav>.open>a:focus, nav .navbar-nav>.open>a:hover {color: #06C2CC; background-color: #fff!important;}
 .dropdown-menu {background-color: #fff; border: none; padding: 20px 10px;}
 .dropdown-menu>li>a {display: block; padding: 10px 20px; clear: both; font-weight: 600; 
 	line-height: 1.42857143; color: #667b90; white-space: nowrap; font-size: 14px; text-transform: uppercase;
@@ -128,12 +128,12 @@ ul.check-circle {margin-bottom: 30px;}
 	background-color: transparent;}
 /***** Mobile Toggle Menu *****/
 	
-.navigation .navbar-default .navbar-toggle {border-color: #06c2cd; background-color:#06c2cd;}
-.navigation .navbar-default .navbar-toggle .icon-bar {background-color: #fff;}
-.navigation .navbar-toggle {position: relative; float: right; padding: 9px 10px; margin-top: 8px;
+.navbar-default .navbar-toggle {border-color: #06c2cd; background-color:#06c2cd;}
+.navbar-default .navbar-toggle .icon-bar {background-color: #fff;}
+.navbar-toggle {position: relative; float: right; padding: 9px 10px; margin-top: 8px;
     margin-right: 15px; margin-bottom: 8px; background-color: transparent; background-image: none;
     border: 1px solid transparent; border-radius: 4px;}
-.navigation .navbar-default .navbar-toggle:focus, .navbar-default .navbar-toggle:hover {
+.navbar-default .navbar-toggle:focus, .navbar-default .navbar-toggle:hover {
 	background-color: #09dce8; border-color:#09dce8;}
 .navbar-default .navbar-collapse, .navbar-default .navbar-form {border-color: transparent;}	
 /******* Hero section *******/	
