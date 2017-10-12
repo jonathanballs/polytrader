@@ -1,25 +1,143 @@
 extends base.pug
 
 block content
-  h1 Your Account
+  h1 Account Settings
+  hr
+  br
+  h2 General
 
   - if (!user.poloniexAPIKey || !user.poloniexAPISecret)
     .alert.alert-info
       p You need to set your Poloniex API key and secret in order to user polytrader
   form(method='post', action='/account')
 
-    .form-group
-      label.sr-only(for='email') Email
-      input#email.form-control(type='email', name='email', placeholder='Email', required='', value=user.email)
+    .form-group.row
+      label.col-md-2.col-form-label(for='email') Email
+      input.col-md-10#email.form-control(type='email', name='email', placeholder='Email', required='', value=user.email)
 
-    .form-group
-      label.sr-only(for='apiKey') Poloniex API Key
-      input#apiKey.form-control(type='text', name='apiKey', placeholder='Poloniex API Key', required='', value=user.poloniexAPIKey)
+    .form-group.row
+      label.col-md-2.col-form-label(for='password-change') Password
+      .col-md-3(style='padding:0')
+        button.btn.btn-block(type='button', data-toggle='modal', data-target='#passwordModal') Change Password
 
-    .form-group
-      label.sr-only(for='apiSecret') Poloniex API Secret
-      input#apiSecret.form-control(type='text', name='apiSecret', placeholder='Poloniex API Secret', required='', value=user.poloniexAPISecret)
+    hr
+    br
+    .row
+      .col-md-11
+        h2 Linked accounts and wallets
+      .col-md-1(style='padding:0')
+        button.btn.btn-block(type='button', data-toggle='modal', data-target='#addAccountModal') Add
+    .exchange-settings
+      .row
+        .col-md-2
+          img.exchange-logo(src='/static/images/exchange-logos/poloniex.png')
+        .col-md-9
+        .col-md-1(style='padding:0')
+          button.btn.btn-block(type='button') Edit
+      .row
+        .col-md-2.exchange-property API Key
+        .col-md-10.exchange-property-val=user.poloniexAPIKey
+      .row
+        .col-md-2.exchange-property API Secret
+        .col-md-10.exchange-property-val **********************************************************************************
+      .row
+        .col-md-2.exchange-property Added
+        .col-md-10.exchange-property-val 4 months ago
+      .row
+        .col-md-2.exchange-property Last Synced
+        .col-md-10.exchange-property-val 24 seconds ago
 
-    .form-group
-      button.btn.btn-block.btn-default.btn-big(type='submit', value='submit') Update
+
+    .exchange-settings
+      .row
+        .col-md-2
+          img.exchange-logo(src='/static/images/exchange-logos/bittrex.png')
+        .col-md-9
+        .col-md-1(style='padding:0')
+          button.btn.btn-block(type='button') Edit
+      .row
+        .col-md-2.exchange-property API Key
+        .col-md-10.exchange-property-val=user.poloniexAPIKey
+      .row
+        .col-md-2.exchange-property API Secret
+        .col-md-10.exchange-property-val **********************************************************************************
+      .row
+        .col-md-2.exchange-property Added
+        .col-md-10.exchange-property-val 4 months ago
+      .row
+        .col-md-2.exchange-property Last Synced
+        .col-md-10.exchange-property-val 24 seconds ago
+
+  //- Password modal
+  #passwordModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='passwordModal', aria-hidden='true')
+      .modal-dialog.modal-lg(role='document')
+          .modal-content
+            .modal-header
+              h2#exampleModalLabel.modal-title Password change
+              button.close(type='button', data-dismiss='modal', aria-label='Close')
+                span(aria-hidden='true') &times;
+            .modal-body
+              form
+                .form-group.row
+                  label.col-md-3.col-form-label(for='email') Old password
+                  .col-md-9
+                    input#email.form-control(type='password', name='email', placeholder='Password', required='')
+
+                .form-group.row
+                  label.col-md-3.col-form-label(for='password-change') New password
+                  .col-md-9
+                    input#email.form-control(type='password', name='email', placeholder='Password', required='')
+
+                .form-group.row
+                  label.col-md-3.col-form-label(for='password-change') Repeat password
+                  .col-md-9
+                    input#email.form-control(type='password', name='email', placeholder='Password', required='')
+
+            .modal-footer
+              button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+              button.btn.btn-danger(type='button') Change password
+
+
+  //- add Account modal
+  #addAccountModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='addAccountModal', aria-hidden='true')
+      .modal-dialog.modal-lg(role='document')
+          .modal-content
+            .modal-header
+              h2#exampleModalLabel.modal-title Add Account
+              button.close(type='button', data-dismiss='modal', aria-label='Close')
+                span(aria-hidden='true') &times;
+            .modal-body(style="min-height: 20em")
+
+              #addAccountCarousel.carousel.slide
+                .carousel-inner(role='listbox')
+
+                  .carousel-item.active
+                    .col-md-12.account-type-selection
+                      button.btn.btn-lg.btn-light.btn-block(type='button') Poloniex
+                    .col-md-12.account-type-selection
+                      button.btn.btn-lg.btn-light.btn-block(type='button') Bittrex
+                    
+                    script.
+                      $('.account-type-selection>button').click(_ => {
+                        $('#addAccountCarousel').carousel(1)
+                        $('#addAccountCarousel').carousel('pause')
+                      })
+
+                  .carousel-item
+                    .row
+                      .col-md-3
+                        img.exchange-logo(src='/static/images/exchange-logos/poloniex.png', style="width:100%")
+                    br
+                    .form-group.row
+                      label.col-md-2.col-form-label(for='apiKey') API Key
+                      .col-md-10
+                        input#apiKey.form-control(type='text', name='apiKey', placeholder='Poloniex API Key', required='')
+
+                    .form-group.row
+                      label.col-md-2.col-form-label(for='apiSecret') API Secret
+                      .col-md-10
+                        input#apiSecret.form-control(type='text', name='apiSecret', placeholder='Poloniex API Secret', required='')
+
+            .modal-footer
+              button.btn.btn-secondary(type='button', data-dismiss='modal') Close
 

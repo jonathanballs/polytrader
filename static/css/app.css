@@ -41,3 +41,23 @@ body {
     margin-bottom: 0;
 }
 
+/* Exchange settings */
+.exchange-settings {
+    padding-top: 2em;
+    padding-bottom: 1em;
+}
+.exchange-settings img.exchange-logo {
+    width: 100%;
+    padding-bottom: 1.5em;
+}
+.exchange-settings .exchange-property {
+    font-weight: bold;
+}
+.exchange-settings .exchange-property-val {
+    word-wrap: break-word;
+}
+
+/* Account selection */
+#addAccountModal .account-type-selection {
+    margin-bottom: 1em;
+}
