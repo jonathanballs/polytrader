@@ -41,7 +41,7 @@ block content
               button.btn.btn-block(type='button') Edit
           .row
             .col-md-2.exchange-property API Key
-            .col-md-10.exchange-property-val=account.poloniexAPIKey
+            .col-md-10.exchange-property-val=account.apiKey
           .row
             .col-md-2.exchange-property API Secret
             .col-md-10.exchange-property-val **********************************************************************************
@@ -111,7 +111,7 @@ block content
                       .col-md-1
 
             .modal-footer
-              button#addAccountSubmitButton.btn-loader.btn.btn-primary(type='submit' style='opacity:0') Add Account
+              button#addAccountSubmitButton.btn-loader.btn.btn-primary.col-md-3(type='submit' style='opacity:0') Add Account
               button.btn.btn-secondary(type='button', data-dismiss='modal') Close
 
   script(src='/static/js/accounts.js')
@@ -123,12 +123,13 @@ block content
         img.exchange-logo(src='/static/images/exchange-logos/poloniex.png', style="width:100%")
     br
     form#poloniexAddAccountForm
+      input#accountType(type='hidden', name='account-type', value='poloniex')
       .form-group.row
         label.col-md-2.col-form-label(for='apiKey') API Key
         .col-md-10
-          input#apiKey.form-control(type='text', name='apiKey', placeholder='Poloniex API Key', required='')
+          input#poloniexApiKey.form-control(type='text', name='poloniexApiKey', placeholder='Poloniex API Key', required='')
 
       .form-group.row
         label.col-md-2.col-form-label(for='apiSecret') API Secret
         .col-md-10
-          input#apiSecret.form-control(type='text', name='apiSecret', placeholder='Poloniex API Secret', required='')
+          input#poloniexApiSecret.form-control(type='text', name='poloniexApiSecret', placeholder='Poloniex API Secret', required='')

@@ -23,7 +23,7 @@ $('.account-type-selection>button').click(_ => {
     $('#addAccountSubmitButton').fadeTo(0.5, 1)
 })
 
-$('.btn-loader').on('click', function() {
+$('.btn-loader').click( _ => {
     var $this = $(this);
   $this.button('loading');
     setTimeout(function() {
@@ -31,7 +31,40 @@ $('.btn-loader').on('click', function() {
    }, 8000);
 });
 
+// Make sure that the add account button actually submits the form
+
+var submitAddAccountForm = function() {
+    $('button#addAccountSubmitButton').html('<i class="fa fa-circle-o-notch fa-spin"></i> Adding...')
+
+    // Get form elements and submit it
+    var accountType = $('#addAccountCarousel #accountType').val()
+
+    if (accountType == 'poloniex') {
+        var apiKey = $('#poloniexApiKey').val()
+        var apiSecret = $('#poloniexApiSecret').val()
+
+        $.post('/account/accounts/new', {accountType, apiKey, apiSecret}, _ => {
+
+            // On success
+            $('button#addAccountSubmitButton').html('<i class="fa fa-check"></i> Added')
+            $('button#addAccountSubmitButton').addClass('btn-success')
+            $('button#addAccountSubmitButton').removeClass('btn-primary')
+            $('button#addAccountSubmitButton').prop("disabled", true)
+        })
+
+        console.log({apiKey, apiSecret})
+    }
+
+    // When it is successfully added
+    setTimeout(_ => {
+    }, 3000)
+}
+
+$('#addAccountSubmitButton').click(_ => {
+    submitAddAccountForm();
+})
+
 $('#poloniexAddAccountForm').submit(e => {
     e.preventDefault();
-    $('#poloniexAddAccountForm button').html('<i class="fa fa-circle-o-notch fa-spin"></i> Adding...')
+    submitAddAccountForm();
 })

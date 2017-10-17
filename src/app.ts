@@ -101,6 +101,28 @@ app.get('/account', loginRequired, (req, res) => {
     res.render('account', {user: req.user})
 });
 
+app.post('/account/accounts/new', loginRequired, (req, res) => {
+
+    var accountType = req.body.accountType;
+    var apiKey = req.body.apiKey;
+    var apiSecret = req.body.apiSecret;
+
+    if (accountType == 'poloniex') {
+        var data = {type: accountType, apiKey, apiSecret}
+
+        User.update({email: req.user.email},
+            { $push : { accounts: data }},
+        (err, numAffected, rawResponse) => {
+            req.login(req.user, () => res.redirect('/account'));
+        });
+
+    }
+    else {
+        // Return an error code
+    }
+    return;
+});
+
 app.post('/account', loginRequired, (req, res) => {
 
     var email = req.body.email;
@@ -108,9 +130,7 @@ app.post('/account', loginRequired, (req, res) => {
     var apiSecret = req.body.apiSecret;
 
     User.update({email: req.user.email}, {
-        email: email,
-        poloniexAPIKey: apiKey,
-        poloniexAPISecret: apiSecret
+        email: email
     }, (err, numAffected, rawResponse) => {
         req.login(req.user, () => res.redirect('/account'));
     });
@@ -127,7 +147,7 @@ app.get('/portfolio', loginRequired, (req, res) => {
     }
 
     // Create a new connection to poloniex api
-    var p = new Poloniex(req.user.accounts[0].poloniexAPIKey, req.user.accounts[0].poloniexAPISecret)
+    var p = new Poloniex(req.user.accounts[0].apiKey, req.user.accounts[0].apiSecret)
 
     p.returnCompleteBalances().then(balances => {
         p.returnBalanceHistory().then(portfolioHistory => {
