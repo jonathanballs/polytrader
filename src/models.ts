@@ -5,8 +5,9 @@ var userSchema = new mongoose.Schema({
     email: String,
     loginTimestamp: Date,
     signupTimestamp: Date,
-    poloniexAPIKey: String,
-    poloniexAPISecret: String,
+    // poloniexAPIKey: String,
+    // poloniexAPISecret: String,
+    accounts: [mongoose.Schema.Types.Mixed],
     passwordHash: String
 });
 export var User = mongoose.model('User', userSchema);

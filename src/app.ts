@@ -121,12 +121,13 @@ app.post('/account', loginRequired, (req, res) => {
 // Get poloniex data
 app.get('/portfolio', loginRequired, (req, res) => {
     //Redirect to account in case of API key not setup
-    if(!req.user.poloniexAPIKey || !req.user.poloniexAPISecret){
+    console.log(req.user)
+    if(!req.user.accounts.length) {
         res.redirect('/account')
     }
 
     // Create a new connection to poloniex api
-    var p = new Poloniex(req.user.poloniexAPIKey, req.user.poloniexAPISecret)
+    var p = new Poloniex(req.user.accounts[0].poloniexAPIKey, req.user.accounts[0].poloniexAPISecret)
 
     p.returnCompleteBalances().then(balances => {
         p.returnBalanceHistory().then(portfolioHistory => {

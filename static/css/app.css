@@ -61,3 +61,7 @@ body {
 #addAccountModal .account-type-selection {
     margin-bottom: 1em;
 }
+
+#addAccountModal .carousel-item {
+    min-height: 20em;
+}

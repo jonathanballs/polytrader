@@ -6,9 +6,10 @@ block content
   br
   h2 General
 
-  - if (!user.poloniexAPIKey || !user.poloniexAPISecret)
+  - if (!user.accounts.length)
     .alert.alert-info
-      p You need to set your Poloniex API key and secret in order to user polytrader
+      p You need to add at least one account or wallet before you use polytrader
+
   form(method='post', action='/account')
 
     .form-group.row
@@ -27,46 +28,32 @@ block content
         h2 Linked accounts and wallets
       .col-md-1(style='padding:0')
         button.btn.btn-block(type='button', data-toggle='modal', data-target='#addAccountModal') Add
-    .exchange-settings
-      .row
-        .col-md-2
-          img.exchange-logo(src='/static/images/exchange-logos/poloniex.png')
-        .col-md-9
-        .col-md-1(style='padding:0')
-          button.btn.btn-block(type='button') Edit
-      .row
-        .col-md-2.exchange-property API Key
-        .col-md-10.exchange-property-val=user.poloniexAPIKey
-      .row
-        .col-md-2.exchange-property API Secret
-        .col-md-10.exchange-property-val **********************************************************************************
-      .row
-        .col-md-2.exchange-property Added
-        .col-md-10.exchange-property-val 4 months ago
-      .row
-        .col-md-2.exchange-property Last Synced
-        .col-md-10.exchange-property-val 24 seconds ago
 
+    each account in user.accounts
 
-    .exchange-settings
-      .row
-        .col-md-2
-          img.exchange-logo(src='/static/images/exchange-logos/bittrex.png')
-        .col-md-9
-        .col-md-1(style='padding:0')
-          button.btn.btn-block(type='button') Edit
-      .row
-        .col-md-2.exchange-property API Key
-        .col-md-10.exchange-property-val=user.poloniexAPIKey
-      .row
-        .col-md-2.exchange-property API Secret
-        .col-md-10.exchange-property-val **********************************************************************************
-      .row
-        .col-md-2.exchange-property Added
-        .col-md-10.exchange-property-val 4 months ago
-      .row
-        .col-md-2.exchange-property Last Synced
-        .col-md-10.exchange-property-val 24 seconds ago
+      if account.type == 'poloniex'
+        .exchange-settings
+          .row
+            .col-md-2
+              img.exchange-logo(src='/static/images/exchange-logos/poloniex.png')
+            .col-md-9
+            .col-md-1(style='padding:0')
+              button.btn.btn-block(type='button') Edit
+          .row
+            .col-md-2.exchange-property API Key
+            .col-md-10.exchange-property-val=account.poloniexAPIKey
+          .row
+            .col-md-2.exchange-property API Secret
+            .col-md-10.exchange-property-val **********************************************************************************
+          .row
+            .col-md-2.exchange-property Added
+            .col-md-10.exchange-property-val 4 months ago
+          .row
+            .col-md-2.exchange-property Last Synced
+            .col-md-10.exchange-property-val 24 seconds ago
+
+      else if account.type == 'bittrex'
+        h1 this should be a bittrex account settings overview
 
   //- Password modal
   #passwordModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='passwordModal', aria-hidden='true')
@@ -111,33 +98,37 @@ block content
               #addAccountCarousel.carousel.slide
                 .carousel-inner(role='listbox')
 
+                  //- List of different account types and wallets
                   .carousel-item.active
                     .col-md-12.account-type-selection
                       button.btn.btn-lg.btn-light.btn-block(type='button') Poloniex
                     .col-md-12.account-type-selection
                       button.btn.btn-lg.btn-light.btn-block(type='button') Bittrex
                     
-                    script.
-                      $('.account-type-selection>button').click(_ => {
-                        $('#addAccountCarousel').carousel(1)
-                        $('#addAccountCarousel').carousel('pause')
-                      })
-
-                  .carousel-item
+                  //- Account form carousel
+                  .carousel-item.add-account-form
                     .row
-                      .col-md-3
-                        img.exchange-logo(src='/static/images/exchange-logos/poloniex.png', style="width:100%")
-                    br
-                    .form-group.row
-                      label.col-md-2.col-form-label(for='apiKey') API Key
-                      .col-md-10
-                        input#apiKey.form-control(type='text', name='apiKey', placeholder='Poloniex API Key', required='')
-
-                    .form-group.row
-                      label.col-md-2.col-form-label(for='apiSecret') API Secret
-                      .col-md-10
-                        input#apiSecret.form-control(type='text', name='apiSecret', placeholder='Poloniex API Secret', required='')
+                      .col-md-1
 
             .modal-footer
+              button#addAccountSubmitButton.btn-loader.btn.btn-primary(type='submit' style='opacity:0') Add Account
               button.btn.btn-secondary(type='button', data-dismiss='modal') Close
 
+  script(src='/static/js/accounts.js')
+
+  //- Poloniex form
+  #addPoloniexAccountForm(style='display:none')
+    .row
+      .col-md-3
+        img.exchange-logo(src='/static/images/exchange-logos/poloniex.png', style="width:100%")
+    br
+    form#poloniexAddAccountForm
+      .form-group.row
+        label.col-md-2.col-form-label(for='apiKey') API Key
+        .col-md-10
+          input#apiKey.form-control(type='text', name='apiKey', placeholder='Poloniex API Key', required='')
+
+      .form-group.row
+        label.col-md-2.col-form-label(for='apiSecret') API Secret
+        .col-md-10
+          input#apiSecret.form-control(type='text', name='apiSecret', placeholder='Poloniex API Secret', required='')
