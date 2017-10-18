@@ -45,9 +45,17 @@ var submitAddAccountForm = function() {
 
         $.post('/account/accounts/new', {accountType, apiKey, apiSecret}, _ => {
 
-            // On success
+            // Set button to success
             $('button#addAccountSubmitButton').html('<i class="fa fa-check"></i> Added')
             $('button#addAccountSubmitButton').addClass('btn-success')
+            $('button#addAccountSubmitButton').removeClass('btn-primary')
+            $('button#addAccountSubmitButton').prop("disabled", true)
+        }).fail( (xhr, status) => {
+            $('#addAccountErrorMessage').text(xhr.responseText)
+
+            // Set button to failed
+            $('button#addAccountSubmitButton').html('<i class="fa fa-cross"></i> Failed')
+            $('button#addAccountSubmitButton').addClass('btn-danger')
             $('button#addAccountSubmitButton').removeClass('btn-primary')
             $('button#addAccountSubmitButton').prop("disabled", true)
         })

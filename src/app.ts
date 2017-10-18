@@ -109,12 +109,25 @@ app.post('/account/accounts/new', loginRequired, (req, res) => {
 
     if (accountType == 'poloniex') {
         var data = {type: accountType, apiKey, apiSecret}
+        var p = new Poloniex(apiKey, apiSecret);
 
-        User.update({email: req.user.email},
-            { $push : { accounts: data }},
-        (err, numAffected, rawResponse) => {
-            req.login(req.user, () => res.redirect('/account'));
-        });
+        p.returnBalances().then(balances => {
+
+            console.log(balances)
+            res.send(balances)
+
+            // If fetched balances successfully then this is a valid poloniex API key
+            // thus it can be inserted to the database.
+            User.update({email: req.user.email},
+                { $push : { accounts: data }},
+            (err, numAffected, rawResponse) => {
+                res.redirect('/account');
+            });
+        }).catch(err => {
+            // On error, send the error to the user
+            res.status(400).send(err + '')
+        })
+
 
     }
     else {
@@ -126,8 +139,6 @@ app.post('/account/accounts/new', loginRequired, (req, res) => {
 app.post('/account', loginRequired, (req, res) => {
 
     var email = req.body.email;
-    var apiKey = req.body.apiKey;
-    var apiSecret = req.body.apiSecret;
 
     User.update({email: req.user.email}, {
         email: email

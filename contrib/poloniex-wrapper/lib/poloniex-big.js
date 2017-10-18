@@ -361,7 +361,7 @@ class Poloniex {
         return new Promise((resolve, reject) => {
             this._private('returnBalances', {}, (err, balances) => {
                 if (err = err || balances.error) {
-                    reject(Error("Error in returnBalances: " + err));
+                    reject(Error(err));
                 }
                 resolve(balances);
             });
