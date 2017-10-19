@@ -7,10 +7,10 @@ services:
         depends_on:
             - db
         volumes:
-            - ./comp:/usr/src/app/comp
+            - ./dist:/usr/src/app/dist
             - ./static:/usr/src/app/static
             - ./views:/usr/src/app/views
-            - ./contrib:/usr/src/app/contrib
+            - ./lib:/usr/src/app/lib
 
     price_updater:
         build: price_updater/

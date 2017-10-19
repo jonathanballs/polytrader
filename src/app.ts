@@ -12,6 +12,7 @@ import * as ms from 'connect-mongo';
 import * as clone from 'clone';
 import * as Big from 'big.js'
 var MongoStore = ms(session);
+import * as path from 'path'
 
 import * as passport from 'passport'
 import { Strategy } from 'passport-local'
@@ -19,18 +20,15 @@ import { Strategy } from 'passport-local'
 import * as mongoose from 'mongoose';
 import { User, Price } from "./models";
 import Poloniex from 'poloniex-wrapper'
+import { loginRequired } from './auth/auth'
+import settingsRouter from './settings/settings'
+import authRouter from './auth/auth'
 
 mongoose.connect('mongodb://db/polytrader', {useMongoClient: true});
 
 var LOCAL_STRATEGY_CONFIG = {
     usernameField: 'email',
 };
-
-// TODO set redirect url
-function loginRequired(req, res, next) {
-    // req['user'] is the user
-    req.user ? next() : res.redirect('/login')
-}
 
 
 // Local strategy to fetch user from database
@@ -67,6 +65,8 @@ console.log("Polytrader running :)");
 console.log(':: Listening on port ' + port);
 
 app.set('view engine', 'pug')
+app.set('views', path.join(__dirname, '/views'))
+
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(session({
     secret: 'TODO: make a secret key',
@@ -78,7 +78,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use('/static', express.static('static')) // Serve static files
 app.use(expressValidator())
-// Serve the index file
+
+app.use('/account', settingsRouter)
+app.use('/auth', authRouter)
+
 app.get('/', (req, res) => {
     if (req.user) {
         // Logged in users get redirected to their portfolios
@@ -87,66 +90,6 @@ app.get('/', (req, res) => {
     else {
         res.render('index')
     }
-});
-
-app.get('/login', (req, res) => {
-    res.render('login')
-});
-
-app.post('/login', passport.authenticate(
-    'local', { successRedirect: '/', failureRedirect: '/login' }));
-
-// Account settings for choosing an api key
-app.get('/account', loginRequired, (req, res) => {
-    res.render('account', {user: req.user})
-});
-
-app.post('/account/accounts/new', loginRequired, (req, res) => {
-
-    var accountType = req.body.accountType;
-    var apiKey = req.body.apiKey;
-    var apiSecret = req.body.apiSecret;
-
-    if (accountType == 'poloniex') {
-        var data = {type: accountType, apiKey, apiSecret}
-        var p = new Poloniex(apiKey, apiSecret);
-
-        p.returnBalances().then(balances => {
-
-            console.log(balances)
-            res.send(balances)
-
-            // If fetched balances successfully then this is a valid poloniex API key
-            // thus it can be inserted to the database.
-            User.update({email: req.user.email},
-                { $push : { accounts: data }},
-            (err, numAffected, rawResponse) => {
-                res.redirect('/account');
-            });
-        }).catch(err => {
-            // On error, send the error to the user
-            res.status(400).send(err + '')
-        })
-
-
-    }
-    else {
-        // Return an error code
-    }
-    return;
-});
-
-app.post('/account', loginRequired, (req, res) => {
-
-    var email = req.body.email;
-
-    User.update({email: req.user.email}, {
-        email: email
-    }, (err, numAffected, rawResponse) => {
-        req.login(req.user, () => res.redirect('/account'));
-    });
-
-    return;
 });
 
 // Get poloniex data
@@ -226,70 +169,11 @@ app.get('/portfolio', loginRequired, (req, res) => {
                     return p
                 })
 
-                res.render('portfolio', {balances, portfolioHistory: portfolioHistoryProcessed});
+                res.render('portfolio/portfolio', {balances, portfolioHistory: portfolioHistoryProcessed});
             })
         }).catch(err => res.render('portfolio', {err}))
     }).catch(err => res.render('portfolio', {err}))
 });
-
-app.post('/signup', (req, res) => {
-
-    // Check passwords are the same
-    var email = req.body.email;
-    var password1 = req.body.password1;
-    var password2 = req.body.password2;
-    if (password1 != password2) {
-        console.log(`User signed up with ${email} but passwords don't match`);
-        res.render('signup',
-            {formErrors: [
-                {param: 'password1', msg: 'Passwords do not match', value: ''},
-                {param: 'email', value: email}
-            ]
-            }
-        );
-
-        return;
-    }
-
-    // Check for other errors
-    req.checkBody('email', 'Invalid email address').isEmail();
-    req.checkBody('password1', 'Your password is too short').len({min: 6});
-    var errors = req.validationErrors();
-    if (errors) {
-        console.log(`User signed up with ${email} but there were validation errors`);
-        res.render('signup', {formErrors: errors} );
-        return;
-    }
-
-    // Check if user already exists otherwise create it.
-    User.findOne({email: email}, (err, user) => {
-        if (!user) {
-            var u = new User({
-                email: email,
-                passwordHash: passwordHasher.generate(password1),
-                signupTimestamp: Date.now(),
-                loginTimestamp: Date.now()
-            })
-            u.save((err, u) => {
-                req.logIn(u, () =>  res.redirect('/portfolio'))
-                return;
-            });
-        }
-
-        else {
-            console.log(`User tried to sign up with ${email} but it is already in use`);
-            var errors = [
-                {param: 'email', msg: 'A user with this email already exists', value: email}
-            ]
-            res.render('signup', {formErrors: errors} );
-            return;
-        }
-    });
-});
-app.get('/logout', (req, res) => {
-    req.logout()
-    res.redirect('/')
-})
 
 app.use((req, res, next) => {
     res.status(404).render('404') // 404 handler

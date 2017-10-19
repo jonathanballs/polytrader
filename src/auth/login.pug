@@ -1,4 +1,4 @@
-extends base.pug
+extends ../base
 
 block content
   .container
@@ -6,7 +6,7 @@ block content
       .col-md-6
         .form-block
           h1 Login to your polytrader account.
-          form(method='post', action='/login')
+          form(method='post', action='/auth/login')
             if formErrors
               - var err = formErrors.filter((x) => x.param == 'email')
               if err.length != 0 && err[0].msg
