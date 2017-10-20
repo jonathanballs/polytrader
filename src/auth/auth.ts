@@ -9,7 +9,7 @@ var router = express.Router()
 // TODO set redirect url
 export function loginRequired(req, res, next) {
     // req['user'] is the user
-    req.user ? next() : res.redirect('/login')
+    req.user ? next() : res.redirect('/auth/login')
 }
 
 router.post('/signup', (req, res) => {

@@ -1,4 +1,4 @@
-#!/usr/bin/env/ node
+//#!/usr/bin/env/ node
 
 import * as express from 'express';
 import * as http from 'http';
@@ -66,6 +66,7 @@ console.log(':: Listening on port ' + port);
 
 app.set('view engine', 'pug')
 app.set('views', path.join(__dirname, '/views'))
+console.log(require.main.filename)
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(session({
@@ -171,8 +172,8 @@ app.get('/portfolio', loginRequired, (req, res) => {
 
                 res.render('portfolio/portfolio', {balances, portfolioHistory: portfolioHistoryProcessed});
             })
-        }).catch(err => res.render('portfolio', {err}))
-    }).catch(err => res.render('portfolio', {err}))
+        }).catch(err => res.render('portfolio/portfolio', {err}))
+    }).catch(err => res.render('portfolio/portfolio', {err}))
 });
 
 app.use((req, res, next) => {
