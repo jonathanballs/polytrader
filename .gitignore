@@ -6,4 +6,5 @@ npm-debug.log
 tscommand*
 .tscache/
 db/
+src/.sass-cache/
 
