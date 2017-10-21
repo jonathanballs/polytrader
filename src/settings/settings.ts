@@ -24,7 +24,11 @@ router.post('/', loginRequired, (req, res) => {
     return;
 });
 
-router.post('/accounts/new', loginRequired, (req, res) => {
+router.get('/api/accounts/', loginRequired, (req, res) => {
+    res.send(req.user.accounts)
+})
+
+router.post('/api/accounts/new', loginRequired, (req, res) => {
 
     var accountType = req.body.accountType;
     var apiKey = req.body.apiKey;

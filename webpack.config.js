@@ -69,14 +69,15 @@ const sass = {
 // The settings react app
 SETTINGS_APP_DIR = path.resolve(__dirname, './src/settings/settings-client/')
 const settings_client = {
-    entry: SETTINGS_APP_DIR + '/index.jsx',
+    context: SETTINGS_APP_DIR,
+    entry: './index.js',
     output: {
         filename: './dist/static/js/settings-client.js'
     },
     module: {
         loaders: [
             {
-                test: /\.jsx?/,
+                test: /\.js?/,
                 include: SETTINGS_APP_DIR,
                 loader: 'babel-loader'
             }

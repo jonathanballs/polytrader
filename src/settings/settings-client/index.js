@@ -1,17 +1,35 @@
 import React from 'react';
 import {render} from 'react-dom';
+import axios from 'axios'
+
+import Account from './account';
 
 class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { loading: true };
+    this.makeApiRequest();
+  }
+
+  makeApiRequest() {
+    axios.get('/account/api/accounts')
+    .then((res) => {
+      console.log(res.data)
+      this.setState((prev, props) => Object.assign(prev, { loading:false, data: res.data}))
+    })
+    .catch(e => e)
+  }
+
   render () {
+    if(this.state.loading) {
+      return (<h1> Loading... </h1>);
+    }
     return (
       <div className="container" id="div">
         <h1>Account Settings</h1>
         <hr />
         <br />
         <h2>General</h2>
-        <div id="settingsApp">
-          <p> Hello React!</p>
-        </div>
         <form method="post" action="/account">
           <div className="form-group row"><label className="col-md-2 col-form-label" htmlFor="email">Email</label><input className="col-md-10 form-control" id="email" type="email" name="email" placeholder="Email" required defaultValue="jonathanballs@protonmail.com" /></div>
           <div className="form-group row">
@@ -26,30 +44,10 @@ class App extends React.Component {
             </div>
             <div className="col-md-1" style={{padding: 0}}><button className="btn btn-block" type="button" data-toggle="modal" data-target="#addAccountModal">Add</button></div>
           </div>
-          <div className="exchange-settings">
-            <div className="row">
-              <div className="col-md-2"><img className="exchange-logo" src="/static/images/exchange-logos/poloniex.png" /></div>
-              <div className="col-md-9" />
-              <div className="col-md-1" style={{padding: 0}}><button className="btn btn-block" type="button">Edit</button></div>
-            </div>
-            <div className="row">
-              <div className="col-md-2 exchange-property">API Key</div>
-              <div className="col-md-10 exchange-property-val">H8OBW9VT-EZHK6C9G-7UOFTGS3-EZZZN9YV</div>
-            </div>
-            <div className="row">
-              <div className="col-md-2 exchange-property">API Secret</div>
-              <div className="col-md-10 exchange-property-val">**********************************************************************************</div>
-            </div>
-            <div className="row">
-              <div className="col-md-2 exchange-property">Added</div>
-              <div className="col-md-10 exchange-property-val">4 months ago</div>
-            </div>
-            <div className="row">
-              <div className="col-md-2 exchange-property">Last Synced</div>
-              <div className="col-md-10 exchange-property-val">24 seconds ago</div>
-            </div>
-          </div>
         </form>
+
+        { this.state.data.map((acc, i) => <Account key={i} type={acc.type} apiKey={acc.apiKey} apiSecret={acc.apiSecret}/>)}
+
         <div className="modal fade" id="passwordModal" tabIndex={-1} role="dialog" aria-labelledby="passwordModal" aria-hidden="true">
           <div className="modal-dialog modal-lg" role="document">
             <div className="modal-content">
