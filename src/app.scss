@@ -1,5 +1,6 @@
-$color_1: red;
-$font_family_1: "Lucida Console", Monaco, monospace;
+// Imports
+@import "settings/settings";
+@import "portfolio/portfolio";
 
 html {
 	height: 100%;
