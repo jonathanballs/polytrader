@@ -5,6 +5,7 @@ block content
   hr
   br
   h2 General
+  #settingsApp
 
   - if (!user.accounts.length)
     .alert.alert-info
@@ -114,7 +115,6 @@ block content
               button#addAccountSubmitButton.btn-loader.btn.btn-primary.col-md-3(type='submit' style='opacity:0') Add Account
               button.btn.btn-secondary(type='button', data-dismiss='modal') Close
 
-  script(src='/static/js/accounts.js')
 
   //- Poloniex form
   #addPoloniexAccountForm(style='display:none')
@@ -136,3 +136,6 @@ block content
       .form-group.row
         .col-md-12
           p#addAccountErrorMessage
+
+  script(src='/static/js/accounts.js')
+  script(src='/static/js/settings-client.js')

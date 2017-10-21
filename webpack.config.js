@@ -42,7 +42,7 @@ SETTINGS_APP_DIR = path.resolve(__dirname, './src/settings/settings-client/')
 const settings_client = {
     entry: SETTINGS_APP_DIR + '/index.jsx',
     output: {
-        filename: './dist/settings/settings-client.js'
+        filename: './dist/static/js/settings-client.js'
     },
     module: {
         loaders: [

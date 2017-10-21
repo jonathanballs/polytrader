@@ -78,6 +78,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/static', express.static('static')) // Serve static files
+app.use('/static', express.static('dist/static')) // Serve static files
 app.use(expressValidator())
 
 app.use('/account', settingsRouter)
