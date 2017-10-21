@@ -14,7 +14,6 @@ class App extends React.Component {
   makeApiRequest() {
     axios.get('/account/api/accounts')
     .then((res) => {
-      console.log(res.data)
       this.setState((prev, props) => Object.assign(prev, { loading:false, data: res.data}))
     })
     .catch(e => e)

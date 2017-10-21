@@ -1,6 +1,7 @@
 import * as express from 'express';
 import {loginRequired} from '../auth/auth'
 import {User} from '../models'
+import * as mongoose from 'mongoose'
 import Poloniex from 'poloniex-wrapper'
 
 var router = express.Router()
@@ -30,12 +31,20 @@ router.get('/api/accounts/', loginRequired, (req, res) => {
 
 router.post('/api/accounts/new', loginRequired, (req, res) => {
 
+    // Get post variables and strip whitespace
     var accountType = req.body.accountType;
-    var apiKey = req.body.apiKey;
-    var apiSecret = req.body.apiSecret;
+    var apiKey = req.body.apiKey.replace(/ /g,'');;
+    var apiSecret = req.body.apiSecret.replace(/ /g,'');;
 
     if (accountType == 'poloniex') {
-        var data = {type: accountType, apiKey, apiSecret}
+        var data = {
+            _id: mongoose.Types.ObjectId(),
+            type: accountType,
+            apiKey,
+            apiSecret,
+            timestampCreated: new Date(),
+            timestampLastSuccessfulSync: null
+        }
         var p = new Poloniex(apiKey, apiSecret);
 
         p.returnBalances().then(balances => {
@@ -50,14 +59,12 @@ router.post('/api/accounts/new', loginRequired, (req, res) => {
                 res.redirect('/account');
             });
         }).catch(err => {
-            // On error, send the error to the user
             res.status(400).send(err + '')
         })
 
 
     }
     else {
-        // Return an error code
+        res.status(400).send("Error: invalid account type")
     }
-    return;
 });
