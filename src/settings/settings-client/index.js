@@ -46,7 +46,7 @@ class App extends React.Component {
           </div>
         </form>
 
-        { this.state.data.map((acc, i) => <Account key={i} type={acc.type} apiKey={acc.apiKey} apiSecret={acc.apiSecret}/>)}
+        { this.state.data.map((acc, i) => <Account key={i} type={acc.type} apiKey={acc.apiKey} apiSecret={acc.apiSecret} timestampCreated={acc.timestampCreated}/>)}
 
         <div className="modal fade" id="passwordModal" tabIndex={-1} role="dialog" aria-labelledby="passwordModal" aria-hidden="true">
           <div className="modal-dialog modal-lg" role="document">

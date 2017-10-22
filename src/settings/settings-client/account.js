@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from 'react-dom';
 import PropTypes from 'prop-types'
+import moment from 'moment'
 
 export default class Account extends React.Component {
   makeRow(title, content) {
@@ -14,7 +15,7 @@ export default class Account extends React.Component {
   }
   
   render() {
-    const { type, apiKey, apiSecret } = this.props;
+    const { type, apiKey, apiSecret, timestampCreated } = this.props;
     return (
       <div className="exchange-settings">
         <div className="row">
@@ -24,7 +25,7 @@ export default class Account extends React.Component {
         </div>
         { this.makeRow('API Key', apiKey) }
         { this.makeRow('API Secret', apiSecret) }
-        { this.makeRow('Added', '4 months ago') }
+        { this.makeRow('Added', moment(timestampCreated).fromNow()) }
         { this.makeRow('Last Synced', '24 seconds ago') }
       </div>
     )

@@ -66,7 +66,6 @@ console.log(':: Listening on port ' + port);
 
 app.set('view engine', 'pug')
 app.set('views', path.join(__dirname, '/views'))
-console.log(require.main.filename)
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(session({
@@ -97,7 +96,6 @@ app.get('/', (req, res) => {
 // Get poloniex data
 app.get('/portfolio', loginRequired, (req, res) => {
     //Redirect to account in case of API key not setup
-    console.log(req.user)
     if(!req.user.accounts.length) {
         res.redirect('/account')
     }

@@ -61,14 +61,13 @@ router.post('/api/accounts/new', loginRequired, (req, res) => {
 
         p.returnBalances().then(balances => {
 
-            res.send(balances)
-
             // If fetched balances successfully then this is a valid poloniex API key
             // thus it can be inserted to the database.
             User.update({email: req.user.email},
                 { $push : { accounts: data }},
             (err, numAffected, rawResponse) => {
-                res.redirect('/account');
+                console.log(rawResponse)
+                res.send(balances)
             });
         }).catch(err => {
             res.status(400).send(err + '')

@@ -62,7 +62,7 @@ export default class AddAccount extends React.Component {
     var formValues = accountForm.formFields.reduce((acc, f) => {
       acc[f.name] = document.getElementsByName(f.name)[0].value
       return acc
-    }, {accountType: accountForm.service})
+    }, { accountType: accountForm.service })
 
     // Make the post request
     axios.post('/account/api/accounts/new/', qs.stringify(formValues))
@@ -84,10 +84,10 @@ export default class AddAccount extends React.Component {
             <input className="form-control"
               id="poloniexApiKey"
               type="text"
-              disabled={this.state.submissionStatus=='loading'}
+              disabled={this.state.submissionStatus == 'loading'}
               name={ff.name}
               placeholder={ff.placeholder}
-              onChange={_ => {this.setState({submissionStatus: 'none'})}}
+              onChange={_ => { this.setState({ submissionStatus: 'none' }) }}
               required />
           </div>
         </div>
@@ -105,9 +105,9 @@ export default class AddAccount extends React.Component {
       </form>
       <div className="row">
         <div className="col-md-12">
-      {this.state.submissionStatus == 'failure' ?
-          <p className="add-account-error-message">{ this.state.submissionErrorMessage }</p>
-      : <p></p>}
+          {this.state.submissionStatus == 'failure' ?
+            <p className="add-account-error-message">{this.state.submissionErrorMessage}</p>
+            : <p></p>}
         </div>
       </div>
     </div>
@@ -157,7 +157,7 @@ export default class AddAccount extends React.Component {
 
     return (
       <div className="col-md-1" style={{ padding: 0 }}>
-        <Button block={true} onClick={this.toggleModal}>Add</Button>
+        <Button block={true} color="primary" onClick={this.toggleModal}>Add</Button>
 
         <Modal className="add-account-modal" isOpen={this.state.showModal} size="lg" toggle={this.toggleModal}>
           <div className="modal-header">
