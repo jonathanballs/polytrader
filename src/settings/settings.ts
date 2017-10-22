@@ -31,10 +31,22 @@ router.get('/api/accounts/', loginRequired, (req, res) => {
 
 router.post('/api/accounts/new', loginRequired, (req, res) => {
 
+    req.checkBody('accountType').notEmpty().isAscii()
+    req.checkBody('apiKey').notEmpty().isAscii()
+    req.checkBody('apiSecret').notEmpty().isAscii()
+    req.sanitizeBody('apiKey').trim()
+    req.sanitizeBody('apiSecret').trim()
+
+    if (req.validationErrors()) {
+        console.log(req.validationErrors())
+        res.status(400).send('Error: Please fill in details correctly.');
+        return
+    }
+
     // Get post variables and strip whitespace
     var accountType = req.body.accountType;
-    var apiKey = req.body.apiKey.replace(/ /g,'');;
-    var apiSecret = req.body.apiSecret.replace(/ /g,'');;
+    var apiKey = req.body.apiKey
+    var apiSecret = req.body.apiSecret
 
     if (accountType == 'poloniex') {
         var data = {

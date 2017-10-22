@@ -2,6 +2,8 @@ import React from 'react'
 import { render } from 'react-dom'
 import PropTypes from 'prop-types'
 import { Modal, Button, Carousel, CarouselItem } from 'reactstrap'
+import axios from 'axios'
+import qs from 'qs'
 
 export default class AddAccount extends React.Component {
   constructor(props) {
@@ -10,7 +12,8 @@ export default class AddAccount extends React.Component {
       showModal: false,
       activeSlide: 0,
       currentAccountForm: 'poloniex',
-      submissionStatus: 'none' // none, loading, success or failure
+      submissionStatus: 'none', // none, loading, success or failure
+      submissionErrorMessage: '',
     }
   }
 
@@ -45,11 +48,23 @@ export default class AddAccount extends React.Component {
   }
 
   submitAccountForm = () => {
-    var formFields = this.accountForms.filter(f => f.service == this.state.currentAccountForm)[0]
+    var accountForm = this.accountForms.filter(f => f.service == this.state.currentAccountForm)[0]
     this.setState({ submissionStatus: 'loading' })
 
-    setTimeout(_ => this.setState({ submissionStatus: 'success' }), 3000)
+    // Get form values
+    var formValues = accountForm.formFields.reduce((acc, f) => {
+      acc[f.name] = document.getElementsByName(f.name)[0].value
+      return acc
+    }, {accountType: accountForm.service})
 
+    // Make the post request
+    axios.post('/account/api/accounts/new/', qs.stringify(formValues))
+      .then((resp) => {
+        this.setState({ submissionStatus: 'success' })
+        console.log(resp)
+      }).catch(err => {
+        this.setState({ submissionStatus: 'failure', submissionErrorMessage: err.response.data })
+      })
   }
 
   makeAccountForm = (account) => {
@@ -74,6 +89,13 @@ export default class AddAccount extends React.Component {
       <form>
         {accountFormFields}
       </form>
+      <div className="row">
+        <div className="col-md-12">
+      {this.state.submissionStatus == 'failure' ?
+          <p className="add-account-error-message">{ this.state.submissionErrorMessage }</p>
+      : <p></p>}
+        </div>
+      </div>
     </div>
 
     return accountForm
@@ -84,11 +106,13 @@ export default class AddAccount extends React.Component {
     var slides = [<CarouselItem key='1' src=''>
       <div>
         {this.accountForms.map((form, i) => {
-          return (<div key={i} className="col-md-12 account-type-selection">
-            <Button block={true} size="lg" color="light"
-              onClick={() => {
-                this.setState({ currentAccountForm: form.service, activeSlide: 1 });
-              }}>{form.service}</Button>
+          return (<div className="row">
+            <div key={i} className="col-md-12 account-type-selection">
+              <Button block={true} size="lg" color="light"
+                onClick={() => {
+                  this.setState({ currentAccountForm: form.service, activeSlide: 1 });
+                }}>{form.service}</Button>
+            </div>
           </div>)
         })}
       </div>
@@ -134,7 +158,7 @@ export default class AddAccount extends React.Component {
           <div className="modal-footer">
             {this.state.activeSlide == 1 ? <Button color="secondary" onClick={_ => { this.goToSlide(0) }}>Back</Button> : null}
             <div className="col-md-6"></div>
-            { accountButton }
+            {accountButton}
             <Button color="secondary" onClick={this.toggleModal}>Close</Button>
           </div>
         </Modal>
