@@ -12,19 +12,19 @@ export default class AddAccount extends React.Component {
   accountForms = [
     {
       service: 'poloniex',
-      formFields: [{
-        name: 'apiKey', description: 'API Key'
-      }, { name: 'apiSecret', description: 'API Secret' },]
+      formFields: [
+        { name: 'apiKey', description: 'API Key', placeholder: 'Poloniex API Key'},
+        { name: 'apiSecret', description: 'API Secret', placeholder: 'Poloniex API Secret' },]
     },
     {
       service: 'bittrex',
-      formFields: [{
-        name: 'apiKey', description: 'API Key'
-      }, { name: 'apiSecret', description: 'API Secret' },]
+      formFields: [
+        { name: 'apiKey', description: 'API Key', placeholder: 'Bittrex API Key'},
+        { name: 'apiSecret', description: 'API Secret', placeholder: 'Bittrex API Secret' },]
     },
     {
       service: 'ethereum wallet',
-      formFields: [{ name: 'walletAddress', description: 'Wallet Address' }]
+      formFields: [{ name: 'walletAddress', description: 'Address', placeholder: 'Ethereum Wallet Address'}]
     }
   ]
 
@@ -36,19 +36,35 @@ export default class AddAccount extends React.Component {
     })
   }
 
-  // Displays an account form in the modal
+  goToSlide = (slideNum) => {
+    this.setState({activeSlide: 0});
+  }
+
+  // Creatse a account form for 
   displayAccountForm = (account) => {
     var accountFormDesc = this.accountForms.filter(a => a.service == account)[0]
-    var accountForm = accountFormDesc.formFields.map((ff, i) => {
+    var accountFormFields = accountFormDesc.formFields.map((ff, i) => {
       return (
       <div key={i} className="form-group row">
         <label className="col-md-2 col-form-label" htmlFor={ff.name}>{ff.description}</label>
         <div className="col-md-10">
-          <input className="form-control" id="poloniexApiKey" type="text" name={ff.name} required />
+          <input className="form-control" id="poloniexApiKey" type="text" name={ff.name} placeholder={ff.placeholder} required />
         </div>
       </div>
       )
     })
+
+    var accountForm = <div key="2">
+      <div className="row">
+        <div className="col-md-3">
+          <img className="exchange-logo" src={"/static/images/exchange-logos/" + accountFormDesc.service + ".png"} />
+        </div>
+      </div>
+      <form>
+        {accountFormFields}
+      </form>
+    </div>
+
     this.setState({activeSlide: 1, accountFormSlide: <div key="2">{accountForm}</div>})
   }
 
@@ -86,11 +102,11 @@ export default class AddAccount extends React.Component {
 
           </div>
           <div className="modal-footer">
-            {
-              this.state.activeSlide == 1 ? <Button color="primary">Add Account</Button> : null
-            }
+              { this.state.activeSlide == 1 ? <Button color="secondary" onClick={_ => {this.goToSlide(0)}}>Back</Button> : null }
+              <div className="col-md-6"></div>
+            { this.state.activeSlide == 1 ? <Button block={true} color="primary">Add Account</Button> : null }
             <Button color="secondary" onClick={this.toggle}>Close</Button>
-          </div>
+            </div>
         </Modal>
       </div>
     )
