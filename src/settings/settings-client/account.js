@@ -1,14 +1,8 @@
 import React from 'react';
-import {render} from 'react-dom';
+import { render } from 'react-dom';
 import PropTypes from 'prop-types'
 
 export default class Account extends React.Component {
-  // static propTypes = {
-  //   type: PropTypes.string.isRequired,
-  //   apiKey: PropTypes.string.isRequired,
-  //   apiSecret: PropTypes.string.isRequired,
-  // };
-
   makeRow(title, content) {
     return(
         <div className="row">
@@ -32,7 +26,6 @@ export default class Account extends React.Component {
         { this.makeRow('API Secret', apiSecret) }
         { this.makeRow('Added', '4 months ago') }
         { this.makeRow('Last Synced', '24 seconds ago') }
-
       </div>
     )
   }

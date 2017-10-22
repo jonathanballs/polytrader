@@ -15,17 +15,17 @@ $error-message-font: "Lucida Console", Monaco, monospace;
 	}
 }
 
-#addAccountModal {
+.add-account-modal {
 	.account-type-selection {
 		margin-bottom: 1em;
 	}
 	.carousel-item {
 		min-height: 20em;
 	}
-}
 
-#addAccountErrorMessage {
-	color: red;
-	font-family: $error-message-font;
-	font-size: 0.9em;
+	.add-account-error-message {
+		color: red;
+		font-family: $error-message-font;
+		font-size: 0.9em;
+	}
 }
