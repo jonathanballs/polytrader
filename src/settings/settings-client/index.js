@@ -15,7 +15,7 @@ class App extends React.Component {
   makeApiRequest() {
     axios.get('/account/api/accounts')
     .then((res) => {
-      this.setState((prev, props) => Object.assign(prev, { loading:false, data: res.data}))
+      this.setState({loading:false, data: res.data})
     })
     .catch(e => e)
   }
@@ -42,11 +42,17 @@ class App extends React.Component {
             <div className="col-md-11">
               <h2>Linked accounts and wallets</h2>
             </div>
-            <AddAccount />
+            <AddAccount updateAccountList={this.makeApiRequest.bind(this)}/>
           </div>
         </form>
 
-        { this.state.data.map((acc, i) => <Account key={i} type={acc.type} apiKey={acc.apiKey} apiSecret={acc.apiSecret} timestampCreated={acc.timestampCreated}/>)}
+        { this.state.data.map((acc, i) => {
+          return <Account key={i}
+            type={acc.type}
+            apiKey={acc.apiKey}
+            apiSecret={acc.apiSecret}
+            timestampCreated={acc.timestampCreated}/>
+        })}
 
         <div className="modal fade" id="passwordModal" tabIndex={-1} role="dialog" aria-labelledby="passwordModal" aria-hidden="true">
           <div className="modal-dialog modal-lg" role="document">

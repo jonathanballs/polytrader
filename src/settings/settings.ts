@@ -66,7 +66,6 @@ router.post('/api/accounts/new', loginRequired, (req, res) => {
             User.update({email: req.user.email},
                 { $push : { accounts: data }},
             (err, numAffected, rawResponse) => {
-                console.log(rawResponse)
                 res.send(balances)
             });
         }).catch(err => {

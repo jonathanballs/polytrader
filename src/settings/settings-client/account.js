@@ -24,7 +24,7 @@ export default class Account extends React.Component {
           <div className="col-md-1" style={{ padding: 0 }}><button className="btn btn-block" type="button">Edit</button></div>
         </div>
         { this.makeRow('API Key', apiKey) }
-        { this.makeRow('API Secret', apiSecret) }
+        { this.makeRow('API Secret', '*****************************************************************************' ) }
         { this.makeRow('Added', moment(timestampCreated).fromNow()) }
         { this.makeRow('Last Synced', '24 seconds ago') }
       </div>

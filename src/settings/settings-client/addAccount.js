@@ -68,6 +68,7 @@ export default class AddAccount extends React.Component {
     axios.post('/account/api/accounts/new/', qs.stringify(formValues))
       .then((resp) => {
         this.setState({ submissionStatus: 'success' })
+        this.props.updateAccountList();
         console.log(resp)
       }).catch(err => {
         this.setState({ submissionStatus: 'failure', submissionErrorMessage: err.response.data })
@@ -150,7 +151,7 @@ export default class AddAccount extends React.Component {
           accountButton = <Button block={true} color="danger"><i className="fa fa-cross"></i> Failed</Button>
           break
         case 'success':
-          accountButton = <Button block={true} color="success"><i className="fa fa-check"></i> Success</Button>
+          accountButton = <Button onClick={this.toggleModal} block={true} color="success"><i className="fa fa-check"></i> Success</Button>
           break
       }
     }
