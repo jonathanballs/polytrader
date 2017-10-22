@@ -44,7 +44,14 @@ export default class AddAccount extends React.Component {
   }
 
   goToSlide = (slideNum) => {
-    this.setState({ activeSlide: slideNum });
+    // Reset form
+    if (slideNum == 1) {
+      var accountForm = this.accountForms.filter(f => f.service == this.state.currentAccountForm)[0]
+      accountForm.formFields.forEach(f => {
+        document.getElementsByName(f.name)[0].value = ""
+      })
+    }
+    this.setState({ activeSlide: slideNum, submissionStatus: 'none' });
   }
 
   submitAccountForm = () => {
@@ -117,7 +124,8 @@ export default class AddAccount extends React.Component {
             <div key={i} className="col-md-12 account-type-selection">
               <Button block={true} size="lg" color="light"
                 onClick={() => {
-                  this.setState({ currentAccountForm: form.service, activeSlide: 1 });
+                  this.setState({ currentAccountForm: form.service });
+                  this.goToSlide(1);
                 }}>{form.service}</Button>
             </div>
           </div>)
