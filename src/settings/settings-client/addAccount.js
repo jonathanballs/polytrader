@@ -30,7 +30,10 @@ export default class AddAccount extends React.Component {
 
 
   toggle = () => {
-    this.setState((prev, props) => Object.assign(prev, { showModal: !prev.showModal }))
+    this.setState({
+      showModal: !this.state.showModal,
+      activeSlide: 0
+    })
   }
 
   // Displays an account form in the modal
