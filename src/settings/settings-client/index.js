@@ -46,7 +46,9 @@ class App extends React.Component {
           </div>
         </form>
 
-        { this.state.data.map((acc, i) => {
+        { this.state.data.sort((a, b) => {
+            return new Date(b.timestampCreated).getTime() - new Date(a.timestampCreated).getTime()
+          }).map((acc, i) => {
           return <Account key={i}
             type={acc.type}
             apiKey={acc.apiKey}
