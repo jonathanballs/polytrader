@@ -74,7 +74,14 @@ export default class AddAccount extends React.Component {
         <div key={i} className="form-group row">
           <label className="col-md-2 col-form-label" htmlFor={ff.name}>{ff.description}</label>
           <div className="col-md-10">
-            <input className="form-control" id="poloniexApiKey" type="text" name={ff.name} placeholder={ff.placeholder} required />
+            <input className="form-control"
+              id="poloniexApiKey"
+              type="text"
+              disabled={this.state.submissionStatus=='loading'}
+              name={ff.name}
+              placeholder={ff.placeholder}
+              onChange={_ => {this.setState({submissionStatus: 'none'})}}
+              required />
           </div>
         </div>
       )
