@@ -6,7 +6,7 @@ import { Modal, Button, Carousel, CarouselItem } from 'reactstrap'
 export default class AddAccount extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { showModal: false, activeSlide: 0, accountFormSlide: <div key="2" /> }
+    this.state = { showModal: false, activeSlide: 0, currentAccountForm: 'poloniex' }
   }
 
   accountForms = [
@@ -41,7 +41,7 @@ export default class AddAccount extends React.Component {
   }
 
   // Creatse a account form for 
-  displayAccountForm = (account) => {
+  makeAccountForm = (account) => {
     var accountFormDesc = this.accountForms.filter(a => a.service == account)[0]
     var accountFormFields = accountFormDesc.formFields.map((ff, i) => {
       return (
@@ -57,7 +57,7 @@ export default class AddAccount extends React.Component {
     var accountForm = <div key="2">
       <div className="row">
         <div className="col-md-3">
-          <img className="exchange-logo" src={"/static/images/exchange-logos/" + accountFormDesc.service + ".png"} />
+          <img className="exchange-logo" src={"/static/images/exchange-logos/" + accountFormDesc.service.replace(/\s/g, '') + ".png"} />
         </div>
       </div>
       <form>
@@ -65,24 +65,25 @@ export default class AddAccount extends React.Component {
       </form>
     </div>
 
-    this.setState({activeSlide: 1, accountFormSlide: <div key="2">{accountForm}</div>})
+    return accountForm
+
   }
 
   render() {
     var slides = [<CarouselItem key='1' src=''>
       <div>
-        {
-          this.accountForms.map((form, i) => {
+        { this.accountForms.map((form, i) => {
             return (<div key={i} className="col-md-12 account-type-selection">
               <Button block={true} size="lg" color="light"
-                onClick={()=>{this.displayAccountForm(form.service)}}>{form.service}</Button>
+                onClick={()=>{
+                  this.setState({currentAccountForm: form.service, activeSlide: 1});
+                }}>{form.service}</Button>
             </div>)
-          })
-        }
+          }) }
       </div>
     </CarouselItem>,
     <CarouselItem key='2' src=''>
-      {this.state.accountFormSlide}
+      {this.makeAccountForm(this.state.currentAccountForm)}
     </CarouselItem>
     ]
 
