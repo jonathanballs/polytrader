@@ -24,8 +24,6 @@ export default class Account extends React.Component {
       return acc
     }, {})
 
-    console.log(this.props.account)
-
     return (
       <div className="exchange-settings">
         <div className="row">
@@ -36,7 +34,8 @@ export default class Account extends React.Component {
             status='none'
             setState={()=>{}}
             errorMessage=""
-            formValues={formValues}/>
+            formValues={formValues}
+            updateAccountList={this.props.updateAccountList}/>
         </div>
         { this.makeRow('API Key', apiKey) }
         { this.makeRow('API Secret', '*****************************************************************************' ) }

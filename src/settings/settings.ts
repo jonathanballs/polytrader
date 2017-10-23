@@ -115,9 +115,23 @@ router.post('/api/accounts/:accountID/', loginRequiredApi, validateAccountForm, 
 // DELETE an account
 router.delete('/api/accounts/:accountID/', loginRequiredApi, (req, res) => {
     var account = req.user.accounts.filter(a => a._id == req.params.accountID)[0]
+    console.log("Delete request for " + req.params.accountID)
     if (typeof (account) == 'undefined') {
         res.status(404).send("Unable to find account with ID " + req.params.accountID)
+        return
     }
+
+    User.findOneAndUpdate({ _id: req.user._id },
+    {
+        $pull : { accounts: { _id: mongoose.Types.ObjectId(req.params.accountID) } }
+    }, (err, user) => {
+        if (err) {
+            res.status(400).send(err + '')
+        }
+        else {
+            res.send('OK')
+        }
+    })
 })
 
 
@@ -141,6 +155,11 @@ router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) 
     User.update({ email: req.user.email },
         { $push: { accounts: data } },
         (err, numAffected, rawResponse) => {
-            res.send('OK')
+            if (err) {
+                res.status(400).send(err + '')
+            }
+            else {
+                res.send('OK')
+            }
         });
 })

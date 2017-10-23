@@ -17,6 +17,7 @@ export default class EditAccountButton extends React.Component {
       currentAccountForm: 'poloniex',
       submissionStatus: 'none', // none, loading, success or failure
       submissionErrorMessage: '',
+      deleteButtonState: 'none'
     }
 
     this.setSubmissionState.bind(this)
@@ -45,13 +46,20 @@ export default class EditAccountButton extends React.Component {
       .then((resp) => {
         this.setState({ submissionStatus: 'success' })
         this.props.updateAccountList();
-        console.log(resp)
       }).catch(err => {
-        this.setState({ submissionStatus: 'failure', submissionErrorMessage: err.response.data })
+        this.setState({ submissionStatus: 'failure', submissionErrorMessage: err.response })
       })
   }
 
-  deleteAccount = () => { }
+  deleteAccount = () => {
+    this.setState({ deleteButtonState: 'deleting' })
+
+    axios.delete('/account/api/accounts/' + this.props.account._id)
+    .then((resp) => {
+      this.props.updateAccountList();
+      this.setState({ showModal: false })
+    })
+  }
 
   setSubmissionState = (newState) => {
     this.setState({submissionStatus: newState})
@@ -75,9 +83,36 @@ export default class EditAccountButton extends React.Component {
         break
     }
 
+    var deleteButton = null
+    switch(this.state.deleteButtonState) {
+      case 'none':
+        deleteButton = <Button block={true} color="secondary"
+          onClick={_ => {
+            this.setState({ deleteButtonState: 'loading' })
+            setTimeout(_ => {
+              this.setState({ deleteButtonState: 'ready' })
+            }, 2000)
+            }
+          }>Delete</Button>
+        break;
+      case 'loading':
+        var deleteButton = <Button block={true} disabled color="secondary"><i className="fa fa-circle-o-notch fa-spin"></i> Delete</Button>
+        break
+      case 'ready':
+        var deleteButton = <Button block={true} color="danger" onClick={this.deleteAccount}>Confirm</Button>
+        break
+      case 'deleting':
+        var deleteButton = <Button block={true} disabled color="danger" onClick={this.deleteAccount}><i className="fa fa-circle-o-notch fa-spin" /> Deleting</Button>
+        break
+
+    }
+
     return (
       <div className="col-md-1" style={{ padding: 0 }}>
-        <Button block={true} color="secondary" onClick={this.toggleModal}>Edit</Button>
+        <Button block={true}
+          color="secondary"
+          onClick={this.toggleModal}
+        >Edit</Button>
 
         <Modal className="add-account-modal" isOpen={this.state.showModal} size="lg" toggle={this.toggleModal}>
           <div className="modal-header">
@@ -91,7 +126,8 @@ export default class EditAccountButton extends React.Component {
               formValues={this.props.formValues} />
           </div>
           <div className="modal-footer">
-            <div className="col-md-7"></div>
+            {deleteButton}
+            <div className="col-md-6"></div>
             {accountButton}
             <Button color="secondary" onClick={this.toggleModal}>Close</Button>
           </div>

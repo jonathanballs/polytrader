@@ -55,7 +55,6 @@ export default class AddAccountButton extends React.Component {
       .then((resp) => {
         this.setState({ submissionStatus: 'success' })
         this.props.updateAccountList();
-        console.log(resp)
       }).catch(err => {
         this.setState({ submissionStatus: 'failure', submissionErrorMessage: err.response.data })
       })
