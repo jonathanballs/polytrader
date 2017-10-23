@@ -13,7 +13,6 @@ export default class EditAccountButton extends React.Component {
     super(props)
     this.state = {
       showModal: false,
-      activeSlide: 0,
       currentAccountForm: 'poloniex',
       submissionStatus: 'none', // none, loading, success or failure
       submissionErrorMessage: '',
@@ -25,9 +24,7 @@ export default class EditAccountButton extends React.Component {
 
   toggleModal = () => {
     this.setState({
-      showModal: !this.state.showModal,
-      activeSlide: 0,
-      submissionStatus: 'none'
+      showModal: !this.state.showModal
     })
   }
 
@@ -47,7 +44,7 @@ export default class EditAccountButton extends React.Component {
         this.setState({ submissionStatus: 'success' })
         this.props.updateAccountList();
       }).catch(err => {
-        this.setState({ submissionStatus: 'failure', submissionErrorMessage: err.response })
+        this.setState({ submissionStatus: 'failure', submissionErrorMessage: err.response.data })
       })
   }
 
@@ -114,7 +111,7 @@ export default class EditAccountButton extends React.Component {
           onClick={this.toggleModal}
         >Edit</Button>
 
-        <Modal className="add-account-modal" isOpen={this.state.showModal} size="lg" toggle={this.toggleModal}>
+        <Modal className="add-account-modal" onClosed={(() => {this.setState({ submissionStatus: 'none' })}).bind(this)} isOpen={this.state.showModal} size="lg" toggle={this.toggleModal}>
           <div className="modal-header">
             <h2 className="modal-title">Edit Account</h2>
           </div>
