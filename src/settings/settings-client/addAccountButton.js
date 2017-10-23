@@ -25,7 +25,6 @@ export default class AddAccountButton extends React.Component {
   toggleModal = () => {
     this.setState({
       showModal: !this.state.showModal,
-      activeSlide: 0
     })
   }
 
@@ -111,7 +110,7 @@ export default class AddAccountButton extends React.Component {
       <div className="col-md-1" style={{ padding: 0 }}>
         <Button block={true} color="primary" onClick={this.toggleModal}>Add</Button>
 
-        <Modal className="add-account-modal" isOpen={this.state.showModal} size="lg" toggle={this.toggleModal}>
+        <Modal className="add-account-modal" onClosed={(() => {this.goToSlide(0)}).bind(this)} isOpen={this.state.showModal} size="lg" toggle={this.toggleModal}>
           <div className="modal-header">
             <h2 className="modal-title">Add Account</h2>
           </div>
