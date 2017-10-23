@@ -3,7 +3,7 @@ import {render} from 'react-dom';
 import axios from 'axios'
 
 import Account from './account';
-import AddAccount from './addAccount'
+import AddAccount from './addAccountButton'
 
 class App extends React.Component {
   constructor(props) {

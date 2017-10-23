@@ -23,7 +23,7 @@ const backend = {
             { test: /\.tsx?$/, loader: 'ts-loader' }
         ]
     },
-
+    devtool: 'inline-source-map',
     // Pug files
     plugins: [
         new CopyWebpackPlugin([
