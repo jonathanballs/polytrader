@@ -34,13 +34,14 @@ export default class AccountForm extends React.Component {
                 <label className="col-md-2 col-form-label" htmlFor={ff.name}>{ff.description}</label>
                 <div className="col-md-10">
                     <input className="form-control"
-                    id="poloniexApiKey"
-                    type="text"
-                    disabled={this.props.status == 'loading'}
-                    name={ff.name}
-                    placeholder={ff.placeholder}
-                    onChange={_ => { this.props.setState('none') }}
-                    required />
+                        id="poloniexApiKey"
+                        type="text"
+                        defaultValue={this.props.formValues ? this.props.formValues[ff.name] : undefined}
+                        disabled={this.props.status == 'loading'}
+                        name={ff.name}
+                        placeholder={ff.placeholder}
+                        onChange={_ => { this.props.setState('none') }}
+                        required />
                 </div>
                 </div>
             )

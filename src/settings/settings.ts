@@ -25,11 +25,66 @@ router.post('/', loginRequired, (req, res) => {
     return;
 });
 
+// Get info on all accounts
 router.get('/api/accounts/', loginRequired, (req, res) => {
     res.send(req.user.accounts)
 })
 
-router.post('/api/accounts/new', loginRequired, (req, res) => {
+// GET an account
+router.get('/api/accounts/:accountID/', loginRequired, (req, res) => {
+    var account = req.user.accounts.filter(a => a._id == req.params.accountID)[0]
+    if (typeof(account) == 'undefined') {
+        res.status(404).send("Unable to find account with ID " + req.params.accountID)
+    }
+    else {
+        res.send(account)
+    }
+})
+
+// UPDATE an account
+router.post('/api/accounts/:accountID/', loginRequired, (req, res) => {
+    var account = req.user.accounts.filter(a => a._id == req.params.accountID)[0]
+    if (typeof(account) == 'undefined') {
+        res.status(404).send("Unable to find account with ID " + req.params.accountID)
+    } else {
+
+        req.checkBody('apiKey').notEmpty().isAscii()
+        req.checkBody('apiSecret').notEmpty().isAscii()
+        req.sanitizeBody('apiKey').trim()
+        req.sanitizeBody('apiSecret').trim()
+
+        User.findOneAndUpdate(
+            { "_id": req.user._id, "accounts._id": mongoose.Types.ObjectId(req.params.accountID) },
+            {
+                $set: {
+                    "accounts.$.apiKey": req.body.apiKey,
+                    "accounts.$.apiSecret": req.body.apiSecret
+                }
+            },
+            (err, user) => {
+                if (err) {
+                    res.status(400).send(err + '')
+                    return
+                }
+
+                console.log(user)
+                res.send(req.user.accounts)
+            }
+        )
+    }
+})
+
+// DELETE an account
+router.delete('/api/accounts/:accountID/', loginRequired, (req, res) => {
+    var account = req.user.accounts.filter(a => a._id == req.params.accountID)[0]
+    if (typeof(account) == 'undefined') {
+        res.status(404).send("Unable to find account with ID " + req.params.accountID)
+    }
+})
+
+
+// CREATE a new account
+router.post('/api/accounts/', loginRequired, (req, res) => {
 
     req.checkBody('accountType').notEmpty().isAscii()
     req.checkBody('apiKey').notEmpty().isAscii()

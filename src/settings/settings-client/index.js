@@ -50,10 +50,7 @@ class App extends React.Component {
             return new Date(b.timestampCreated).getTime() - new Date(a.timestampCreated).getTime()
           }).map((acc, i) => {
           return <Account key={i}
-            type={acc.type}
-            apiKey={acc.apiKey}
-            apiSecret={acc.apiSecret}
-            timestampCreated={acc.timestampCreated}/>
+            account={acc} />
         })}
 
         <div className="modal fade" id="passwordModal" tabIndex={-1} role="dialog" aria-labelledby="passwordModal" aria-hidden="true">

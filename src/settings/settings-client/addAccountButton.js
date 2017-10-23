@@ -51,7 +51,7 @@ export default class AddAccountButton extends React.Component {
     }, { accountType: accountForm.service })
 
     // Make the post request
-    axios.post('/account/api/accounts/new/', qs.stringify(formValues))
+    axios.post('/account/api/accounts/', qs.stringify(formValues))
       .then((resp) => {
         this.setState({ submissionStatus: 'success' })
         this.props.updateAccountList();
