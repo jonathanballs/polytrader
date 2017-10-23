@@ -25,7 +25,8 @@ export default class EditAccountButton extends React.Component {
   toggleModal = () => {
     this.setState({
       showModal: !this.state.showModal,
-      activeSlide: 0
+      activeSlide: 0,
+      submissionStatus: 'none'
     })
   }
 
