@@ -11,6 +11,10 @@ export function loginRequired(req, res, next) {
     // req['user'] is the user
     req.user ? next() : res.redirect('/auth/login')
 }
+export function loginRequiredApi(req, res, next) {
+    // req['user'] is the user
+    req.user ? next() : res.status(401).send("Error: You are not signed into polytrader.")
+}
 
 router.post('/signup', (req, res) => {
 
