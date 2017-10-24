@@ -87,7 +87,8 @@ export default class EditAccountButton extends React.Component {
           onClick={_ => {
             this.setState({ deleteButtonState: 'loading' })
             setTimeout(_ => {
-              this.setState({ deleteButtonState: 'ready' })
+              if (this.state.deleteButtonState == 'loading')
+                this.setState({ deleteButtonState: 'ready' })
             }, 2000)
             }
           }>Delete</Button>
@@ -111,7 +112,7 @@ export default class EditAccountButton extends React.Component {
           onClick={this.toggleModal}
         >Edit</Button>
 
-        <Modal className="add-account-modal" onClosed={(() => {this.setState({ submissionStatus: 'none' })}).bind(this)} isOpen={this.state.showModal} size="lg" toggle={this.toggleModal}>
+        <Modal className="add-account-modal" onClosed={(() => {this.setState({ submissionStatus: 'none', deleteButtonState: 'none' })}).bind(this)} isOpen={this.state.showModal} size="lg" toggle={this.toggleModal}>
           <div className="modal-header">
             <h2 className="modal-title">Edit Account</h2>
           </div>
