@@ -37,6 +37,7 @@ const backend = {
 
 }
 
+// Sass compiler. Way more complicated than it should be
 var extractSass = new ExtractTextPlugin({ filename: "dist/static/css/app.css", })
 const sass = {
     entry: './src/app.scss',
@@ -50,8 +51,6 @@ const sass = {
         rules: [{
             test: /\.(scss)$/,
             use: extractSass.extract({
-            //   fallback: 'style-loader',
-              //resolve-url-loader may be chained before sass-loader if necessary
               use: [{
                 loader: "css-loader" // translates CSS into CommonJS
               }, {
