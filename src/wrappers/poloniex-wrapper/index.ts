@@ -1,9 +1,14 @@
 // Typescript poloniex library
+// Actually has a lot more types than is strictly necessary
+// Jonathan Balls 2017
+
 import * as request from 'request'
 import * as crypto from 'crypto'
 import * as moment from 'moment'
 import * as clone from 'clone'
 import * as Big from 'big.js'
+
+import { Portfolio, Balance } from '../'
 
 export class OrderBook {
     asks: {price: string, amount: string}[]
@@ -23,49 +28,6 @@ export class Order {
 export enum TradeType {
     Buy,
     Sell
-}
-
-export class Balance {
-    currency: string;
-    amount: string;
-    btcValue: string;
-
-    constructor(currency?, amount?) {
-        if(currency)
-            this.currency = currency
-        if(amount)
-            this.amount = amount
-    }
-}
-
-export class Portfolio {
-    timestamp: Date;
-    balances: Balance[];
-
-    constructor(balances: Balance[], timestamp: Date) {
-        this.timestamp = timestamp;
-        this.balances = balances;
-    }
-
-    balanceOf(currency: string) : Balance {
-        var b = this.balances.filter((x) => x.currency == currency);
-
-        if (b.length)
-            return b[0];
-
-        var newBalance = new Balance(currency, "0.0");
-        this.balances.push(newBalance);
-
-        return newBalance;
-    }
-
-    removeCurrency(currency: string) {
-        this.balances = this.balances.filter(b => b.currency == currency);
-    }
-
-    getValue() : number {
-        return null
-    }
 }
 
 function tradeStringToType(s: string) : TradeType {
@@ -925,7 +887,7 @@ export default class Poloniex {
 
     // Returns a list of balances after each balance 'event' e.g. a buy,
     // sell, deposit etc.
-    returnBalanceHistory() {
+    returnPortfolioHistory() {
 
         return new Promise<Portfolio[]>((resolve, reject) => {
 

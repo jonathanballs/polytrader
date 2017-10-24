@@ -29,6 +29,10 @@ var LOCAL_STRATEGY_CONFIG = {
     usernameField: 'email',
 };
 
+import services from './wrappers/services'
+var ether = services['ethereum-wallet']
+var api = new ether.wrapper(ether.serverAuth, {walletAddress: "0x9bacb4980540dcf973b0d02c5fd952adcbe51d78"})
+api.returnPortfolioHistory()
 
 // Local strategy to fetch user from database
 passport.use(new Strategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
@@ -103,7 +107,7 @@ app.get('/portfolio', loginRequired, (req, res) => {
     var p = new Poloniex(req.user.accounts[0].apiKey, req.user.accounts[0].apiSecret)
 
     p.returnCompleteBalances().then(balances => {
-        p.returnBalanceHistory().then(portfolioHistory => {
+        p.returnPortfolioHistory().then(portfolioHistory => {
 
             // Find list of all currency pairs
             var all_pairs = new Set()
