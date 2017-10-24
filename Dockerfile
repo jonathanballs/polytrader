@@ -8,10 +8,6 @@ COPY package.json .
 COPY lib/ ./lib
 RUN npm install
 
-# Link to contrib packages directly
-RUN rm -r /usr/src/app/node_modules/poloniex-wrapper
-RUN ln -s /usr/src/app/lib/poloniex-wrapper /usr/src/app/node_modules/poloniex-wrapper
-
 # Copy application files over
 COPY . .
 

@@ -1,4 +1,4 @@
-import Poloniex from '../src/poloniex-big'
+import Poloniex from './'
 
 import { expect, assert } from 'chai'
 import 'mocha'

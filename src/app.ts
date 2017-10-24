@@ -3,7 +3,6 @@
 import * as express from 'express';
 import * as http from 'http';
 import * as socketio from 'socket.io';
-import * as poloniex from 'poloniex.js';
 import * as bodyParser from 'body-parser';
 import expressValidator = require('express-validator');
 import * as passwordHasher from 'password-hash';
@@ -19,7 +18,7 @@ import { Strategy } from 'passport-local'
 
 import * as mongoose from 'mongoose';
 import { User, Price } from "./models";
-import Poloniex from 'poloniex-wrapper'
+import Poloniex from './wrappers/poloniex-wrapper'
 import { loginRequired } from './auth/auth'
 import settingsRouter from './settings/settings'
 import authRouter from './auth/auth'

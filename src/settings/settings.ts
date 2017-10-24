@@ -2,7 +2,7 @@ import * as express from 'express';
 import { loginRequired, loginRequiredApi } from '../auth/auth'
 import { User } from '../models'
 import * as mongoose from 'mongoose'
-import Poloniex from 'poloniex-wrapper'
+import Poloniex from '../wrappers/poloniex-wrapper'
 
 var router = express.Router()
 export default router

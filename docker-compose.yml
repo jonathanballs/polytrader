@@ -9,8 +9,6 @@ services:
         volumes:
             - ./dist:/usr/src/app/dist
             - ./static:/usr/src/app/static
-            - ./views:/usr/src/app/views
-            - ./lib:/usr/src/app/lib
 
     price_updater:
         build: price_updater/
