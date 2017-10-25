@@ -5,10 +5,10 @@ import { Modal, Button, Carousel, CarouselItem } from 'reactstrap'
 import axios from 'axios'
 import qs from 'qs'
 
-import { accountForms } from './accountForm.js'
 import AccountForm from './accountForm.js'
 
 export default class AddAccountButton extends React.Component {
+
   constructor(props) {
     super(props)
     this.state = {
@@ -31,7 +31,7 @@ export default class AddAccountButton extends React.Component {
   goToSlide = (slideNum) => {
     // Reset form
     if (slideNum == 1) {
-      var accountForm = accountForms.filter(f => f.service == this.state.currentAccountForm)[0]
+      var accountForm = this.props.serviceList.filter(f => f.key == this.state.currentAccountForm)[0]
       accountForm.formFields.forEach(f => {
         document.getElementsByName(f.name)[0].value = ""
       })
@@ -40,14 +40,14 @@ export default class AddAccountButton extends React.Component {
   }
 
   submitAccountForm = () => {
-    var accountForm = accountForms.filter(f => f.service == this.state.currentAccountForm)[0]
+    var accountForm = this.props.serviceList.filter(f => f.key == this.state.currentAccountForm)[0]
     this.setState({ submissionStatus: 'loading' })
 
     // Get form values
     var formValues = accountForm.formFields.reduce((acc, f) => {
       acc[f.name] = document.getElementsByName(f.name)[0].value
       return acc
-    }, { accountType: accountForm.service })
+    }, { accountType: accountForm.key })
 
     // Make the post request
     axios.post('/account/api/accounts/', qs.stringify(formValues))
@@ -85,21 +85,22 @@ export default class AddAccountButton extends React.Component {
 
     var slides = [<CarouselItem key='1' src=''>
       <div>
-        {accountForms.map((form, i) => {
+        {this.props.serviceList.map((service, i) => {
           return (<div key={i} className="row">
             <div className="col-md-12 account-type-selection">
               <Button block={true} size="lg" color="light"
                 onClick={() => {
-                  this.setState({ currentAccountForm: form.service });
+                  this.setState({ currentAccountForm: service.key });
                   this.goToSlide(1);
-                }}>{form.service}</Button>
+                }}>{service.name}</Button>
             </div>
           </div>)
         })}
       </div>
     </CarouselItem>,
     <CarouselItem key='2' src=''>
-      <AccountForm service={this.state.currentAccountForm}
+      <AccountForm
+        service={this.props.serviceList.filter(s => s.key == this.state.currentAccountForm)[0]}
         status={this.state.submissionStatus}
         setState={this.setSubmissionState}
         errorMessage={this.state.submissionErrorMessage} />

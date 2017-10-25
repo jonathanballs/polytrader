@@ -3,21 +3,23 @@ import {render} from 'react-dom';
 import axios from 'axios'
 
 import Account from './account';
-import AddAccount from './addAccountButton'
+import AddAccountButton from './addAccountButton'
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { loading: true };
+    this.state = { loading: true, serviceList: Array(), accounts: Array() };
     this.makeApiRequest();
   }
 
   makeApiRequest() {
-    axios.get('/account/api/accounts')
-    .then((res) => {
-      this.setState({loading:false, data: res.data})
-    })
-    .catch(e => e)
+    var accounts = axios.get('/account/api/accounts')
+    var serviceList = axios.get('/account/api/services')
+
+    Promise.all([accounts, serviceList]).then(values => {
+      console.log(values[1].data)
+      this.setState({ accounts: values[0].data, serviceList: values[1].data, loading: false })
+    }).catch(err => console.log(err))
   }
 
   render () {
@@ -42,14 +44,14 @@ class App extends React.Component {
             <div className="col-md-11">
               <h2>Linked accounts and wallets</h2>
             </div>
-            <AddAccount updateAccountList={this.makeApiRequest.bind(this)}/>
+            <AddAccountButton serviceList={this.state.serviceList} updateAccountList={this.makeApiRequest.bind(this)} />
           </div>
         </form>
 
-        { this.state.data.sort((a, b) => {
+        { this.state.accounts.sort((a, b) => {
             return new Date(b.timestampCreated).getTime() - new Date(a.timestampCreated).getTime()
           }).map((acc, i) => {
-          return <Account key={i}
+          return <Account key={i} serviceList={this.state.serviceList} 
             account={acc} updateAccountList={this.makeApiRequest.bind(this)} />
         })}
 

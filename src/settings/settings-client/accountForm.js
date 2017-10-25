@@ -5,30 +5,10 @@ import { Modal, Button, Carousel, CarouselItem } from 'reactstrap'
 import axios from 'axios'
 import qs from 'qs'
 
-export var accountForms = [
-    {
-        service: 'poloniex',
-        formFields: [
-            { name: 'apiKey', description: 'API Key', placeholder: 'Poloniex API Key' },
-            { name: 'apiSecret', description: 'API Secret', placeholder: 'Poloniex API Secret' },]
-    },
-    {
-        service: 'bittrex',
-        formFields: [
-            { name: 'apiKey', description: 'API Key', placeholder: 'Bittrex API Key' },
-            { name: 'apiSecret', description: 'API Secret', placeholder: 'Bittrex API Secret' },]
-    },
-    {
-        service: 'ethereum wallet',
-        formFields: [{ name: 'walletAddress', description: 'Address', placeholder: 'Ethereum Wallet Address' }]
-    }
-]
-
-
 export default class AccountForm extends React.Component {
+
     render() {
-        var accountFormDesc = accountForms.filter(a => a.service == this.props.service)[0]
-        var accountFormFields = accountFormDesc.formFields.map((ff, i) => {
+        var accountFormFields = this.props.service.formFields.map((ff, i) => {
             return (
                 <div key={i} className="form-group row">
                 <label className="col-md-2 col-form-label" htmlFor={ff.name}>{ff.description}</label>
@@ -50,7 +30,7 @@ export default class AccountForm extends React.Component {
         var accountForm = <div key="2">
             <div className="row">
                 <div className="col-md-3">
-                    <img className="exchange-logo" src={"/static/images/exchange-logos/" + accountFormDesc.service.replace(/\s/g, '') + ".png"} />
+                    <img className="exchange-logo" src={"/static/images/exchange-logos/" + this.props.service.key + ".png"} />
                 </div>
             </div>
             <form>

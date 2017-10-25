@@ -57,7 +57,7 @@ export default class Etherscan {
             request(requestURL, (err, resp, body) => {
 
                 if (err)
-                    reject()
+                    reject(err)
 
                 var portfolioHistory:  Portfolio[] = new Array()
 

@@ -5,7 +5,6 @@ import { Modal, Button, Carousel, CarouselItem } from 'reactstrap'
 import axios from 'axios'
 import qs from 'qs'
 
-import { accountForms } from './accountForm.js'
 import AccountForm from './accountForm.js'
 
 export default class EditAccountButton extends React.Component {
@@ -29,14 +28,14 @@ export default class EditAccountButton extends React.Component {
   }
 
   submitAccountForm = () => {
-    var accountForm = accountForms.filter(f => f.service == this.state.currentAccountForm)[0]
     this.setState({ submissionStatus: 'loading' })
 
     // Get form values
-    var formValues = accountForm.formFields.reduce((acc, f) => {
+    var form = this.props.serviceList.filter(s => s.key == this.props.account.type)[0]
+    var formValues = form.formFields.reduce((acc, f) => {
       acc[f.name] = document.getElementsByName(f.name)[0].value
       return acc
-    }, { accountType: accountForm.service })
+    }, { accountType: this.props.account.type })
 
     // Make the post request
     axios.post('/account/api/accounts/' + this.props.account._id , qs.stringify(formValues))
@@ -117,7 +116,8 @@ export default class EditAccountButton extends React.Component {
             <h2 className="modal-title">Edit Account</h2>
           </div>
           <div className="modal-body">
-            <AccountForm service={this.state.currentAccountForm}
+            <AccountForm
+              service={this.props.serviceList.filter(s => s.key == this.state.currentAccountForm)[0]}
               status={this.state.submissionStatus}
               setState={this.setSubmissionState}
               errorMessage={this.state.submissionErrorMessage}

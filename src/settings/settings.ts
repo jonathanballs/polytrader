@@ -3,6 +3,7 @@ import { loginRequired, loginRequiredApi } from '../auth/auth'
 import { User } from '../models'
 import * as mongoose from 'mongoose'
 import Poloniex from '../wrappers/poloniex-wrapper'
+import { servicesClient } from '../wrappers/services'
 
 var router = express.Router()
 export default router
@@ -74,6 +75,10 @@ router.post('/api/email/', loginRequiredApi, (req, res) => {
 
     return;
 });
+
+router.get('/api/services/', loginRequiredApi, (req, res) => {
+    res.send(servicesClient)
+})
 
 // Get info on all accounts
 router.get('/api/accounts/', loginRequiredApi, (req, res) => {

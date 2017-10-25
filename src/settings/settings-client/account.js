@@ -3,7 +3,6 @@ import { render } from 'react-dom';
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import EditAccountButton from './editAccountButton'
-import { accountForms } from './accountForm'
 
 export default class Account extends React.Component {
   makeRow(title, content) {
@@ -19,7 +18,7 @@ export default class Account extends React.Component {
   render() {
     const { type, apiKey, apiSecret, timestampCreated } = this.props.account;
 
-    var formValues = accountForms.filter(a => a.service == type)[0].formFields.reduce((acc, ff) => {
+    var formValues = this.props.serviceList.filter(a => a.key == type)[0].formFields.reduce((acc, ff) => {
       acc[ff.name] = this.props.account[ff.name]
       return acc
     }, {})
@@ -35,6 +34,7 @@ export default class Account extends React.Component {
             setState={()=>{}}
             errorMessage=""
             formValues={formValues}
+            serviceList={this.props.serviceList}
             updateAccountList={this.props.updateAccountList}/>
         </div>
         { this.makeRow('API Key', apiKey) }

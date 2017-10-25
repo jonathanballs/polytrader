@@ -30,9 +30,9 @@ var LOCAL_STRATEGY_CONFIG = {
 };
 
 import services from './wrappers/services'
-var ether = services['ethereum-wallet']
-var api = new ether.wrapper(ether.serverAuth, {walletAddress: "0x9bacb4980540dcf973b0d02c5fd952adcbe51d78"})
-api.returnPortfolioHistory()
+var ether = services.filter(s => s.key == 'etherium-wallet')[0]
+// var api = new ether.wrapper(ether.serverAuth, {walletAddress: "0x9bacb4980540dcf973b0d02c5fd952adcbe51d78"})
+// api.returnPortfolioHistory()
 
 // Local strategy to fetch user from database
 passport.use(new Strategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
