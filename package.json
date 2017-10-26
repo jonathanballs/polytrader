@@ -33,6 +33,7 @@
     "copy-webpack-plugin": "^4.2.0",
     "crypto": "0.0.3",
     "css-loader": "^0.28.7",
+    "ethereum-address": "0.0.4",
     "express": "^4.15.3",
     "express-session": "^1.15.3",
     "express-validator": "^3.2.0",

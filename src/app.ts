@@ -12,13 +12,11 @@ import * as clone from 'clone';
 import * as Big from 'big.js'
 var MongoStore = ms(session);
 import * as path from 'path'
-
+import * as mongoose from 'mongoose';
 import * as passport from 'passport'
 import { Strategy } from 'passport-local'
 
-import * as mongoose from 'mongoose';
 import { User, Price } from "./models";
-import Poloniex from './wrappers/poloniex-wrapper'
 import { loginRequired } from './auth/auth'
 import settingsRouter from './settings/settings'
 import authRouter from './auth/auth'
@@ -29,10 +27,7 @@ var LOCAL_STRATEGY_CONFIG = {
     usernameField: 'email',
 };
 
-import services from './wrappers/services'
-var ether = services.filter(s => s.key == 'etherium-wallet')[0]
-// var api = new ether.wrapper(ether.serverAuth, {walletAddress: "0x9bacb4980540dcf973b0d02c5fd952adcbe51d78"})
-// api.returnPortfolioHistory()
+import servicesList from './wrappers/services'
 
 // Local strategy to fetch user from database
 passport.use(new Strategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
@@ -103,10 +98,12 @@ app.get('/portfolio', loginRequired, (req, res) => {
         res.redirect('/account')
     }
 
-    // Create a new connection to poloniex api
-    var p = new Poloniex({apiKey: req.user.accounts[0].apiKey, apiSecret: req.user.accounts[0].apiSecret}, {})
+    var accountService = req.user.accounts[0].service
+    var wrapper = servicesList.filter(s => s.key == accountService)[0]
 
-    p.returnCompleteBalances().then(balances => {
+    var p = new wrapper.wrapper(wrapper.serverAuth, req.user.accounts[0].userAuth)
+
+    p.returnBalances().then(balances => {
         p.returnPortfolioHistory().then(portfolioHistory => {
 
             // Find list of all currency pairs

@@ -91,10 +91,6 @@ export class DepositAddresses {
     [currency: string]: string
 }
 
-export class Balances {
-    [currency: string]: string
-}
-
 export class Currency {
     txFee: string
     name: string
@@ -188,6 +184,8 @@ export default class Poloniex implements Wrapper {
     readonly STRICT_SSL : boolean = true
 
     constructor(serverAuth, userAuth) {
+        console.log("user auth")
+        console.log(userAuth)
         this.apiKey = userAuth.apiKey
         this.apiSecret = userAuth.apiSecret
     }
@@ -510,13 +508,24 @@ export default class Poloniex implements Wrapper {
     //
 
     returnBalances() {
-        return new Promise<Balances>((resolve, reject) => {
+        return new Promise<Balance[]>((resolve, reject) => {
             this._private('returnBalances', {}, (err, balances) => {
                 if (err = err || balances.error) {
                     reject(Error(err))
                 }
 
-                resolve(balances)
+                var ret: Balance[] = new Array()
+                for (var currency in balances) {
+                    if (Big(balances[currency]).gt("0.0000001")) {
+                        ret.push({
+                            currency,
+                            amount: balances[currency],
+                            btcValue: "1.0"
+                        })
+                    }
+                }
+
+                resolve(ret)
             })
         })
     }

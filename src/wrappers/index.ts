@@ -1,6 +1,7 @@
 // Base interface for api wrappers
 
 export default interface Wrapper {
+    returnBalances() : Promise<Balance[]>
     returnPortfolioHistory() : Promise<Portfolio[]>
     validateCredentials() : boolean
 }

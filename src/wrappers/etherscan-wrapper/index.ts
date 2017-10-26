@@ -5,6 +5,7 @@ import * as clone from 'clone'
 import * as request from 'request'
 import * as qs from 'qs'
 import * as Big from 'big.js'
+import * as ethereum_address from 'ethereum-address'
 
 import { Balance, Portfolio } from '../'
 
@@ -20,7 +21,9 @@ export default class Etherscan {
         this.walletAddress = userAuth.walletAddress
     }
 
-    validateCredentials() { return true }
+    validateCredentials() {
+        return ethereum_address.isAddress(this.walletAddress)
+    }
 
     returnBalances() : Promise<Balance[]> {
         var requestURL : string = this.apiURL + qs.stringify({

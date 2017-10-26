@@ -40,9 +40,6 @@ var services : [Service] = [
     }
 ]
 
-console.log("Etherscan is ")
-console.log(Etherscan.toString())
-
 export var servicesClient = clone(services)
 servicesClient.forEach(s => {
     delete s['serverAuth']
