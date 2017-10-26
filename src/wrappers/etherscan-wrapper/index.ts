@@ -20,6 +20,8 @@ export default class Etherscan {
         this.walletAddress = userAuth.walletAddress
     }
 
+    validateCredentials() { return true }
+
     returnBalances() : Promise<Balance[]> {
         var requestURL : string = this.apiURL + qs.stringify({
             module: 'account',

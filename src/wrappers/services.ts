@@ -3,15 +3,32 @@ import * as clone from 'clone'
 
 import Poloniex from './poloniex-wrapper'
 import Etherscan from './etherscan-wrapper'
+import Wrapper from './'
 
-var services = [
+interface WrapperConstructor {
+    new(serverAuth, userAuth) : Wrapper
+}
+
+interface Service {
+    name : string
+    key: string
+    formFields: [{
+        name: string
+        description: string
+        placeholder: string
+    }]
+    serverAuth: { [key: string]: string }
+    wrapper: WrapperConstructor
+}
+
+var services : [Service] = [
     {
         name: 'Poloniex',
         key: 'poloniex',
         formFields: [
             { name: 'apiKey', description: 'API Key', placeholder: 'Poloniex API Key' },
             { name: 'apiSecret', description: 'API Secret', placeholder: 'Poloniex API Secret' }],
-        serverAuth: [],
+        serverAuth: {},
         wrapper: Poloniex
     },
     {
@@ -22,6 +39,9 @@ var services = [
         wrapper: Etherscan
     }
 ]
+
+console.log("Etherscan is ")
+console.log(Etherscan.toString())
 
 export var servicesClient = clone(services)
 servicesClient.forEach(s => {

@@ -12,7 +12,7 @@ if (!process.env.POLONIEX_API_KEY || !process.env.POLONIEX_API_SECRET) {
 
 describe('Poloniex', function() {
 
-    let p = new Poloniex()
+    let p = new Poloniex({}, {})
 
     this.timeout(20000)
 
@@ -202,8 +202,8 @@ describe('Poloniex', function() {
     // These tests require environment variables to be set
     //
 
-    p = new Poloniex(process.env.POLONIEX_API_KEY,
-                                process.env.POLONIEX_API_SECRET)
+    p = new Poloniex({ apiKey: process.env.POLONIEX_API_KEY,
+                            apiSecret: process.env.POLONIEX_API_SECRET }, {})
     
     describe('returnBalances', () => {
         it('Returns All Balances', done => {

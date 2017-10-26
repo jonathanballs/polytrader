@@ -1,9 +1,8 @@
 // Base interface for api wrappers
 
 export default interface Wrapper {
-    constructor(appAuth, userAuth)
-    returnPortfolioHistory() : Promise<Portfolio>
-    validateCredentials() : Boolean
+    returnPortfolioHistory() : Promise<Portfolio[]>
+    validateCredentials() : boolean
 }
 
 export class Portfolio {

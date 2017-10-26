@@ -8,6 +8,8 @@ import * as moment from 'moment'
 import * as clone from 'clone'
 import * as Big from 'big.js'
 
+import Wrapper from '../'
+
 import { Portfolio, Balance } from '../'
 
 export class OrderBook {
@@ -174,7 +176,7 @@ export class Ticker {
 }
 
 
-export default class Poloniex {
+export default class Poloniex implements Wrapper {
 
     apiKey: string
     apiSecret: string
@@ -185,13 +187,12 @@ export default class Poloniex {
     readonly USER_AGENT : string = "poloniex-big" + this.version
     readonly STRICT_SSL : boolean = true
 
-    constructor(apiKey?: string, apiSecret?: string) {
-        if (apiKey)
-            this.apiKey = apiKey
-        
-        if (apiSecret)
-            this.apiSecret = apiSecret
+    constructor(serverAuth, userAuth) {
+        this.apiKey = userAuth.apiKey
+        this.apiSecret = userAuth.apiSecret
     }
+
+    validateCredentials(){ return true }
 
     // Make an API request
     _request(options, callback) {
@@ -887,7 +888,7 @@ export default class Poloniex {
 
     // Returns a list of balances after each balance 'event' e.g. a buy,
     // sell, deposit etc.
-    returnPortfolioHistory() {
+    returnPortfolioHistory() : Promise<Portfolio[]> {
 
         return new Promise<Portfolio[]>((resolve, reject) => {
 

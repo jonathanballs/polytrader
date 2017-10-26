@@ -104,7 +104,7 @@ app.get('/portfolio', loginRequired, (req, res) => {
     }
 
     // Create a new connection to poloniex api
-    var p = new Poloniex(req.user.accounts[0].apiKey, req.user.accounts[0].apiSecret)
+    var p = new Poloniex({apiKey: req.user.accounts[0].apiKey, apiSecret: req.user.accounts[0].apiSecret}, {})
 
     p.returnCompleteBalances().then(balances => {
         p.returnPortfolioHistory().then(portfolioHistory => {
