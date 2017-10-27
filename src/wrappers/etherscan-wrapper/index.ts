@@ -23,7 +23,11 @@ export default class Etherscan implements Wrapper {
     }
 
     validateCredentials() {
-        return Promise.resolve(ethereum_address.isAddress(this.walletAddress))
+        if (ethereum_address.isAddress(this.walletAddress)) {
+            return Promise.resolve(true)
+        } else {
+            return Promise.reject("Error: Not a valid Ethereum wallet address")
+        }
     }
 
     returnBalances() : Promise<Balance[]> {
