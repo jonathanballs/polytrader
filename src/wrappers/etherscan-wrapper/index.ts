@@ -85,6 +85,10 @@ export default class Etherscan implements Wrapper {
                     portfolioHistory.push(portfolio)
                 });
 
+                portfolioHistory.forEach(p => {
+                    p.balanceOf('ETH').amount = Big(p.balanceOf('ETH').amount).div(Big(10).pow(this.decimalPlaces)).toFixed(10)
+                })
+
                 resolve(portfolioHistory)
             })
         })
