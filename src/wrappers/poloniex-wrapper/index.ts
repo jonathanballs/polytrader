@@ -184,13 +184,19 @@ export default class Poloniex implements Wrapper {
     readonly STRICT_SSL : boolean = true
 
     constructor(serverAuth, userAuth) {
-        console.log("user auth")
-        console.log(userAuth)
         this.apiKey = userAuth.apiKey
         this.apiSecret = userAuth.apiSecret
     }
 
-    validateCredentials(){ return true }
+    validateCredentials() {
+        return new Promise<boolean>((resolve, reject) => {
+            this.returnBalances().then(balances => {
+                resolve(true)
+            }).catch(e => {
+                reject(e)
+            })
+        })
+    }
 
     // Make an API request
     _request(options, callback) {
@@ -206,8 +212,8 @@ export default class Poloniex implements Wrapper {
 
         request(options, function(err, response, body) {
             // Empty response
-            if (!err && (typeof body === 'undefined' || body === null)){
-            err = 'Empty response';
+            if (!err && (typeof body === 'undefined' || body === null)) {
+                err = 'Empty response';
             }
 
             callback(err, body);
@@ -510,8 +516,9 @@ export default class Poloniex implements Wrapper {
     returnBalances() {
         return new Promise<Balance[]>((resolve, reject) => {
             this._private('returnBalances', {}, (err, balances) => {
-                if (err = err || balances.error) {
-                    reject(Error(err))
+                if (err  || balances.error) {
+                    reject(Error(balances.error))
+                    return
                 }
 
                 var ret: Balance[] = new Array()

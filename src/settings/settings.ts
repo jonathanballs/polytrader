@@ -2,7 +2,7 @@ import * as express from 'express';
 import { loginRequired, loginRequiredApi } from '../auth/auth'
 import { User } from '../models'
 import * as mongoose from 'mongoose'
-import Poloniex from '../wrappers/poloniex-wrapper'
+import services from '../wrappers/services'
 import { servicesClient } from '../wrappers/services'
 
 var router = express.Router()
@@ -11,53 +11,45 @@ export default router
 // Validates account form submission
 function validateAccountForm(req, res, next) {
 
-    // Check that the account type is valid
-    req.checkBody('accountType').notEmpty().isAscii()
-    // If validation errors then stop and return
+    // Check that the service type is valid
+    req.checkBody('service').notEmpty().isAscii()
+                                        .isIn(services.map(s => s.key))
     if (req.validationErrors()) {
-        console.log(req.validationErrors())
-        res.status(400).send('Error: Please fill in details correctly.');
+        res.status(400).send('Error: Please submit a valid service type')
         return
     }
 
-    switch (req.body.accountType) {
-        case 'poloniex':
-            req.checkBody('apiKey').notEmpty().isAscii()
-            req.checkBody('apiSecret').notEmpty().isAscii()
-            req.sanitizeBody('apiKey').trim()
-            req.sanitizeBody('apiSecret').trim()
+    // Assert that userAuth variables are submitted
+    var service = services.filter(s => s.key == req.body.service)[0]
+    service.formFields.forEach(ff => {
+        req.checkBody(ff.name).notEmpty().isAscii()
+        req.sanitizeBody(ff.name).trim()
+    })
 
-            if (req.validationErrors()) {
-                console.log(req.validationErrors())
-                res.status(400).send('Error: Please fill in details correctly.');
-                return
-            }
-
-            var accountType = req.body.accountType;
-            var apiKey = req.body.apiKey
-            var apiSecret = req.body.apiSecret
-
-            var data = {
-                _id: mongoose.Types.ObjectId(),
-                type: accountType,
-                apiKey,
-                apiSecret,
-                timestampCreated: new Date(),
-                timestampLastSuccessfulSync: null
-            }
-            var p = new Poloniex(apiKey, apiSecret);
-
-            // Test these keys against the poloniex api
-            p.returnBalances().then(balances => {
-                next()
-            }).catch(err => {
-                res.status(400).send(err + '')
-            })
-            return
-        default:
-            res.status(400).send('Error: Unsupported account type')
-            return
+    if (req.validationErrors()) {
+        console.log(req.validationErrors())
+        res.status(400).send('Error: Please fill in form details fully.');
+        return
     }
+
+    // Validate the userAuth variables and run next middleware
+    var userAuth = service.formFields.reduce((acc, ff) => {
+        acc[ff.name] = req.body[ff.name]
+        return acc
+    }, {})
+
+    var wrapper = new service.wrapper(service.serverAuth, userAuth)
+    wrapper.validateCredentials().then(b => {
+        if (b) {
+            next()
+        } else {
+            res.status(400).send("Error Invalid Credentials")
+        }
+    })
+    .catch(e => {
+        res.status(400).send(e + '')
+        return
+    })
 }
 
 // Account settings for choosing an api key
@@ -99,13 +91,22 @@ router.get('/api/accounts/:accountID/', loginRequiredApi, (req, res) => {
 // UPDATE an account
 router.post('/api/accounts/:accountID/', loginRequiredApi, validateAccountForm, (req, res) => {
     var account = req.user.accounts.filter(a => a._id == req.params.accountID)[0]
+    if (!account) {
+        res.status(404).send("Unable to find account with ID " + req.params.accountID)
+        return
+    }
+
+    var service = services.filter(s => s.key == req.body.service)[0]
+    var updateSet = service.formFields.reduce((acc, ff) => {
+        // e.g. { "accounts.$.apiKey": "1234-5678" }
+        acc["accounts.$." + ff.name] = req.body[ff.name]
+        return acc
+    }, {})
+
     User.findOneAndUpdate(
         { "_id": req.user._id, "accounts._id": mongoose.Types.ObjectId(req.params.accountID) },
         {
-            $set: {
-                "accounts.$.apiKey": req.body.apiKey,
-                "accounts.$.apiSecret": req.body.apiSecret
-            }
+            $set: updateSet
         },
         (err, user) => {
             if (err) {
@@ -120,7 +121,7 @@ router.post('/api/accounts/:accountID/', loginRequiredApi, validateAccountForm, 
 // DELETE an account
 router.delete('/api/accounts/:accountID/', loginRequiredApi, (req, res) => {
     var account = req.user.accounts.filter(a => a._id == req.params.accountID)[0]
-    console.log("Delete request for " + req.params.accountID)
+
     if (typeof (account) == 'undefined') {
         res.status(404).send("Unable to find account with ID " + req.params.accountID)
         return
@@ -143,22 +144,23 @@ router.delete('/api/accounts/:accountID/', loginRequiredApi, (req, res) => {
 // CREATE a new account
 router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) => {
 
-    // Get post variables and strip whitespace
-    var accountType = req.body.accountType;
-    var apiKey = req.body.apiKey
-    var apiSecret = req.body.apiSecret
+    // Get the service type and create a user auth object for it
+    var service = services.filter(s => s.key == req.body.service)[0]
+    var userAuth = service.formFields.reduce((acc, ff) => {
+        acc[ff.name] = req.body[ff.name]
+        return acc
+    }, {})
 
-    var data = {
+    var newAccount = {
         _id: mongoose.Types.ObjectId(),
-        type: accountType,
-        apiKey,
-        apiSecret,
+        service: req.body.service,
         timestampCreated: new Date(),
-        timestampLastSuccessfulSync: null
+        timestampLastSuccessfulSync: null,
+        userAuth
     }
 
     User.update({ email: req.user.email },
-        { $push: { accounts: data } },
+        { $push: { accounts: newAccount } },
         (err, numAffected, rawResponse) => {
             if (err) {
                 res.status(400).send(err + '')

@@ -13,7 +13,7 @@ export default class EditAccountButton extends React.Component {
     this.state = {
       showModal: false,
       currentAccountForm: 'poloniex',
-      submissionStatus: 'none', // none, loading, success or failure
+      submissionState: 'none', // none, loading, success or failure
       submissionErrorMessage: '',
       deleteButtonState: 'none'
     }
@@ -22,49 +22,46 @@ export default class EditAccountButton extends React.Component {
   }
 
   toggleModal = () => {
-    this.setState({
-      showModal: !this.state.showModal
-    })
+    this.setState({ showModal: !this.state.showModal })
   }
 
   submitAccountForm = () => {
-    this.setState({ submissionStatus: 'loading' })
+    this.setState({ submissionState: 'loading' })
 
     // Get form values
-    var form = this.props.serviceList.filter(s => s.key == this.props.account.type)[0]
-    var formValues = form.formFields.reduce((acc, f) => {
+    var formValues = this.props.service.formFields.reduce((acc, f) => {
       acc[f.name] = document.getElementsByName(f.name)[0].value
       return acc
-    }, { accountType: this.props.account.type })
+    }, { service: this.props.service.key })
 
     // Make the post request
-    axios.post('/account/api/accounts/' + this.props.account._id , qs.stringify(formValues))
+    axios.post('/account/api/accounts/' + this.props.accountID, qs.stringify(formValues))
       .then((resp) => {
-        this.setState({ submissionStatus: 'success' })
-        this.props.updateAccountList();
+        this.setState({ submissionState: 'success' })
+        this.props.onSubmitted();
       }).catch(err => {
-        this.setState({ submissionStatus: 'failure', submissionErrorMessage: err.response.data })
+        this.setState({ submissionState: 'failure', submissionErrorMessage: err.response ? err.response.data : err.message })
       })
   }
 
   deleteAccount = () => {
     this.setState({ deleteButtonState: 'deleting' })
 
-    axios.delete('/account/api/accounts/' + this.props.account._id)
-    .then((resp) => {
-      this.props.updateAccountList();
-      this.setState({ showModal: false })
-    })
+    axios.delete('/account/api/accounts/' + this.props.accountID)
+      .then((resp) => {
+        this.props.onSubmitted();
+        this.setState({ showModal: false })
+      })
   }
 
   setSubmissionState = (newState) => {
-    this.setState({submissionStatus: newState})
+    this.setState({ submissionState: newState })
   }
 
   render() {
 
     var accountButton = null;
-    switch (this.state.submissionStatus) {
+    switch (this.state.submissionState) {
       case 'none':
         accountButton = <Button onClick={this.submitAccountForm} block={true} color="primary">Update</Button>
         break
@@ -80,7 +77,7 @@ export default class EditAccountButton extends React.Component {
     }
 
     var deleteButton = null
-    switch(this.state.deleteButtonState) {
+    switch (this.state.deleteButtonState) {
       case 'none':
         deleteButton = <Button block={true} color="secondary"
           onClick={_ => {
@@ -89,7 +86,7 @@ export default class EditAccountButton extends React.Component {
               if (this.state.deleteButtonState == 'loading')
                 this.setState({ deleteButtonState: 'ready' })
             }, 2000)
-            }
+          }
           }>Delete</Button>
         break;
       case 'loading':
@@ -111,17 +108,23 @@ export default class EditAccountButton extends React.Component {
           onClick={this.toggleModal}
         >Edit</Button>
 
-        <Modal className="add-account-modal" onClosed={(() => {this.setState({ submissionStatus: 'none', deleteButtonState: 'none' })}).bind(this)} isOpen={this.state.showModal} size="lg" toggle={this.toggleModal}>
+        <Modal
+          className="add-account-modal"
+          onClosed={(() => { this.setState({ submissionState: 'none', deleteButtonState: 'none' }) }).bind(this)}
+          isOpen={ this.state.showModal }
+          size="lg"
+          toggle={ this.toggleModal } >
+
           <div className="modal-header">
             <h2 className="modal-title">Edit Account</h2>
           </div>
           <div className="modal-body">
             <AccountForm
-              service={this.props.serviceList.filter(s => s.key == this.state.currentAccountForm)[0]}
-              status={this.state.submissionStatus}
-              setState={this.setSubmissionState}
-              errorMessage={this.state.submissionErrorMessage}
-              formValues={this.props.formValues} />
+              service={ this.props.service }
+              submissionState={ this.state.submissionState }
+              setSubmissionState={ this.setSubmissionState }
+              errorMessage={ this.state.submissionErrorMessage }
+              formValues={ this.props.formValues } />
           </div>
           <div className="modal-footer">
             {deleteButton}
@@ -129,8 +132,25 @@ export default class EditAccountButton extends React.Component {
             {accountButton}
             <Button color="secondary" onClick={this.toggleModal}>Close</Button>
           </div>
+
         </Modal>
       </div>
     )
   }
+}
+
+EditAccountButton.propTypes = {
+  status: PropTypes.oneOf(['none', 'failure', 'success', 'loading']),
+  onSubmitted: PropTypes.func,
+  formValues: PropTypes.objects,
+  accountID: PropTypes.string,
+  service: {
+    key: PropTypes.string,
+    name: PropTypes.string,
+    formValues: PropTypes.arrayOf(PropTypes.shape({
+      name: PropTypes.string,
+      description: PropTypes.string,
+      placeholder: PropTypes.string,
+    }))
+  },
 }

@@ -16,32 +16,51 @@ export default class Account extends React.Component {
   }
   
   render() {
-    const { type, apiKey, apiSecret, timestampCreated } = this.props.account;
 
-    var formValues = this.props.serviceList.filter(a => a.key == type)[0].formFields.reduce((acc, ff) => {
-      acc[ff.name] = this.props.account[ff.name]
-      return acc
-    }, {})
+    var userVariables = this.props.service.formFields.map(ff => {
+      var varValue = ff.name.toLowerCase().includes("secret")
+        ? "*******************************************************************************"
+        : this.props.account.userAuth[ff.name]
+      return this.makeRow(ff.description, varValue)
+    })
 
     return (
       <div className="exchange-settings">
         <div className="row">
-          <div className="col-md-2"><img className="exchange-logo" src={"/static/images/exchange-logos/" + type + ".png"} /></div>
+          <div className="col-md-2"><img className="exchange-logo" src={"/static/images/exchange-logos/" + this.props.service.key + ".png"} /></div>
           <div className="col-md-9" />
           <EditAccountButton
-            account={this.props.account}
-            status='none'
-            setState={()=>{}}
+            service={ this.props.service }
             errorMessage=""
-            formValues={formValues}
-            serviceList={this.props.serviceList}
-            updateAccountList={this.props.updateAccountList}/>
+            formValues={ this.props.account.userAuth }
+            accountID={ this.props.account._id }
+            onSubmitted={ this.props.updateAccountList } />
+
         </div>
-        { this.makeRow('API Key', apiKey) }
-        { this.makeRow('API Secret', '*****************************************************************************' ) }
-        { this.makeRow('Added', moment(timestampCreated).fromNow()) }
+        { userVariables }
+        { this.makeRow('Added', moment(this.props.account.timestampCreated).fromNow()) }
         { this.makeRow('Last Synced', '24 seconds ago') }
       </div>
     )
   }
+}
+
+
+Account.propTypes = {
+  updateAccountList: PropTypes.func,
+  formValues: PropTypes.object,
+  account: PropTypes.shape({
+    _id: PropTypes.string,
+    service: PropTypes.string,
+    userAuth: PropTypes.object
+  }).isRequired,
+  service: PropTypes.shape({
+    key: PropTypes.string,
+    name: PropTypes.string,
+    formFields: PropTypes.arrayOf({
+      name: PropTypes.string,
+      description: PropTypes.string,
+      placeholder: PropTypes.string,
+    })
+  }).isRequired,
 }

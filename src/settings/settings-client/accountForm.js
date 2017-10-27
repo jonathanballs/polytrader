@@ -17,10 +17,10 @@ export default class AccountForm extends React.Component {
                         id="poloniexApiKey"
                         type="text"
                         defaultValue={this.props.formValues ? this.props.formValues[ff.name] : undefined}
-                        disabled={this.props.status == 'loading'}
+                        disabled={this.props.submissionState == 'loading'}
                         name={ff.name}
                         placeholder={ff.placeholder}
-                        onChange={_ => { this.props.setState('none') }}
+                        onChange={_ => { this.props.setSubmissionState('none') }}
                         required />
                 </div>
                 </div>
@@ -38,7 +38,7 @@ export default class AccountForm extends React.Component {
             </form>
             <div className="row">
                 <div className="col-md-12">
-                    {this.props.status == 'failure' ?
+                    {this.props.submissionState == 'failure' ?
                         <p className="add-account-error-message">{this.props.errorMessage}</p>
                         : <p></p>}
                 </div>
@@ -47,4 +47,20 @@ export default class AccountForm extends React.Component {
 
         return accountForm
     }
+}
+
+AccountForm.propTypes = {
+    submissionState: PropTypes.oneOf(['none', 'failure', 'success', 'loading']),
+    setSubmissionState: PropTypes.func,
+    errorMessage: PropTypes.string,
+    formValues: PropTypes.object,
+    service: PropTypes.shape({
+        key: PropTypes.string,
+        name: PropTypes.string,
+        formFields: PropTypes.arrayOf({
+            name: PropTypes.string,
+            description: PropTypes.string,
+            placeholder: PropTypes.string,
+        })
+    }),
 }

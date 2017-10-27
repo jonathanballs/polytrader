@@ -6,14 +6,15 @@ import * as request from 'request'
 import * as qs from 'qs'
 import * as Big from 'big.js'
 import * as ethereum_address from 'ethereum-address'
+import Wrapper from '../'
 
 import { Balance, Portfolio } from '../'
 
-export default class Etherscan {
+export default class Etherscan implements Wrapper {
     walletAddress: string
     apiKey: string
 
-    apiURL = 'https://api.etherscan.io/api?'
+    readonly apiURL = 'https://api.etherscan.io/api?'
     decimalPlaces = 18 // Results from api are returned as integers with 18dp
 
     constructor(serverAuth, userAuth) {
@@ -22,7 +23,7 @@ export default class Etherscan {
     }
 
     validateCredentials() {
-        return ethereum_address.isAddress(this.walletAddress)
+        return Promise.resolve(ethereum_address.isAddress(this.walletAddress))
     }
 
     returnBalances() : Promise<Balance[]> {

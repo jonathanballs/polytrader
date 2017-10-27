@@ -15,7 +15,7 @@ export default class AddAccountButton extends React.Component {
       showModal: false,
       activeSlide: 0,
       currentAccountForm: 'poloniex',
-      submissionStatus: 'none', // none, loading, success or failure
+      submissionState: 'none', // none, loading, success or failure
       submissionErrorMessage: '',
     }
 
@@ -36,38 +36,38 @@ export default class AddAccountButton extends React.Component {
         document.getElementsByName(f.name)[0].value = ""
       })
     }
-    this.setState({ activeSlide: slideNum, submissionStatus: 'none' });
+    this.setState({ activeSlide: slideNum, submissionState: 'none' });
   }
 
   submitAccountForm = () => {
     var accountForm = this.props.serviceList.filter(f => f.key == this.state.currentAccountForm)[0]
-    this.setState({ submissionStatus: 'loading' })
+    this.setState({ submissionState: 'loading' })
 
     // Get form values
     var formValues = accountForm.formFields.reduce((acc, f) => {
       acc[f.name] = document.getElementsByName(f.name)[0].value
       return acc
-    }, { accountType: accountForm.key })
+    }, { service: accountForm.key })
 
     // Make the post request
     axios.post('/account/api/accounts/', qs.stringify(formValues))
       .then((resp) => {
-        this.setState({ submissionStatus: 'success' })
+        this.setState({ submissionState: 'success' })
         this.props.updateAccountList();
       }).catch(err => {
-        this.setState({ submissionStatus: 'failure', submissionErrorMessage: err.response.data })
+        this.setState({ submissionState: 'failure', submissionErrorMessage: err.response.data })
       })
   }
 
   setSubmissionState = (newState) => {
-    this.setState({submissionStatus: newState})
+    this.setState({submissionState: newState})
   }
 
   render() {
 
     var accountButton = null;
     if (this.state.activeSlide == 1) {
-      switch (this.state.submissionStatus) {
+      switch (this.state.submissionState) {
         case 'none':
           accountButton = <Button onClick={this.submitAccountForm} block={true} color="primary">Add Account</Button>
           break
@@ -101,8 +101,8 @@ export default class AddAccountButton extends React.Component {
     <CarouselItem key='2' src=''>
       <AccountForm
         service={this.props.serviceList.filter(s => s.key == this.state.currentAccountForm)[0]}
-        status={this.state.submissionStatus}
-        setState={this.setSubmissionState}
+        submissionState={this.state.submissionState}
+        setSubmissionState={this.setSubmissionState}
         errorMessage={this.state.submissionErrorMessage} />
     </CarouselItem>
     ]
@@ -132,4 +132,9 @@ export default class AddAccountButton extends React.Component {
       </div>
     )
   }
+}
+
+AddAccountButton.propTypes = {
+  serviceList: PropTypes.object,
+  updateAccountList: PropTypes.func
 }

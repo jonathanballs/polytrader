@@ -17,7 +17,6 @@ class App extends React.Component {
     var serviceList = axios.get('/account/api/services')
 
     Promise.all([accounts, serviceList]).then(values => {
-      console.log(values[1].data)
       this.setState({ accounts: values[0].data, serviceList: values[1].data, loading: false })
     }).catch(err => console.log(err))
   }
@@ -44,15 +43,23 @@ class App extends React.Component {
             <div className="col-md-11">
               <h2>Linked accounts and wallets</h2>
             </div>
-            <AddAccountButton serviceList={this.state.serviceList} updateAccountList={this.makeApiRequest.bind(this)} />
+
+            <AddAccountButton
+              serviceList={this.state.serviceList}
+              updateAccountList={this.makeApiRequest.bind(this)} />
+
           </div>
         </form>
 
         { this.state.accounts.sort((a, b) => {
             return new Date(b.timestampCreated).getTime() - new Date(a.timestampCreated).getTime()
-          }).map((acc, i) => {
-          return <Account key={i} serviceList={this.state.serviceList} 
-            account={acc} updateAccountList={this.makeApiRequest.bind(this)} />
+          }).map(account => {
+          return <Account
+            key={account._id}
+            service={this.state.serviceList.filter(s=>s.key == account.service)[0]}
+            account={account}
+            updateAccountList={this.makeApiRequest.bind(this)} />
+
         })}
 
         <div className="modal fade" id="passwordModal" tabIndex={-1} role="dialog" aria-labelledby="passwordModal" aria-hidden="true">
@@ -82,6 +89,7 @@ class App extends React.Component {
             </div>
           </div>
         </div>
+
       </div>
     );
   }

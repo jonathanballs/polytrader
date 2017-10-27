@@ -3,7 +3,7 @@
 export default interface Wrapper {
     returnBalances() : Promise<Balance[]>
     returnPortfolioHistory() : Promise<Portfolio[]>
-    validateCredentials() : boolean
+    validateCredentials() : Promise<boolean>
 }
 
 export class Portfolio {

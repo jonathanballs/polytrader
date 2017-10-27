@@ -6,7 +6,8 @@ import Etherscan from './etherscan-wrapper'
 import Wrapper from './'
 
 interface WrapperConstructor {
-    new(serverAuth, userAuth) : Wrapper
+    new(serverAuth: {[key: string] : string},
+                    userAuth: {[key: string] : string}) : Wrapper
 }
 
 interface Service {
