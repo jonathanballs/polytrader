@@ -516,8 +516,8 @@ export default class Poloniex implements Wrapper {
     returnBalances() {
         return new Promise<Balance[]>((resolve, reject) => {
             this._private('returnBalances', {}, (err, balances) => {
-                if (err  || balances.error) {
-                    reject(Error(balances.error))
+                if (err = err || balances.error) {
+                    reject(Error(err))
                     return
                 }
 
