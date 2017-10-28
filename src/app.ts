@@ -2,22 +2,18 @@
 
 import * as express from 'express';
 import * as http from 'http';
-import * as socketio from 'socket.io';
 import * as bodyParser from 'body-parser';
 import expressValidator = require('express-validator');
 import * as passwordHasher from 'password-hash';
 import * as session from 'express-session';
 import * as ms from 'connect-mongo';
-import * as clone from 'clone';
-import * as Big from 'big.js'
 var MongoStore = ms(session);
 import * as path from 'path'
 import * as mongoose from 'mongoose';
 import * as passport from 'passport'
 import { Strategy } from 'passport-local'
 
-import { User, Price } from "./models";
-import { loginRequired } from './auth/auth'
+import { User } from "./models";
 import settingsRouter from './settings/settings'
 import authRouter from './auth/auth'
 import portfolioRouter from './portfolio/portfolio'
@@ -57,7 +53,6 @@ var verbose = false;
 var port = 8080;
 var app = express();
 var server = http.createServer(app);
-var io = socketio(server);
 
 server.listen(port);
 console.log("Polytrader running :)");
