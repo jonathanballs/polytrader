@@ -3,9 +3,11 @@
 
 var ctx = document.getElementById("portfolio-pie")
 
+// A combined portfolio that represents the entire portfolio of the user
+
 var data = {
     datasets: [{
-        data: cryptoBalances.map((x) => x.btcValue),
+        data: [],//cryptoBalances.map((x) => x.btcValue),
         backgroundColor: [
             "#FF6384",
             "#36A2EB",
@@ -19,7 +21,7 @@ var data = {
     }],
 
     // These labels appear in the legend and in the tooltips when hovering different arcs
-    labels: cryptoBalances.map((x) => x.currency)
+    // labels: cryptoBalances.map((x) => x.currency)
 };
 
 var portfolioPieChart = new Chart(ctx, {
@@ -31,23 +33,22 @@ var portfolioPieChart = new Chart(ctx, {
 var historyCtx = document.getElementById("portfolio-value-history");
 
 var historyData = {
-    labels: portfolioHistory.map((x) => x.timestamp),
-    datasets: [{
-        data: portfolioHistory.map((p) => {
-            if (!p.balances.length)
-                return {x: p.timestamp, y: 0.0}
+    labels: portfolioHistories[0].map((x) => x.timestamp),
+    datasets: portfolioHistories.map(ph => {
+        return {
+            data: ph.map((p) => {
+                if (!p.balances.length)
+                    return {x: p.timestamp, y: 0.0}
 
-            var btc_balance = p.balances
-                .map(b=>parseFloat(b.btcValue))
-                .reduce((a,b)=>a+b,0.0)
-
-            console.log(p.balances)
-            console.log(btc_balance)
-            return {x: p.timestamp, y: btc_balance}
-        })
-    }]
+                var btc_balance = p.balances
+                    .map(b=>parseFloat(b.btcValue))
+                    .reduce((a,b)=>a+b,0.0)
+                return {x: p.timestamp, y: btc_balance}
+            })
+        }
+    })
 }
-historyData.datasets[0].data.push({x: +Date.now(), y: historyData.datasets[0].data[historyData.datasets[0].data.length-1].y});
+// historyData.datasets[0].data.push({x: +Date.now(), y: historyData.datasets[0].data[historyData.datasets[0].data.length-1].y});
 
 var historyOptions = {
     title:{
@@ -57,8 +58,6 @@ var historyOptions = {
         xAxes: [{
             type: "time",
             time: {
-                //format: 'MM/DD/YYYY HH:mm',
-                // round: 'day'
                 unit: 'month',
                 tooltipFormat: 'll HH:mm'
             },
