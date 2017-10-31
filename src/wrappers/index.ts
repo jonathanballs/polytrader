@@ -44,7 +44,7 @@ export class Balance {
     constructor(currency?, amount?) {
         if(currency)
             this.currency = currency
-        if(amount)
-            this.amount = amount
+
+        this.amount = amount ? amount : '0.0'
     }
 }

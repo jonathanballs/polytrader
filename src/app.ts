@@ -26,6 +26,14 @@ var LOCAL_STRATEGY_CONFIG = {
 
 import servicesList from './wrappers/services'
 
+
+import Bittrex from './wrappers/bittrex-wrapper'
+
+var b = new Bittrex({}, {apiKey:'e9e4e3fa507a48449986cc4c943a92ac', apiSecret: 'c578123b2e5d44279246f4d65f6e34f4'})
+b.returnPortfolioHistory().then(ph => {
+    console.log(ph)
+}).catch(err => console.log('ERR', err))
+
 // Local strategy to fetch user from database
 passport.use(new Strategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
     User.findOne({email: email}, (err, user) => {
@@ -55,7 +63,7 @@ var app = express();
 var server = http.createServer(app);
 
 server.listen(port);
-console.log("Polytrader running :)");
+console.log("Polytrader starting at " + new Date());
 console.log(':: Listening on port ' + port);
 
 app.set('view engine', 'pug')
