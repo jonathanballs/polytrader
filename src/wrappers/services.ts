@@ -18,7 +18,7 @@ interface Service {
         name: string
         description: string
         placeholder: string
-        type?: string // Optional. default is string
+        type?: string // Optional. Assume text
     }]
     serverAuth: { [key: string]: string }
     wrapper: WrapperConstructor
@@ -29,7 +29,7 @@ var services : [Service] = [
         name: 'Bittrex',
         key: 'bittrex',
         formFields: [
-            { name: 'apiKey', description: 'History CSV', placeholder: 'Bittrex History CSV', type: 'file'},
+            { name: 'portfolioHistory', description: 'History CSV', placeholder: 'Bittrex History CSV', type: 'file'},
             { name: 'apiKey', description: 'API Key', placeholder: 'Bittrex API Key' },
             { name: 'apiSecret', description: 'API Secret', placeholder: 'Bittrex API Secret' }],
         serverAuth: {},

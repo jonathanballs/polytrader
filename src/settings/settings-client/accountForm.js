@@ -7,6 +7,15 @@ import qs from 'qs'
 
 export default class AccountForm extends React.Component {
 
+    constructor(props) {
+        super(props)
+        this.state = {
+            inputValues: this.props.formValues
+                ? this.props.formValues
+                : {}
+        }
+    }
+
     render() {
         var accountFormFields = this.props.service.formFields.map((ff, i) => {
             return (
@@ -15,13 +24,23 @@ export default class AccountForm extends React.Component {
                 <div className="col-md-10">
                     <input className="form-control"
                         id="poloniexApiKey"
-                        type="text"
+                        type={ff.type ? ff.type : 'text'}
                         defaultValue={this.props.formValues ? this.props.formValues[ff.name] : undefined}
                         disabled={this.props.submissionState == 'loading'}
                         name={ff.name}
                         placeholder={ff.placeholder}
-                        onChange={_ => { this.props.setSubmissionState('none') }}
+                        onChange={evt => {
+                            this.props.setSubmissionState('none');
+                            this.state.inputValues[ff.name] = evt.target.value
+                        }}
                         required />
+                    { ff.type == 'file'
+                        ? <button class="btn btn-secondary btn-file">
+                            { this.state.inputValues[ff.name]
+                                ? this.state.inputValues[ff.name].split('\\').reverse()[0].split('/').reverse()[0]
+                                : "Select File" }
+                          </button>
+                        : null }
                 </div>
                 </div>
             )
