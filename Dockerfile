@@ -5,7 +5,6 @@ WORKDIR /usr/src/app
 
 # Copy package.json and install deps
 COPY package.json .
-COPY lib/ ./lib
 RUN npm install
 
 # Copy application files over
