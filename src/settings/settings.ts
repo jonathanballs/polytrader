@@ -1,9 +1,10 @@
 import * as express from 'express';
 import { loginRequired, loginRequiredApi } from '../auth/auth'
-import { User } from '../models'
+import { UserModel } from '../models'
 import * as mongoose from 'mongoose'
 import services from '../wrappers/services'
 import { servicesClient } from '../wrappers/services'
+import * as multiparty from 'multiparty'
 
 var router = express.Router()
 export default router
@@ -11,45 +12,63 @@ export default router
 // Validates account form submission
 function validateAccountForm(req, res, next) {
 
-    // Check that the service type is valid
-    req.checkBody('service').notEmpty().isAscii()
-                                        .isIn(services.map(s => s.key))
-    if (req.validationErrors()) {
-        res.status(400).send('Error: Please submit a valid service type')
-        return
-    }
-
-    // Assert that userAuth variables are submitted
-    var service = services.filter(s => s.key == req.body.service)[0]
-    service.formFields.forEach(ff => {
-        req.checkBody(ff.name).notEmpty().isAscii()
-        req.sanitizeBody(ff.name).trim()
-    })
-
-    if (req.validationErrors()) {
-        console.log(req.validationErrors())
-        res.status(400).send('Error: Please fill in form details fully.');
-        return
-    }
-
-    // Validate the userAuth variables and run next middleware
-    var userAuth = service.formFields.reduce((acc, ff) => {
-        acc[ff.name] = req.body[ff.name]
-        return acc
-    }, {})
-
-    var wrapper = new service.wrapper(service.serverAuth, userAuth)
-    wrapper.validateCredentials().then(b => {
-        if (b) {
-            next()
-        } else {
-            res.status(400).send("Error Invalid Credentials")
+    // Parse the multipart form
+    var form = new multiparty.Form({ maxFieldsSize: 100000,
+                            uploadDir: '/upload' }) // limit to 100kb
+    form.parse(req, (err, fields, files) => {
+        if (err) {
+            res.status(400).send("Error: Failed to parse form: " + err + '')
+            return
         }
+
+        for (var key in fields) {
+            req.body[key] = fields[key][0]
+        }
+
+        // Check that the service type is valid
+        req.checkBody('service').notEmpty().isAscii()
+            .isIn(services.map(s => s.key))
+        if (req.validationErrors()) {
+            res.status(400).send('Error: Please submit a valid service type')
+            return
+        }
+        var service = services.filter(s => s.key == req.body.service)[0]
+
+        // Assert that userAuth variables are submitted
+        service.formFields.forEach(ff => {
+            if (!ff.type) {
+                req.checkBody(ff.name).notEmpty().isAscii()
+                req.sanitizeBody(ff.name).trim()
+            }
+        })
+
+        if (req.validationErrors()) {
+            res.status(400).send('Error: Please fill in form details fully.');
+            return
+        }
+
+        // Validate the userAuth variables and run next middleware
+        var userAuth = service.formFields.reduce((acc, ff) => {
+            acc[ff.name] = req.body[ff.name]
+            return acc
+        }, {})
+
+        var wrapper = new service.wrapper(service.serverAuth, userAuth)
+        wrapper.validateCredentials().then(b => {
+            if (b) {
+                next()
+            } else {
+                res.status(400).send("Error Invalid Credentials")
+            }
+        })
+            .catch(e => {
+                res.status(400).send(e + '')
+                return
+            })
+
     })
-    .catch(e => {
-        res.status(400).send(e + '')
-        return
-    })
+
+
 }
 
 // Account settings for choosing an api key
@@ -59,7 +78,7 @@ router.get('/', loginRequired, (req, res) => {
 
 router.post('/api/email/', loginRequiredApi, (req, res) => {
     var email = req.body.email;
-    User.update({ email: req.user.email }, {
+    UserModel.update({ email: req.user.email }, {
         email: email
     }, (err, numAffected, rawResponse) => {
         req.login(req.user, () => res.redirect('/account'));
@@ -89,7 +108,8 @@ router.get('/api/accounts/:accountID/', loginRequiredApi, (req, res) => {
 })
 
 // UPDATE an account
-router.post('/api/accounts/:accountID/', loginRequiredApi, validateAccountForm, (req, res) => {
+router.post('/api/accounts/:accountID/', loginRequiredApi, validateAccountForm,
+                                                                   (req, res) => {
     var account = req.user.accounts.filter(a => a._id == req.params.accountID)[0]
     if (!account) {
         res.status(404).send("Unable to find account with ID " + req.params.accountID)
@@ -103,8 +123,9 @@ router.post('/api/accounts/:accountID/', loginRequiredApi, validateAccountForm, 
         return acc
     }, {})
 
-    User.findOneAndUpdate(
-        { "_id": req.user._id, "accounts._id": mongoose.Types.ObjectId(req.params.accountID) },
+    UserModel.findOneAndUpdate(
+        { "_id": req.user._id, 
+            "accounts._id": mongoose.Types.ObjectId(req.params.accountID) },
         {
             $set: updateSet
         },
@@ -127,19 +148,18 @@ router.delete('/api/accounts/:accountID/', loginRequiredApi, (req, res) => {
         return
     }
 
-    User.findOneAndUpdate({ _id: req.user._id },
-    {
-        $pull : { accounts: { _id: mongoose.Types.ObjectId(req.params.accountID) } }
-    }, (err, user) => {
-        if (err) {
-            res.status(400).send(err + '')
-        }
-        else {
-            res.send('OK')
-        }
-    })
+    UserModel.findOneAndUpdate({ _id: req.user._id },
+        {
+            $pull: { accounts: { _id: mongoose.Types.ObjectId(req.params.accountID) } }
+        }, (err, user) => {
+            if (err) {
+                res.status(400).send(err + '')
+            }
+            else {
+                res.send('OK')
+            }
+        })
 })
-
 
 // CREATE a new account
 router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) => {
@@ -159,7 +179,7 @@ router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) 
         userAuth
     }
 
-    User.update({ email: req.user.email },
+    UserModel.update({ email: req.user.email },
         { $push: { accounts: newAccount } },
         (err, numAffected, rawResponse) => {
             if (err) {

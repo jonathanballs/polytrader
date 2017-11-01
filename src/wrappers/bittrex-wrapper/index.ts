@@ -6,36 +6,35 @@ import * as request from 'request'
 import * as qs from 'qs'
 import * as Big from 'big.js'
 import * as crypto from 'crypto'
-import Wrapper from '../'
+import IWrapper from '../'
 
 import { Balance, Portfolio } from '../'
 
-export default class Bittrex implements Wrapper {
+export default class Bittrex implements IWrapper {
 
-    apiKey: string
-    apiSecret: string
+    userAuth : any
 
     readonly apiURL = 'https://bittrex.com/api/v1.1'
     decimalPlaces = 18 // Results from api are returned as integers with 18dp
 
     constructor(serverAuth, userAuth) {
-        this.apiKey = userAuth.apiKey
-        this.apiSecret = userAuth.apiSecret
+        this.userAuth = userAuth
     }
 
-    validateCredentials() {
-        return Promise.resolve(true)
+    returnHistory(startDate?: Date) {
+        return Promise.resolve([])
     }
 
     _request(url: string) : Promise<any> {
         return new Promise((resolve, reject) => {
             var noncedUrl : string = url + '?' + qs.stringify({
-                    apikey: this.apiKey, nonce: this.nonce()
+                    apikey: this.userAuth.apiKey, nonce: this.nonce()
                 })
             var options = {
                 url: noncedUrl,
                 headers: {
-                    'apisign': crypto.createHmac('sha512', this.apiSecret).update(noncedUrl).digest('hex')
+                    'apisign': crypto.createHmac('sha512', this.userAuth.apiSecret)
+                                                    .update(noncedUrl).digest('hex')
                 }
             }
 
@@ -45,11 +44,8 @@ export default class Bittrex implements Wrapper {
                 }
                 catch (e) {
                     reject("Couldn't parse json: " + body)
-                    console.log(JSON.stringify(body))
                     return
                 }
-
-                console.log(body)
 
                 if (err || body.success == false) {
                     var errorMessage = err || body.message
@@ -60,6 +56,14 @@ export default class Bittrex implements Wrapper {
                     resolve(body.result)
                 }
             })
+        })
+    }
+
+    validateCredentials() : Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            this.returnBalances().then(_ => {
+                resolve(true)
+            }).catch(e => reject(e))
         })
     }
 
@@ -74,14 +78,17 @@ export default class Bittrex implements Wrapper {
         })
     }
 
-    returnPortfolioHistory() : Promise<Portfolio[]> {
-        var url = 'https://bittrex.com/Api/v2.0/auth/orders/GetOrderHistory'
+    returnPortfolioHistory(startDate: Date = new Date(0)) : Promise<Portfolio[]> {
+        var url = this.apiURL + '/account/getorderhistory'
 
         return new Promise((resolve, reject) => {
             this._request(url).then(tradesRaw => {
-                console.log('response', tradesRaw)
+                resolve(tradesRaw)
             }).catch(err => reject(err))
         })
+    }
+
+    returnEvents(startDate: Date = new Date(0)) {
     }
 
     private lastNonce: number = null
@@ -100,6 +107,4 @@ export default class Bittrex implements Wrapper {
         var s = (now + this.repeatNonce).toString()
         return +s.substr(s.length - this.NONCE_LENGTH)
     }
-
 }
-

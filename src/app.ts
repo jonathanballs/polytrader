@@ -13,30 +13,17 @@ import * as mongoose from 'mongoose';
 import * as passport from 'passport'
 import { Strategy } from 'passport-local'
 
-import { User } from "./models";
+import { UserModel } from "./models";
 import settingsRouter from './settings/settings'
 import authRouter from './auth/auth'
 import portfolioRouter from './portfolio/portfolio'
+import servicesList from './wrappers/services'
 
 mongoose.connect('mongodb://db/polytrader', {useMongoClient: true});
 
-var LOCAL_STRATEGY_CONFIG = {
-    usernameField: 'email',
-};
-
-import servicesList from './wrappers/services'
-
-
-import Bittrex from './wrappers/bittrex-wrapper'
-
-var b = new Bittrex({}, {apiKey:'e9e4e3fa507a48449986cc4c943a92ac', apiSecret: 'c578123b2e5d44279246f4d65f6e34f4'})
-b.returnPortfolioHistory().then(ph => {
-    console.log(ph)
-}).catch(err => console.log('ERR', err))
-
 // Local strategy to fetch user from database
-passport.use(new Strategy(LOCAL_STRATEGY_CONFIG, (email, password, done) => {
-    User.findOne({email: email}, (err, user) => {
+passport.use(new Strategy({usernameField: 'email'}, (email, password, done) => {
+    UserModel.findOne({email: email}, (err, user) => {
         if (err)
             return done(err)
 
@@ -54,7 +41,7 @@ passport.serializeUser((user:any, done) => {
     done(null, user._id);
 });
 passport.deserializeUser((id, done) => {
-    User.findById(id, (err, u) => done(null, u));
+    UserModel.findById(id, (err, u) => done(null, u));
 });
 
 var verbose = false;
@@ -79,7 +66,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/static', express.static('static')) // Serve static files
-app.use('/static', express.static('dist/static')) // Serve static files
+app.use('/static', express.static('dist/static')) // Serve compiled static files
 app.use(expressValidator())
 
 app.use('/account', settingsRouter)

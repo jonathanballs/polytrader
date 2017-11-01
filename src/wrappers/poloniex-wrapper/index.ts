@@ -8,7 +8,7 @@ import * as moment from 'moment'
 import * as clone from 'clone'
 import * as Big from 'big.js'
 
-import Wrapper from '../'
+import IWrapper from '../'
 
 import { Portfolio, Balance } from '../'
 
@@ -172,7 +172,7 @@ export class Ticker {
 }
 
 
-export default class Poloniex implements Wrapper {
+export default class Poloniex implements IWrapper {
 
     apiKey: string
     apiSecret: string
@@ -512,6 +512,10 @@ export default class Poloniex implements Wrapper {
     // TRADING API METHODS
     // These methods require api keys in order to work
     //
+
+    returnHistory(startDate?: Date) {
+        return Promise.resolve([])
+    }
 
     returnBalances() {
         return new Promise<Balance[]>((resolve, reject) => {
@@ -904,7 +908,7 @@ export default class Poloniex implements Wrapper {
 
     // Returns a list of balances after each balance 'event' e.g. a buy,
     // sell, deposit etc.
-    returnPortfolioHistory() : Promise<Portfolio[]> {
+    returnPortfolioHistory(startDate: Date = new Date(0)) : Promise<Portfolio[]> {
 
         return new Promise<Portfolio[]>((resolve, reject) => {
 
@@ -920,7 +924,7 @@ export default class Poloniex implements Wrapper {
                 return (<UserTrade>e).globalTradeID != undefined
             }
 
-            this.returnDepositsWithdrawals(new Date(0), new Date).then(depositsWithdrawals => {
+            this.returnDepositsWithdrawals(startDate, new Date).then(depositsWithdrawals => {
                 this.returnUserTradeHistory().then(userTrades => {
                     this.returnCompleteBalances().then(completeBalances => {
 
@@ -1036,8 +1040,6 @@ export default class Poloniex implements Wrapper {
 
                             return {c, rb, cb, diff: cb-rb}
                         }).filter(b => Math.abs(b.rb - b.cb) > 0.001)
-
-                        console.log(balanceDiscrepencies)
 
                         // Find first impossible portfolio and fix errors
                         outerloop:

@@ -20,8 +20,8 @@ var data = {
         ]
     }],
 
-    // These labels appear in the legend and in the tooltips when hovering different arcs
-    // labels: cryptoBalances.map((x) => x.currency)
+    // These labels appear in the legend and in the tooltips when hovering
+    // different arcs labels: cryptoBalances.map((x) => x.currency)
 };
 
 var portfolioPieChart = new Chart(ctx, {
@@ -46,9 +46,8 @@ var historyData = {
                 return {x: p.timestamp, y: btc_balance}
             })
         }
-    })
+    }),
 }
-// historyData.datasets[0].data.push({x: +Date.now(), y: historyData.datasets[0].data[historyData.datasets[0].data.length-1].y});
 
 var historyOptions = {
     title:{
@@ -73,6 +72,11 @@ var historyOptions = {
             }
         }]
     },
+    elements: { point: { radius: 0 }},
+    tooltips: {
+        mode: 'x',
+        intersect: false
+    }
 }
 
 

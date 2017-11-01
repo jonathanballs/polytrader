@@ -35,7 +35,7 @@ export default class AccountForm extends React.Component {
                         }}
                         required />
                     { ff.type == 'file'
-                        ? <button class="btn btn-secondary btn-file">
+                        ? <button className="btn btn-secondary btn-file">
                             { this.state.inputValues[ff.name]
                                 ? this.state.inputValues[ff.name].split('\\').reverse()[0].split('/').reverse()[0]
                                 : "Select File" }

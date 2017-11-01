@@ -1,5 +1,5 @@
 import * as express from 'express';
-import {User} from '../models'
+import {UserModel} from '../models'
 import Poloniex from '../wrappers/poloniex-wrapper'
 import * as passwordHasher from 'password-hash';
 import * as passport from 'passport'
@@ -46,9 +46,9 @@ router.post('/signup', (req, res) => {
     }
 
     // Check if user already exists otherwise create it.
-    User.findOne({email: email}, (err, user) => {
+    UserModel.findOne({email: email}, (err, user) => {
         if (!user) {
-            var u = new User({
+            var u = new UserModel({
                 email: email,
                 passwordHash: passwordHasher.generate(password1),
                 signupTimestamp: Date.now(),

@@ -6,16 +6,16 @@ import * as request from 'request'
 import * as qs from 'qs'
 import * as Big from 'big.js'
 import * as ethereum_address from 'ethereum-address'
-import Wrapper from '../'
+import IWrapper from '../'
 
-import { Balance, Portfolio } from '../'
+import { DepositWithdrawal, PortfolioEvent, Balance, Portfolio } from '../'
 
-export default class Etherscan implements Wrapper {
+export default class Etherscan implements IWrapper {
     walletAddress: string
     apiKey: string
 
     readonly apiURL = 'https://api.etherscan.io/api?'
-    decimalPlaces = 18 // Results from api are returned as integers with 18dp
+    exponent = 17 // Results from api are returned as integers which are 10e17
 
     constructor(serverAuth, userAuth) {
         this.apiKey = serverAuth.apiKey
@@ -45,9 +45,57 @@ export default class Etherscan implements Wrapper {
                     reject(err)
                 }
                 else {
-                    var ethBalance = Big(JSON.parse(body).result).div(Big(10).pow(this.decimalPlaces)).toFixed(10)
+                    var ethBalance = Big(JSON.parse(body).result)
+                            .div(Big(10).pow(this.exponent)).toFixed(10)
                     resolve([new Balance('ETH', ethBalance)])
                 }
+            })
+        })
+    }
+
+    returnHistory(startDate: Date = new Date(0)) : Promise<PortfolioEvent[]> {
+        var requestURL : string = this.apiURL + qs.stringify({
+            module: 'account',
+            action: 'txlist',
+            address: this.walletAddress,
+            startBlock: 0,
+            endBlock: Number.MAX_SAFE_INTEGER,
+            sort: 'asc',
+            apiKey: this.apiKey
+        })
+
+        return new Promise((resolve, reject) => {
+            request(requestURL, (err, resp, body) => {
+
+                if (err)
+                    reject(err)
+
+                var portfolioHistory: PortfolioEvent[]
+                portfolioHistory = JSON.parse(body).result.map(transaction => {
+
+                    var depositWithdrawal : DepositWithdrawal = {
+                        currency: "ETH",
+                        amount: Big(transaction.value).div('10e' + this.exponent)
+                                                            .toFixed(this.exponent),
+                        txid: transaction.hash,
+                        address: transaction.from,
+                        fees: "0.0"
+                    }
+
+                    var portfolioEvent : PortfolioEvent = {
+                            timestamp: new Date(transaction.timeStamp * 1000),
+                            permanent: true,
+                            type: transaction.to == this.walletAddress
+                                                    ? 'deposit' : 'withdrawal',
+                            data: depositWithdrawal
+                    }
+
+                    return portfolioEvent
+                })
+                .filter(pe => pe.timestamp > startDate);
+
+                resolve(portfolioHistory)
+
             })
         })
     }
@@ -74,7 +122,8 @@ export default class Etherscan implements Wrapper {
                 JSON.parse(body).result.forEach(transaction => {
                     var portfolio = portfolioHistory.length
                         ? clone(portfolioHistory[portfolioHistory.length-1])
-                        : new Portfolio([new Balance('ETH', '0.0')], new Date(transaction.timeStamp * 1000))
+                        : new Portfolio([new Balance('ETH', '0.0')],
+                                            new Date(transaction.timeStamp * 1000))
 
                     if(transaction.to == this.walletAddress && transaction.from != this.walletAddress) {
                         portfolio.balanceOf('ETH').amount = new Big(portfolio.balanceOf('ETH').amount).plus(transaction.value).toFixed(10)
@@ -90,7 +139,7 @@ export default class Etherscan implements Wrapper {
                 });
 
                 portfolioHistory.forEach(p => {
-                    p.balanceOf('ETH').amount = Big(p.balanceOf('ETH').amount).div(Big(10).pow(this.decimalPlaces)).toFixed(10)
+                    p.balanceOf('ETH').amount = Big(p.balanceOf('ETH').amount).div(Big(10).pow(this.exponent)).toFixed(10)
                 })
 
                 resolve(portfolioHistory)

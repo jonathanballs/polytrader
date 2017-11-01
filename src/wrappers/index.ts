@@ -1,8 +1,9 @@
 // Base interface for api wrappers
 
-export default interface Wrapper {
+export default interface IWrapper {
     returnBalances() : Promise<Balance[]>
-    returnPortfolioHistory() : Promise<Portfolio[]>
+    returnPortfolioHistory(startDate?: Date) : Promise<Portfolio[]>
+    returnHistory(startDate?: Date) : Promise<PortfolioEvent[]>
     validateCredentials() : Promise<boolean>
 }
 
@@ -16,15 +17,13 @@ export class Portfolio {
     }
 
     balanceOf(currency: string) : Balance {
-        var b = this.balances.filter((x) => x.currency == currency);
+        var b: Balance = null
+        if (b = this.balances.filter((x) => x.currency == currency)[0]) {
+            return b
+        }
 
-        if (b.length)
-            return b[0];
-
-        var newBalance = new Balance(currency, "0.0");
-        this.balances.push(newBalance);
-
-        return newBalance;
+        this.balances.push(new Balance(currency, "0.0"));
+        return this.balanceOf(currency)
     }
 
     removeCurrency(currency: string) {
@@ -47,4 +46,28 @@ export class Balance {
 
         this.amount = amount ? amount : '0.0'
     }
+}
+
+export class DepositWithdrawal {
+    amount: string
+    currency: string
+    txid: string
+    address: string
+    fees: string
+}
+
+export class Trade {
+    base: string
+    quote: string
+    rate: string
+    baseAmount: string
+    quoteAmount: string
+    fee: string
+}
+
+export class PortfolioEvent {
+    timestamp: Date
+    permanent: boolean
+    type: string
+    data: DepositWithdrawal | Trade
 }

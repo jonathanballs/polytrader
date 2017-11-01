@@ -4,11 +4,11 @@ import * as clone from 'clone'
 import Poloniex from './poloniex-wrapper'
 import Etherscan from './etherscan-wrapper'
 import Bittrex from './bittrex-wrapper'
-import Wrapper from './'
+import IWrapper from './'
 
 interface WrapperConstructor {
     new(serverAuth: {[key: string] : string},
-                    userAuth: {[key: string] : string}) : Wrapper
+                    userAuth: {[key: string] : string}) : IWrapper
 }
 
 interface Service {

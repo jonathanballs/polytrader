@@ -28,14 +28,20 @@ export default class EditAccountButton extends React.Component {
   submitAccountForm = () => {
     this.setState({ submissionState: 'loading' })
 
-    // Get form values
-    var formValues = this.props.service.formFields.reduce((acc, f) => {
-      acc[f.name] = document.getElementsByName(f.name)[0].value
-      return acc
-    }, { service: this.props.service.key })
+    var formData = new FormData()
+    formData.append('service', this.props.service.key)
+
+    this.props.service.formFields.forEach(ff => {
+      if (ff.type == 'file') {
+        formData.append(ff.name, document.getElementsByName(ff.name)[0].files[0])
+      }
+      else {
+        formData.append(ff.name, document.getElementsByName(ff.name)[0].value)
+      }
+    })
 
     // Make the post request
-    axios.post('/account/api/accounts/' + this.props.accountID, qs.stringify(formValues))
+    axios.post('/account/api/accounts/' + this.props.accountID, formData)
       .then((resp) => {
         this.setState({ submissionState: 'success' })
         this.props.onSubmitted();
