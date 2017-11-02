@@ -1097,47 +1097,6 @@ export default class Poloniex implements IWrapper {
                                 })
                         }
 
-                        // Error detection
-                        // Sometimes bugs in poloniex code will mean that not all transactions are recorded
-                        // Perhaps this should be made generic instead of tied to a specific exchange :/
-                        let currenciesSet = new Set() // List of all currencies both calculated and real
-                        completeBalances.forEach(b => currenciesSet.add(b.currency))
-                        portfolioHistory[portfolioHistory.length - 1].balances.forEach(b => currenciesSet.add(b.currency))
-
-                        // Only fix significant discrepancies
-                        var balanceDiscrepencies = Array.from(currenciesSet).map(c => {
-                            // rb: real balance, cb: calculated balance
-                            var rb_list = completeBalances.filter(b => b.currency == c)
-                            var rb: number = parseFloat(rb_list.length == 0 ? '0.0' : rb_list[0].amount)
-                            var cb: number = parseFloat(portfolioHistory[portfolioHistory.length - 1].balanceOf(c).amount)
-
-                            return { c, rb, cb, diff: cb - rb }
-                        }).filter(b => Math.abs(b.rb - b.cb) > 0.001)
-
-                        // Find first impossible portfolio and fix errors
-                        outerloop:
-                        for (var p of portfolioHistory) {
-                            for (var currency of p.balances) {
-                                if (parseFloat(currency.amount) < 0.0) {
-
-                                    // Create a new portfolio
-                                    var newPortfolio = clone(p)
-                                    newPortfolio.timestamp = new Date(newPortfolio.timestamp.getTime() + 1)
-                                    { (<any>newPortfolio).event = null }
-                                    portfolioHistory.push(newPortfolio)
-
-                                    // Update portfolios
-                                    portfolioHistory.filter(p => p.timestamp > newPortfolio.timestamp).forEach(p => {
-                                        for (var bDiscrep of balanceDiscrepencies) {
-                                            p.balanceOf(bDiscrep.c).amount = Big(p.balanceOf(bDiscrep.c).amount).minus(bDiscrep.diff).toFixed(20)
-                                        }
-                                    })
-
-                                    break outerloop;
-                                }
-                            }
-                        }
-
                         resolve(portfolioHistory)
                     }).catch(err => reject(err))
                 }).catch(err => reject(err))

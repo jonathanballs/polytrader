@@ -130,93 +130,155 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
                 return p.balances.map(b => 'BTC_' + b.currency)
             }).reduce((acc, p) => acc.concat(p), []))
 
-            // Perform price annotation
-            let prices = []
-            PriceModel.aggregate([
-                {
-                    $match: {
-                        'currency_pair': { $in: Array.from(currencyPairs) },
-                        'date': { $gt: portfolioHistory[0].timestamp }
-                    }
-                },
-                {
-                    $project: {
-                        yearMonthDay: {
-                            $dateToString: {
-                                format: "%Y-%m-%d", date: "$date"
-                            }
-                        },
-                        currency_pair: "$currency_pair",
-                        daily_average: "$daily_average"
-                    }
-                },
-                {
-                    $group: {
-                        _id: "$yearMonthDay",
-                        prices: {
-                            $push: {
-                                currency_pair: "$currency_pair",
-                                daily_average: "$daily_average"
-                            }
+            // Error correction
+            // Sometimes exchange and polytrader bugs lead to missing events.
+            // This should identify, report and (hopefully) correct them
+            UserModel.findOne({ "accounts._id": this.accountID } , (err, user) => {
+                if(!portfolioHistory.length) {
+                    return
+                }
+
+                // Create a list of all currencies
+                let currenciesSet = new Set()
+                var realBalances = user.accounts[0].balances
+                realBalances.forEach(b => currenciesSet.add(b.currency))
+                portfolioHistory[portfolioHistory.length - 1].balances
+                    .forEach(b => currenciesSet.add(b.currency))
+
+                // Only fix significant discrepancies
+                var balanceDiscrepencies = Array.from(currenciesSet).map(c => {
+                    // rb: real balance, cb: calculated balance
+                    var rb_list = realBalances.filter(b => b.currency == c)
+                    var rb: number = parseFloat(rb_list.length == 0 ? '0.0' : rb_list[0].amount)
+
+                    var cb: number = parseFloat(
+                        portfolioHistory[portfolioHistory.length - 1]
+                        .balanceOf(c).amount)
+
+                    return { c, rb, cb, diff: cb - rb }
+                }).filter(b => Math.abs(b.rb - b.cb) > 0.001)
+
+                console.log(balanceDiscrepencies)
+
+                // Find first impossible portfolio and fix errors
+                outerloop:
+                for (var p of portfolioHistory) {
+                    for (var currency of p.balances) {
+                        if (parseFloat(currency.amount) < 0.0) {
+
+                            // Create a new portfolio
+                            var newPortfolio = clone(p)
+                            newPortfolio.timestamp = new Date(newPortfolio.timestamp.getTime() + 1)
+                            { (<any>newPortfolio).event = null }
+                            portfolioHistory.push(newPortfolio)
+
+                            // Update portfolios
+                            portfolioHistory
+                            .filter(p => {
+                                return p.timestamp > newPortfolio.timestamp
+                            })
+                            .forEach(p => {
+                                for (var bDiscrep of balanceDiscrepencies) {
+                                    p.balanceOf(bDiscrep.c).amount =
+                                        Big(p.balanceOf(bDiscrep.c).amount)
+                                        .minus(bDiscrep.diff).toFixed(20)
+                                }
+                            })
+
+                            break outerloop;
                         }
                     }
-                },
-                {
-                    $sort: {
-                        _id: 1
-                    }
                 }
-            ]).cursor({}).exec()
-                .on('data', doc => prices.push(doc))
-                .on('end', _ => {
 
-                    // Helper function to get the user's portfolio at a certain time
-                    var portfolioAtTime = (portfolioHistory: Portfolio[],
-                                                                time: Date) => {
-                        var filteredPortfolios = portfolioHistory
-                            .filter(p => p.timestamp < time)
-                            .sort((a, b) => b.timestamp.getTime() -
-                                                            a.timestamp.getTime())
-
-                        return filteredPortfolios.length
-                            ? filteredPortfolios[0]
-                            : new Portfolio([], portfolioHistory[0].timestamp)
+                // Perform price annotation
+                let prices = []
+                PriceModel.aggregate([
+                    {
+                        $match: {
+                            'currency_pair': { $in: Array.from(currencyPairs) },
+                            'date': { $gt: portfolioHistory[0].timestamp }
+                        }
+                    },
+                    {
+                        $project: {
+                            yearMonthDay: {
+                                $dateToString: {
+                                    format: "%Y-%m-%d", date: "$date"
+                                }
+                            },
+                            currency_pair: "$currency_pair",
+                            daily_average: "$daily_average"
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$yearMonthDay",
+                            prices: {
+                                $push: {
+                                    currency_pair: "$currency_pair",
+                                    daily_average: "$daily_average"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $sort: {
+                            _id: 1
+                        }
                     }
+                ]).cursor({}).exec()
+                    .on('data', doc => prices.push(doc))
+                    .on('end', _ => {
 
-                    var portfolioHistoriesProcessed = prices.map(price => {
-                        // Get users portfolio on date
-                        var pd_sp = price._id.split('-')
-                        var price_date = new Date(pd_sp[0], pd_sp[1] - 1, pd_sp[2])
-                        var p = clone(portfolioAtTime(portfolioHistory, price_date))
-                        p.timestamp = price_date
+                        // Helper function to get the user's portfolio at a certain time
+                        var portfolioAtTime = (portfolioHistory: Portfolio[],
+                            time: Date) => {
+                            var filteredPortfolios = portfolioHistory
+                                .filter(p => p.timestamp < time)
+                                .sort((a, b) => b.timestamp.getTime() -
+                                    a.timestamp.getTime())
 
-                        p.balances.forEach(b => {
-                            if (b.currency == "BTC") {
-                                b.btcValue = b.amount
-                                return;
-                            }
-                            else if (b.currency == "USDT") {
-                                b.btcValue = "0.0"
-                                return;
-                            }
+                            return filteredPortfolios.length
+                                ? filteredPortfolios[0]
+                                : new Portfolio([], portfolioHistory[0].timestamp)
+                        }
 
-                            var b_price = price.prices.filter(p => {
-                                return p.currency_pair == "BTC_" + b.currency
-                            })[0]
+                        var portfolioHistoriesProcessed = prices.map(price => {
+                            // Get users portfolio on date
+                            var pd_sp = price._id.split('-')
+                            var price_date = new Date(pd_sp[0], pd_sp[1] - 1, pd_sp[2])
+                            var p = clone(portfolioAtTime(portfolioHistory, price_date))
+                            p.timestamp = price_date
 
-                            if (typeof (b_price) != 'undefined') {
-                                b.btcValue = new Big(b_price.daily_average)
-                                    .times(b.amount)
-                                    .toFixed(10)
-                            } else {
-                                b.btcValue = '0.0'
-                            }
+                            p.balances.forEach(b => {
+                                if (b.currency == "BTC") {
+                                    b.btcValue = b.amount
+                                    return;
+                                }
+                                else if (b.currency == "USDT") {
+                                    b.btcValue = "0.0"
+                                    return;
+                                }
+
+                                var b_price = price.prices.filter(p => {
+                                    return p.currency_pair == "BTC_" + b.currency
+                                })[0]
+
+                                if (typeof (b_price) != 'undefined') {
+                                    b.btcValue = new Big(b_price.daily_average)
+                                        .times(b.amount)
+                                        .toFixed(10)
+                                } else {
+                                    b.btcValue = '0.0'
+                                }
+                            })
+                            return p
                         })
-                        return p
+
+                        resolve(portfolioHistoriesProcessed)
                     })
 
-                    resolve(portfolioHistoriesProcessed)
-                })
+            })
         })
     }
 
