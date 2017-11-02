@@ -2,7 +2,6 @@
 
 export default interface IWrapper {
     returnBalances() : Promise<Balance[]>
-    returnPortfolioHistory(startDate?: Date) : Promise<Portfolio[]>
     returnHistory(startDate?: Date) : Promise<PortfolioEvent[]>
     validateCredentials() : Promise<boolean>
 }
@@ -57,12 +56,12 @@ export class DepositWithdrawal {
 }
 
 export class Trade {
-    base: string
-    quote: string
+    soldCurrency: string
+    boughtCurrency: string
     rate: string
-    baseAmount: string
-    quoteAmount: string
-    fee: string
+    soldAmount: string
+    boughtAmount: string
+    fees: string
 }
 
 export class PortfolioEvent {

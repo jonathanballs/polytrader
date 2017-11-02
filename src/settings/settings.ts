@@ -65,10 +65,7 @@ function validateAccountForm(req, res, next) {
                 res.status(400).send(e + '')
                 return
             })
-
     })
-
-
 }
 
 // Account settings for choosing an api key
@@ -176,6 +173,7 @@ router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) 
         service: req.body.service,
         timestampCreated: new Date(),
         timestampLastSuccessfulSync: null,
+        balances: [],
         userAuth
     }
 

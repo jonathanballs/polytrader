@@ -9,8 +9,7 @@ import * as clone from 'clone'
 import * as Big from 'big.js'
 
 import IWrapper from '../'
-
-import { Portfolio, Balance } from '../'
+import { Trade, DepositWithdrawal, PortfolioEvent, Portfolio, Balance } from '../'
 
 export class OrderBook {
     asks: {price: string, amount: string}[]
@@ -27,10 +26,7 @@ export class Order {
     total: string
 }
 
-export enum TradeType {
-    Buy,
-    Sell
-}
+export enum TradeType { Buy, Sell }
 
 function tradeStringToType(s: string) : TradeType {
     return s=="buy" ? TradeType.Buy : TradeType.Sell
@@ -115,7 +111,7 @@ export class Candlestick {
 }
 
 
-export class Trade {
+export class TradeResponse {
     globalTradeID: number
     tradeID: number
     timestamp: Date
@@ -406,7 +402,7 @@ export default class Poloniex implements IWrapper {
     // Returns trade history
     // TODO parse date not to local time but to UTC
     returnTradeHistory(currencyPair: string, start?: Date, end?: Date) {
-        return new Promise<Trade[]>((resolve, reject) => {
+        return new Promise<TradeResponse[]>((resolve, reject) => {
 
             var reqOptions: any  = {
                 currencyPair: currencyPair
@@ -513,10 +509,6 @@ export default class Poloniex implements IWrapper {
     // These methods require api keys in order to work
     //
 
-    returnHistory(startDate?: Date) {
-        return Promise.resolve([])
-    }
-
     returnBalances() {
         return new Promise<Balance[]>((resolve, reject) => {
             this._private('returnBalances', {}, (err, balances) => {
@@ -528,11 +520,7 @@ export default class Poloniex implements IWrapper {
                 var ret: Balance[] = new Array()
                 for (var currency in balances) {
                     if (Big(balances[currency]).gt("0.0000001")) {
-                        ret.push({
-                            currency,
-                            amount: balances[currency],
-                            btcValue: "1.0"
-                        })
+                        ret.push(new Balance(currency, balances[currency]))
                     }
                 }
 
@@ -720,7 +708,7 @@ export default class Poloniex implements IWrapper {
 
     // Return trades associated with a given orderNumber
     returnOrderTrades(orderNumber: number) {
-        return new Promise<Trade[]>((resolve, reject) => {
+        return new Promise<TradeResponse[]>((resolve, reject) => {
             return []
         })
     }
@@ -729,14 +717,14 @@ export default class Poloniex implements IWrapper {
     buy(currencyPair: string, rate: string, amount: string) {
         class BuyOrder {
             orderNumber: number
-            resultingTrades: Trade[]
+            resultingTrades: TradeResponse[]
         }
     }
 
     sell(currencyPair: string, rate: string, amount: string) {
         class SellOrder {
             orderNumber: number
-            resultingTrades: Trade[]
+            resultingTrades: TradeResponse[]
         }
     }
 
@@ -752,7 +740,7 @@ export default class Poloniex implements IWrapper {
         class MoveOrder {
             success: boolean
             orderNumber: number
-            resultingTrades: Trade[]
+            resultingTrades: TradeResponse[]
         }
     }
 
@@ -803,7 +791,7 @@ export default class Poloniex implements IWrapper {
             success: boolean
             message: string
             orderNumber: number
-            resultingTrades: Trade[]
+            resultingTrades: TradeResponse[]
         }
     }
 
@@ -812,7 +800,7 @@ export default class Poloniex implements IWrapper {
             success: boolean
             message: string
             orderNumber: number
-            resultingTrades: Trade[]
+            resultingTrades: TradeResponse[]
         }
     }
 
@@ -838,7 +826,7 @@ export default class Poloniex implements IWrapper {
         class ClosedMarginPosition {
             success: boolean
             message: string
-            resultingTrades: Trade[]
+            resultingTrades: TradeResponse[]
         }
     }
 
@@ -906,21 +894,106 @@ export default class Poloniex implements IWrapper {
     // multiple api methods to provide more complex data.
     //
 
+    returnHistory(startDate: Date = new Date(0)) : Promise<PortfolioEvent[]> {
+
+        type RawEvent = Withdrawal | Deposit | UserTrade
+        function isWithdrawal(e: RawEvent): e is Withdrawal {
+            return (<Withdrawal>e).withdrawalNumber !== undefined }
+
+        function isDeposit(e: RawEvent): e is Deposit {
+            return (<Deposit>e).confirmations != undefined }
+
+        function isUserTrade(e: RawEvent): e is UserTrade {
+            return (<UserTrade>e).globalTradeID != undefined }
+
+
+        return new Promise<PortfolioEvent[]>((resolve, reject) => {
+            this.returnDepositsWithdrawals(startDate, new Date).then(depositsWithdrawals => {
+                this.returnUserTradeHistory().then(userTrades => {
+                    this.returnCompleteBalances().then(completeBalances => {
+                        this.returnCurrencies().then(currencies => {
+
+                            var rawEvents: RawEvent[] = depositsWithdrawals.deposits
+                            rawEvents = rawEvents.concat(depositsWithdrawals.withdrawals)
+                            rawEvents = rawEvents.concat(userTrades)
+
+                            var portfolioEvents: PortfolioEvent[] = rawEvents.map(ev => {
+                                if (isWithdrawal(ev) || isDeposit(ev)) {
+                                    var depositsWithdrawal : DepositWithdrawal = {
+                                        currency: ev.currency,
+                                        amount: ev.amount,
+                                        txid: "TODO",
+                                        address: ev.address,
+                                        fees: isWithdrawal(ev) ? currencies[ev.currency].txFee : "0.0",
+                                    }
+
+                                    var portfolioEvent : PortfolioEvent = {
+                                        timestamp: ev.timestamp,
+                                        permanent: ev.status.includes('COMPLETE'),
+                                        type: isDeposit(ev) ? 'deposit' : 'withdrawal',
+                                        data: depositsWithdrawal
+                                    }
+
+                                    return portfolioEvent
+                                }
+                                else if (isUserTrade(ev)) {
+                                    var isSale = ev.type == TradeType.Sell
+
+                                    var trade : Trade = {
+                                        soldCurrency: isSale ? ev.quote : ev.base,
+                                        boughtCurrency: isSale ? ev.base : ev.quote,
+                                        rate: ev.rate,
+                                        soldAmount: isSale ? ev.amount : ev.total,
+                                        boughtAmount: isSale ? ev.total : ev.amount,
+                                        fees: Big(isSale ? ev.total : ev.amount).times(ev.fee).toFixed(15)
+                                    }
+
+                                    var portfolioEvent : PortfolioEvent = {
+                                        timestamp: ev.timestamp,
+                                        permanent: true,
+                                        type: 'trade',
+                                        data: trade
+                                    }
+
+                                    return portfolioEvent
+                                }
+                                
+                                else {
+                                    console.log("WARNING: Unknown event" + JSON.stringify(ev))
+                                }
+                            })
+
+                            portfolioEvents.sort((a, b) => {
+                                return a.timestamp.getTime() - b.timestamp.getTime()
+                            })
+
+                            resolve(portfolioEvents)
+                        })
+
+                    }).catch(err => reject(err))
+                }).catch(err => reject(err))
+            }).catch(err => reject(err))
+
+        })
+
+    }
+
+
     // Returns a list of balances after each balance 'event' e.g. a buy,
     // sell, deposit etc.
-    returnPortfolioHistory(startDate: Date = new Date(0)) : Promise<Portfolio[]> {
+    returnPortfolioHistory(startDate: Date = new Date(0)): Promise<Portfolio[]> {
 
         return new Promise<Portfolio[]>((resolve, reject) => {
 
-            function isWithdrawal(e: Withdrawal | Deposit | UserTrade) : e is Withdrawal {
+            function isWithdrawal(e: Withdrawal | Deposit | UserTrade): e is Withdrawal {
                 return (<Withdrawal>e).withdrawalNumber !== undefined
             }
 
-            function isDeposit(e: Withdrawal | Deposit | UserTrade) : e is Deposit {
+            function isDeposit(e: Withdrawal | Deposit | UserTrade): e is Deposit {
                 return (<Deposit>e).confirmations != undefined
             }
 
-            function isUserTrade(e: Withdrawal | Deposit | UserTrade) : e is UserTrade {
+            function isUserTrade(e: Withdrawal | Deposit | UserTrade): e is UserTrade {
                 return (<UserTrade>e).globalTradeID != undefined
             }
 
@@ -928,11 +1001,11 @@ export default class Poloniex implements IWrapper {
                 this.returnUserTradeHistory().then(userTrades => {
                     this.returnCompleteBalances().then(completeBalances => {
 
-                        var allEvents: (Deposit|Withdrawal|UserTrade)[] = depositsWithdrawals.deposits
+                        var allEvents: (Deposit | Withdrawal | UserTrade)[] = depositsWithdrawals.deposits
                         allEvents = allEvents.concat(depositsWithdrawals.withdrawals).concat(userTrades)
                         allEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
 
-                        var portfolioHistory : Portfolio[] = new Array;
+                        var portfolioHistory: Portfolio[] = new Array;
                         allEvents.forEach(e => {
                             // Add the initial balance
                             if (!portfolioHistory.length) {
@@ -949,10 +1022,10 @@ export default class Poloniex implements IWrapper {
                             }
 
                             // Clone the last portfolio
-                            var portfolio = clone(portfolioHistory[portfolioHistory.length-1])
+                            var portfolio = clone(portfolioHistory[portfolioHistory.length - 1])
                             portfolio.timestamp = e.timestamp
 
-                            if(isDeposit(e)) {
+                            if (isDeposit(e)) {
                                 var b = portfolio.balanceOf(e.currency)
                                 b.amount = new Big(b.amount).plus(e.amount).toFixed(20)
                             }
@@ -996,15 +1069,15 @@ export default class Poloniex implements IWrapper {
 
                         // SPECIAL CASE: BCH deposits
                         var portfoliosBeforeSplit = portfolioHistory.filter(
-                                p => p.timestamp < new Date(1501593374000))
+                            p => p.timestamp < new Date(1501593374000))
 
                         if (portfoliosBeforeSplit) {
-                            var BCHBalance = completeBalances.filter(b=>b.currency=='BCH')[0]
+                            var BCHBalance = completeBalances.filter(b => b.currency == 'BCH')[0]
                             var BCHBalanceAmount = !!BCHBalance ? Big(BCHBalance.amount) : Big('0.0')
                             BCHBalanceAmount = BCHBalanceAmount.minus(
-                                    Big(portfolioHistory[portfolioHistory.length-1].balanceOf('BCH').amount))
+                                Big(portfolioHistory[portfolioHistory.length - 1].balanceOf('BCH').amount))
 
-                            var newPortfolio = clone(portfoliosBeforeSplit[portfoliosBeforeSplit.length-1])
+                            var newPortfolio = clone(portfoliosBeforeSplit[portfoliosBeforeSplit.length - 1])
                             newPortfolio.balanceOf('BCH').amount = BCHBalanceAmount.toFixed(20)
                             newPortfolio.timestamp = new Date(1501593374000)
 
@@ -1014,8 +1087,8 @@ export default class Poloniex implements IWrapper {
                             // Insert it into history
                             portfolioHistory.push(newPortfolio)
                             portfolioHistory = portfolioHistory.sort(
-                                    (a, b) => a.timestamp.getTime() - b.timestamp.getTime())
-                            
+                                (a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+
                             // Update portfolios post split
                             portfolioHistory.filter(p => p.timestamp > new Date(1501593374000))
                                 .map(p => {
@@ -1028,17 +1101,17 @@ export default class Poloniex implements IWrapper {
                         // Sometimes bugs in poloniex code will mean that not all transactions are recorded
                         // Perhaps this should be made generic instead of tied to a specific exchange :/
                         let currenciesSet = new Set() // List of all currencies both calculated and real
-                        completeBalances.forEach(b => currenciesSet.add(b.currency) )
-                        portfolioHistory[portfolioHistory.length-1].balances.forEach(b => currenciesSet.add(b.currency))
+                        completeBalances.forEach(b => currenciesSet.add(b.currency))
+                        portfolioHistory[portfolioHistory.length - 1].balances.forEach(b => currenciesSet.add(b.currency))
 
                         // Only fix significant discrepancies
                         var balanceDiscrepencies = Array.from(currenciesSet).map(c => {
                             // rb: real balance, cb: calculated balance
                             var rb_list = completeBalances.filter(b => b.currency == c)
-                            var rb : number = parseFloat(rb_list.length == 0 ? '0.0' : rb_list[0].amount)
-                            var cb : number = parseFloat(portfolioHistory[portfolioHistory.length-1].balanceOf(c).amount)
+                            var rb: number = parseFloat(rb_list.length == 0 ? '0.0' : rb_list[0].amount)
+                            var cb: number = parseFloat(portfolioHistory[portfolioHistory.length - 1].balanceOf(c).amount)
 
-                            return {c, rb, cb, diff: cb-rb}
+                            return { c, rb, cb, diff: cb - rb }
                         }).filter(b => Math.abs(b.rb - b.cb) > 0.001)
 
                         // Find first impossible portfolio and fix errors
@@ -1054,7 +1127,7 @@ export default class Poloniex implements IWrapper {
                                     portfolioHistory.push(newPortfolio)
 
                                     // Update portfolios
-                                    portfolioHistory.filter(p=>p.timestamp > newPortfolio.timestamp).forEach(p => {
+                                    portfolioHistory.filter(p => p.timestamp > newPortfolio.timestamp).forEach(p => {
                                         for (var bDiscrep of balanceDiscrepencies) {
                                             p.balanceOf(bDiscrep.c).amount = Big(p.balanceOf(bDiscrep.c).amount).minus(bDiscrep.diff).toFixed(20)
                                         }

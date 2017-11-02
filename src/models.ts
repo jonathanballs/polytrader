@@ -5,12 +5,17 @@ import * as Big from 'big.js'
 import { Portfolio, Balance } from './wrappers'
 
 // User schema
+var balanceSchema = mongoose.Schema({
+    currency: String,
+    balance: String
+})
 var linkedAccountSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     service: String, // Rename this to serviceKey
     timestampCreated: Date,
     timestampLastSuccessfulSync: Date,
-    userAuth: mongoose.Schema.Types.Mixed
+    userAuth: mongoose.Schema.Types.Mixed,
+    balances: [mongoose.Schema.Types.Mixed]
 })
 var userSchema = new mongoose.Schema({
     email: String,
@@ -40,11 +45,11 @@ var depositWithdrawal = new mongoose.Schema({
 })
 
 var trade = new mongoose.Schema({
-    base: String,
-    quote: String,
+    soldCurrency: String,
+    boughtCurrency: String,
+    soldAmount: String,
+    boughtAmount: String,
     rate: String,
-    baseAmount: String,
-    quoteAmount: String,
     fee: String
 })
 
@@ -83,7 +88,7 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
 
         return new Promise<Portfolio[]>((resolve, reject) => {
 
-            // Convert events to portfolios
+            // Construct portfolio history based on portfolio events
             var portfolioHistory: Portfolio[] = new Array()
             this.events.forEach(ev => {
                 var portfolio = portfolioHistory.length
@@ -104,13 +109,26 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
                         .minus(ev.data.amount)
                         .toFixed(16)
                 }
+                else if (ev.type == 'trade') {
+                    var oldBoughtBalance = portfolio.balanceOf(ev.data.boughtCurrency)
+                    var oldSoldBalance = portfolio.balanceOf(ev.data.soldCurrency)
+
+                    oldBoughtBalance.amount = Big(oldBoughtBalance.amount)
+                                                .plus(ev.data.boughtAmount)
+                                                .minus(ev.data.fees)
+                                                .toFixed(15)
+
+                    oldSoldBalance.amount = Big(oldSoldBalance.amount)
+                                                .minus(ev.data.soldAmount)
+                                                .toFixed(15)
+                }
                 portfolioHistory.push(portfolio)
             })
 
             // Get list of currencies in portfolio
             var currencyPairs = new Set(portfolioHistory.map(p => {
                 return p.balances.map(b => 'BTC_' + b.currency)
-            }).reduce((acc, p) => acc.concat(p)))
+            }).reduce((acc, p) => acc.concat(p), []))
 
             // Perform price annotation
             let prices = []
@@ -153,10 +171,12 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
                 .on('end', _ => {
 
                     // Helper function to get the user's portfolio at a certain time
-                    var portfolioAtTime = (portfolioHistory: Portfolio[], time: Date) => {
+                    var portfolioAtTime = (portfolioHistory: Portfolio[],
+                                                                time: Date) => {
                         var filteredPortfolios = portfolioHistory
                             .filter(p => p.timestamp < time)
-                            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+                            .sort((a, b) => b.timestamp.getTime() -
+                                                            a.timestamp.getTime())
 
                         return filteredPortfolios.length
                             ? filteredPortfolios[0]

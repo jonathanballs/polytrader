@@ -5,6 +5,7 @@ import { UserModel, PriceModel } from "../models";
 import { Portfolio } from '../wrappers'
 import * as clone from 'clone';
 import * as Big from 'big.js'
+import * as mongoose from 'mongoose'
 
 import Etherscan from '../wrappers/etherscan-wrapper'
 import { PortfolioEventHistoryModel } from '../models'
@@ -21,37 +22,54 @@ router.get('/', loginRequired, (req, res) => {
         return
     }
 
-    // Update portfolio histories
-    var historyPromises: [Promise<Portfolio[]>] = req.user.accounts.map(a => {
+    // Update the accounts
+    req.user.accounts.forEach(a => {
         var service = servicesList.filter(s => s.key == a.service)[0]
         var wrapper = new service.wrapper(service.serverAuth, a.userAuth)
+        wrapper.returnHistory().then(his => {
+            wrapper.returnBalances().then(balances => {
+                // Update account balances
+                UserModel.findOneAndUpdate(
+                    { "_id": req.user._id, 
+                        "accounts._id": a._id },
+                    {
+                        $set: { "accounts.$.balances": balances }
+                    }, (err) => {
+                        if (err)
+                            console.log("Error finding account events" + err)
+                    })
 
-        // Update the event database
-        PortfolioEventHistoryModel.findOneOrCreate({accountID: a._id}).then(peh => {
 
-            // Only get new ones
-            var startDate = peh.events.length 
-                ? peh.events[peh.events.length-1].timestamp
-                : new Date(0)
 
-            wrapper.returnHistory(startDate).then(portfolioHistory => {
-                portfolioHistory.forEach(event => {
-                    PortfolioEventHistoryModel.update({_id: peh._id},
-                        { $push: { events: event } },
-                        (err, numAffected, rawResponse) => {
-                            console.log(numAffected)
-                        }
-                    )
-                })
-            })
+                PortfolioEventHistoryModel.findOneOrCreate({accountID: a._id})
+                .then(peh => {
+                    var lastTimestamp = peh.events.length 
+                        ? peh.events[peh.events.length-1].timestamp
+                        : new Date(0)
+                    his = his.filter(ev => ev.timestamp > lastTimestamp)
 
-            peh.getAnnotatedPortfolioHistory().then(php => {
-                res.render('portfolio/portfolio', {portfolioHistories: [php]})
+                    PortfolioEventHistoryModel.update(
+                        {_id: peh._id},
+                        { $push: { events: { $each : his } } }).then().catch( err => {
+                            console.log(err)
+                        })
+
+                }).catch(err => res.render('portfolio/portfolio', { err }))
             }).catch(err => res.render('portfolio/portfolio', { err }))
-        })
-
-        return wrapper.returnPortfolioHistory()
+        }).catch(err => res.render('portfolio/portfolio', { err }))
     })
 
+    // Fetch event histories from db
+    var eventHistoryPromises = req.user.accounts.map(a => {
+        return PortfolioEventHistoryModel.findOneOrCreate(
+            {accountID: a._id}
+        )
+    })
+    Promise.all(eventHistoryPromises).then(eventHistories => {
+        Promise.all(eventHistories.map(eh => {
+            return eh.getAnnotatedPortfolioHistory()
+        })).then(portfolioHistories => {
+            res.render('portfolio/portfolio', {portfolioHistories})
+        })
+    })
 });
-
