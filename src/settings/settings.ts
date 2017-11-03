@@ -25,6 +25,14 @@ function validateAccountForm(req, res, next) {
             req.body[key] = fields[key][0]
         }
 
+        for (var key in files) {
+            delete files[key][0].fieldName
+            delete files[key][0].headers
+            req.body[key] = files[key][0]
+        }
+
+        console.log(req.body)
+
         // Check that the service type is valid
         req.checkBody('service').notEmpty().isAscii()
             .isIn(services.map(s => s.key))

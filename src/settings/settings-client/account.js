@@ -18,9 +18,18 @@ export default class Account extends React.Component {
   render() {
 
     var userVariables = this.props.service.formFields.map(ff => {
-      var varValue = ff.name.toLowerCase().includes("secret")
-        ? "*******************************************************************************"
-        : this.props.account.userAuth[ff.name]
+      var varValue
+
+      if (ff.name.toLowerCase().includes("secret")) {
+        varValue = "*******************************************************************************"
+      }
+      else if (ff.type == 'file') {
+        varValue = this.props.account.userAuth[ff.name].originalFilename
+      }
+      else {
+        varValue = this.props.account.userAuth[ff.name]
+      }
+
       return this.makeRow(ff.description, varValue)
     })
 

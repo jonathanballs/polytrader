@@ -54,22 +54,22 @@ router.get('/', loginRequired, (req, res) => {
                             console.log(err)
                         })
 
-                }).catch(err => res.render('portfolio/portfolio', { err }))
-            }).catch(err => res.render('portfolio/portfolio', { err }))
-        }).catch(err => res.render('portfolio/portfolio', { err }))
+                    }).catch(err => console.log("returnHistory error :" + err))
+            }).catch(err => console.log("returnHistory error :" + err))
+        }).catch(err => console.log("returnHistory error :" + err))
     })
 
     // Fetch event histories from db
     var eventHistoryPromises = req.user.accounts.map(a => {
         return PortfolioEventHistoryModel.findOneOrCreate(
-            {accountID: a._id}
+            { accountID: a._id }
         )
     })
     Promise.all(eventHistoryPromises).then(eventHistories => {
         Promise.all(eventHistories.map(eh => {
             return eh.getAnnotatedPortfolioHistory()
         })).then(portfolioHistories => {
-            res.render('portfolio/portfolio', {portfolioHistories})
+            res.render('portfolio/portfolio', { portfolioHistories })
         })
     })
 });

@@ -88,6 +88,11 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
 
         return new Promise<Portfolio[]>((resolve, reject) => {
 
+            if (!this.events.length) {
+                resolve([])
+                return
+            }
+
             // Construct portfolio history based on portfolio events
             var portfolioHistory: Portfolio[] = new Array()
             this.events.forEach(ev => {

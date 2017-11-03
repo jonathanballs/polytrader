@@ -60,11 +60,13 @@ export default class Bittrex implements IWrapper {
     }
 
     validateCredentials() : Promise<boolean> {
-        return new Promise((resolve, reject) => {
-            this.returnBalances().then(_ => {
-                resolve(true)
-            }).catch(e => reject(e))
-        })
+        // Keep it always true for now
+        return Promise.resolve(true)
+        // return new Promise((resolve, reject) => {
+        //     this.returnBalances().then(_ => {
+        //         resolve(true)
+        //     }).catch(e => reject(e))
+        // })
     }
 
     returnBalances() : Promise<Balance[]> {
@@ -86,9 +88,6 @@ export default class Bittrex implements IWrapper {
                 resolve(tradesRaw)
             }).catch(err => reject(err))
         })
-    }
-
-    returnEvents(startDate: Date = new Date(0)) {
     }
 
     private lastNonce: number = null
