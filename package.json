@@ -38,6 +38,7 @@
     "express-session": "^1.15.3",
     "express-validator": "^3.2.0",
     "extract-text-webpack-plugin": "^3.0.1",
+    "kue": "^0.11.6",
     "moment": "^2.19.1",
     "mongoose": "^4.11.10",
     "multiparty": "^4.1.3",

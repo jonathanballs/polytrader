@@ -158,8 +158,6 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
                     return { c, rb, cb, diff: cb - rb }
                 }).filter(b => Math.abs(b.rb - b.cb) > 0.001)
 
-                console.log(balanceDiscrepencies)
-
                 // Find first impossible portfolio and fix errors
                 outerloop:
                 for (var p of portfolioHistory) {
@@ -277,8 +275,7 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
 
                         resolve(portfolioHistoriesProcessed)
                     })
-
-            })
+            }).catch( err => reject(err) )
         })
     }
 

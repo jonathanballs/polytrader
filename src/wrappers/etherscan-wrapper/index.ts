@@ -71,7 +71,15 @@ export default class Etherscan implements IWrapper {
                     reject(err)
 
                 var portfolioHistory: PortfolioEvent[]
-                portfolioHistory = JSON.parse(body).result.map(transaction => {
+                var rawResponse
+                try {
+                    rawResponse = JSON.parse(body)
+                } catch (e) {
+                    reject("Unable to parse server response")
+                    return
+                }
+
+                portfolioHistory = rawResponse.result.map(transaction => {
 
                     var depositWithdrawal : DepositWithdrawal = {
                         currency: "ETH",
