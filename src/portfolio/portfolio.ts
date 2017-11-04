@@ -46,17 +46,17 @@ router.get('/', loginRequired, (req, res) => {
                     var lastTimestamp = peh.events.length 
                         ? peh.events[peh.events.length-1].timestamp
                         : new Date(0)
-                    his = his.filter(ev => ev.timestamp > lastTimestamp)
 
+                    his = his.filter(ev => ev.timestamp > lastTimestamp)
                     PortfolioEventHistoryModel.update(
                         {_id: peh._id},
                         { $push: { events: { $each : his } } }).then().catch( err => {
                             console.log(err)
                         })
 
-                    }).catch(err => console.log("returnHistory error :" + err))
-            }).catch(err => console.log("returnHistory error :" + err))
-        }).catch(err => console.log("returnHistory error :" + err))
+                    }).catch(err => console.log(service.key + " returnHistory error :" + err))
+            }).catch(err => console.log(service.key + " returnBalances error :" + err))
+        }).catch(err => console.log(service.key + " returnHistory error :" + err))
     })
 
     // Fetch event histories from db

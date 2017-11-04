@@ -6,13 +6,15 @@ import * as request from 'request'
 import * as qs from 'qs'
 import * as Big from 'big.js'
 import * as crypto from 'crypto'
-import IWrapper from '../'
+import * as csv from 'csv-parser'
+import * as fs from 'fs'
 
-import { Balance, Portfolio } from '../'
+import IWrapper from '../'
+import { DepositWithdrawal, PortfolioEvent, Trade, Balance, Portfolio } from '../'
 
 export default class Bittrex implements IWrapper {
 
-    userAuth : any
+    userAuth: any
 
     readonly apiURL = 'https://bittrex.com/api/v1.1'
     decimalPlaces = 18 // Results from api are returned as integers with 18dp
@@ -21,20 +23,16 @@ export default class Bittrex implements IWrapper {
         this.userAuth = userAuth
     }
 
-    returnHistory(startDate?: Date) {
-        return Promise.resolve([])
-    }
-
-    _request(url: string) : Promise<any> {
+    _request(url: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            var noncedUrl : string = url + '?' + qs.stringify({
-                    apikey: this.userAuth.apiKey, nonce: this.nonce()
-                })
+            var noncedUrl: string = url + '?' + qs.stringify({
+                apikey: this.userAuth.apiKey, nonce: this.nonce()
+            })
             var options = {
                 url: noncedUrl,
                 headers: {
                     'apisign': crypto.createHmac('sha512', this.userAuth.apiSecret)
-                                                    .update(noncedUrl).digest('hex')
+                        .update(noncedUrl).digest('hex')
                 }
             }
 
@@ -59,7 +57,7 @@ export default class Bittrex implements IWrapper {
         })
     }
 
-    validateCredentials() : Promise<boolean> {
+    validateCredentials(): Promise<boolean> {
         // Keep it always true for now
         return Promise.resolve(true)
         // return new Promise((resolve, reject) => {
@@ -69,7 +67,7 @@ export default class Bittrex implements IWrapper {
         // })
     }
 
-    returnBalances() : Promise<Balance[]> {
+    returnBalances(): Promise<Balance[]> {
         var url = this.apiURL + '/account/getbalances'
         return new Promise((resolve, reject) => {
             this._request(url).then(balancesRaw => {
@@ -80,21 +78,138 @@ export default class Bittrex implements IWrapper {
         })
     }
 
-    returnPortfolioHistory(startDate: Date = new Date(0)) : Promise<Portfolio[]> {
-        var url = this.apiURL + '/account/getorderhistory'
-
+    returnDepositsWithdrawals() : Promise<PortfolioEvent[]> {
+        var url = this.apiURL + '/account/getwithdrawalhistory'
         return new Promise((resolve, reject) => {
-            this._request(url).then(tradesRaw => {
-                resolve(tradesRaw)
+            this._request(url).then(withdrawalsRaw => {
+                var url = this.apiURL + '/account/getdeposithistory'
+                this._request(url).then(depositsRaw => {
+                    var deposits: PortfolioEvent[] = depositsRaw.map(dr => {
+                        var deposit : DepositWithdrawal  = {
+                            currency: dr.Currency,
+                            amount: dr.Amount + '',
+                            txid: dr.TxId,
+                            address: dr.CryptoAddress,
+                            fees: "0.0"
+                        }
+                        var event : PortfolioEvent = {
+                            timestamp: new Date(Date.parse(dr.LastUpdated)),
+                            permanent: true,
+                            data: deposit,
+                            type: 'deposit'
+                        }
+
+                        return event
+                    })
+
+                    var withdrawals = withdrawalsRaw.map(wr => {
+                        var withdrawal : DepositWithdrawal = {
+                            currency: wr.Currency,
+                            amount: wr.Amount + '',
+                            txid: wr.TxId,
+                            address: wr.CryptoAddress,
+                            fees: "0.0"
+                        }
+                        var event : PortfolioEvent = {
+                            timestamp: new Date(Date.parse(wr.Opened)),
+                            permanent: true,
+                            data: withdrawal,
+                            type: 'withdrawal'
+                        }
+
+                        return event
+                    })
+
+                    var ret: PortfolioEvent[] = withdrawals.concat(deposits)
+                                .sort((a, b) => b.timestamp.getTime() -
+                                    a.timestamp.getTime())
+                    resolve(ret)
+                }).catch(err => reject(err))
             }).catch(err => reject(err))
+        })
+    }
+
+    returnHistory(startDate?: Date): Promise<PortfolioEvent[]> {
+
+        this.returnDepositsWithdrawals()
+
+        return new Promise<PortfolioEvent[]>((resolve, reject) => {
+            var portfolioHistory: PortfolioEvent[] = new Array()
+
+            // Read order history csv file
+            var filePath = this.userAuth.portfolioHistory.path
+
+            fs.createReadStream(filePath)
+                .pipe(csv({
+                    quote: '"',
+                    headers: ["timestampClosed",
+                        "timestampOpened",
+                        "market",
+                        "type",
+                        "ask",
+                        "unitsFilled",
+                        "unitsTotal",
+                        "rate",
+                        "cost"]
+                }))
+                .on('data', data => {
+                    var isSell = data.type.toLowerCase().includes('sell')
+
+                    if (isSell) {
+                        var trade: Trade = {
+                            soldCurrency: data.market.split('-')[1],
+                            boughtCurrency: data.market.split('-')[0],
+                            soldAmount: data.unitsFilled,
+                            boughtAmount: data.cost,
+                            rate: data.rate,
+                            fees: "0.0"
+                        }
+
+                        var portfolioEvent: PortfolioEvent = {
+                            timestamp: new Date(Date.parse(data.timestampClosed)),
+                            type: 'trade',
+                            permanent: data.unitsFilled == data.unitsTotal,
+                            data: trade,
+                        }
+
+                        portfolioHistory.push(portfolioEvent)
+                    }
+                    else {
+                        var trade: Trade = {
+                            soldCurrency: data.market.split('-')[0],
+                            boughtCurrency: data.market.split('-')[1],
+                            soldAmount: data.cost,
+                            boughtAmount: data.unitsFilled,
+                            rate: data.rate,
+                            fees: "0.0"
+                        }
+
+                        var portfolioEvent: PortfolioEvent = {
+                            timestamp: new Date(Date.parse(data.timestampClosed)),
+                            type: 'trade',
+                            permanent: data.unitsFilled == data.unitsTotal,
+                            data: trade,
+                        }
+
+                        portfolioHistory.push(portfolioEvent)
+                    }
+                })
+                .on('end', _ => {
+                    this.returnDepositsWithdrawals().then(depositsWithdrawals => {
+                        var ret: PortfolioEvent[] = portfolioHistory.concat(depositsWithdrawals)
+                                                            .sort((a, b) => a.timestamp.getTime() -
+                                                                b.timestamp.getTime())
+                        resolve(ret)
+                    })
+                })
         })
     }
 
     private lastNonce: number = null
     private repeatNonce: number = 0
     readonly NONCE_LENGTH: number = 15
-    nonce() : number {
-        var now : number = Math.pow(10, 2) * +new Date()
+    nonce(): number {
+        var now: number = Math.pow(10, 2) * +new Date()
 
         if (now == this.lastNonce) {
             this.repeatNonce++
