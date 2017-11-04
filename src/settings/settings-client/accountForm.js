@@ -76,10 +76,10 @@ AccountForm.propTypes = {
     service: PropTypes.shape({
         key: PropTypes.string,
         name: PropTypes.string,
-        formFields: PropTypes.arrayOf({
+        formFields: PropTypes.arrayOf(PropTypes.shape({
             name: PropTypes.string,
             description: PropTypes.string,
             placeholder: PropTypes.string,
-        })
+        }))
     }),
 }

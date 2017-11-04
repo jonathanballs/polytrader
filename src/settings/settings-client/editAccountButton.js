@@ -148,9 +148,9 @@ export default class EditAccountButton extends React.Component {
 EditAccountButton.propTypes = {
   status: PropTypes.oneOf(['none', 'failure', 'success', 'loading']),
   onSubmitted: PropTypes.func,
-  formValues: PropTypes.objects,
+  formValues: PropTypes.object,
   accountID: PropTypes.string,
-  service: {
+  service: PropTypes.shape({
     key: PropTypes.string,
     name: PropTypes.string,
     formValues: PropTypes.arrayOf(PropTypes.shape({
@@ -158,5 +158,5 @@ EditAccountButton.propTypes = {
       description: PropTypes.string,
       placeholder: PropTypes.string,
     }))
-  },
+  }),
 }

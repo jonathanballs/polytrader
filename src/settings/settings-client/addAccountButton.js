@@ -90,6 +90,9 @@ export default class AddAccountButton extends React.Component {
       }
     }
 
+    // Disable PropType warnings for CarouselItem
+    CarouselItem.propTypes.children = PropTypes.any
+
     var slides = [<CarouselItem key='1' src=''>
       <div>
         {this.props.serviceList.map((service, i) => {
@@ -142,6 +145,6 @@ export default class AddAccountButton extends React.Component {
 }
 
 AddAccountButton.propTypes = {
-  serviceList: PropTypes.object,
+  serviceList: PropTypes.arrayOf(PropTypes.object),
   updateAccountList: PropTypes.func
 }

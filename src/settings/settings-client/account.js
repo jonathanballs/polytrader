@@ -7,7 +7,7 @@ import EditAccountButton from './editAccountButton'
 export default class Account extends React.Component {
   makeRow(title, content) {
     return(
-        <div className="row">
+        <div className="row" key={title}>
           <div className="col-md-2 exchange-property">{title}</div>
           <div className="col-md-10 exchange-property-val">{content}</div>
         </div>
@@ -66,10 +66,10 @@ Account.propTypes = {
   service: PropTypes.shape({
     key: PropTypes.string,
     name: PropTypes.string,
-    formFields: PropTypes.arrayOf({
+    formFields: PropTypes.arrayOf(PropTypes.shape({
       name: PropTypes.string,
       description: PropTypes.string,
       placeholder: PropTypes.string,
-    })
+    }))
   }).isRequired,
 }
