@@ -131,8 +131,6 @@ export default class Bittrex implements IWrapper {
 
     returnHistory(startDate?: Date): Promise<PortfolioEvent[]> {
 
-        this.returnDepositsWithdrawals()
-
         return new Promise<PortfolioEvent[]>((resolve, reject) => {
             var portfolioHistory: PortfolioEvent[] = new Array()
 
@@ -155,11 +153,17 @@ export default class Bittrex implements IWrapper {
                 .on('data', data => {
                     var isSell = data.type.toLowerCase().includes('sell')
 
+                    // Sometimes it parses the headers as a row
+                    if (data.type == 'Type') {
+                        return
+                    }
+
+
                     if (isSell) {
                         var trade: Trade = {
                             soldCurrency: data.market.split('-')[1],
                             boughtCurrency: data.market.split('-')[0],
-                            soldAmount: data.unitsFilled,
+                            soldAmount: Big(data.unitsFilled).abs().toFixed(15),
                             boughtAmount: data.cost,
                             rate: data.rate,
                             fees: "0.0"
@@ -178,7 +182,7 @@ export default class Bittrex implements IWrapper {
                         var trade: Trade = {
                             soldCurrency: data.market.split('-')[0],
                             boughtCurrency: data.market.split('-')[1],
-                            soldAmount: data.cost,
+                            soldAmount: Big(data.cost).abs().toFixed(15),
                             boughtAmount: data.unitsFilled,
                             rate: data.rate,
                             fees: "0.0"
