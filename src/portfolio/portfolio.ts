@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { loginRequired } from '../auth/auth'
+import { loginRequired, loginRequiredApi } from '../auth/auth'
 import servicesList from '../wrappers/services'
 import { UserModel, PriceModel } from "../models";
 import { Portfolio } from '../wrappers'
@@ -14,14 +14,24 @@ var router = express.Router()
 export default router
 
 
-// Get poloniex data
-router.get('/', loginRequired, (req, res) => {
-    //Redirect to account in case of API key not setup
-    if (!req.user.accounts.length) {
-        res.redirect('/account')
-        return
-    }
+router.get('/api/portfolio-history', loginRequiredApi, (req, res) => {
+    // Fetch event histories from db
+    var eventHistoryPromises = req.user.accounts.map(a => {
+        return PortfolioEventHistoryModel.findOneOrCreate(
+            { accountID: a._id }
+        )
+    })
+    Promise.all(eventHistoryPromises).then(eventHistories => {
+        Promise.all(eventHistories.map(eh => {
+            return eh.getAnnotatedPortfolioHistory()
+        })).then(portfolioHistories => {
+            res.send(portfolioHistories)
+        })
+    })
 
+})
+
+router.get('/api/update-portfolios/', loginRequiredApi, (req, res) => {
     // Update the accounts
     req.user.accounts.forEach(a => {
         var service = servicesList.filter(s => s.key == a.service)[0]
@@ -58,18 +68,9 @@ router.get('/', loginRequired, (req, res) => {
             }).catch(err => console.log(service.key + " returnBalances error :" + err))
         }).catch(err => console.log(service.key + " returnHistory error :" + err))
     })
+})
 
-    // Fetch event histories from db
-    var eventHistoryPromises = req.user.accounts.map(a => {
-        return PortfolioEventHistoryModel.findOneOrCreate(
-            { accountID: a._id }
-        )
-    })
-    Promise.all(eventHistoryPromises).then(eventHistories => {
-        Promise.all(eventHistories.map(eh => {
-            return eh.getAnnotatedPortfolioHistory()
-        })).then(portfolioHistories => {
-            res.render('portfolio/portfolio', { portfolioHistories })
-        })
-    })
+// Get poloniex data
+router.get('/', loginRequired, (req, res) => {
+    res.render('portfolio/portfolio')
 });

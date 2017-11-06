@@ -33,9 +33,9 @@ class App extends React.Component {
             <div id="portfolio-value-history"></div>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-12">
-            <table class="table">
+        <div className="row">
+          <div className="col-md-12">
+            <table className="table">
               <thead>
                 <tr>
                   <th>Statistic</th>
