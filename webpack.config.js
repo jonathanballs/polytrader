@@ -84,8 +84,29 @@ const settings_client = {
     }
 }
 
+// The portfolio react app
+PORTFOLIO_APP_DIR = path.resolve(__dirname, './src/portfolio/portfolio-client/')
+const portfolio_client = {
+    context: PORTFOLIO_APP_DIR,
+    entry: './index.js',
+    output: {
+        filename: './dist/static/js/portfolio-client.js'
+    },
+    module: {
+        loaders: [
+            {
+                test: /\.js?/,
+                include: PORTFOLIO_APP_DIR,
+                loader: 'babel-loader'
+            }
+        ]
+    }
+}
+
+
 module.exports = [
     backend,
     sass,
-    settings_client
+    settings_client,
+    portfolio_client
 ]

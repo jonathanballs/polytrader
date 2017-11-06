@@ -1,36 +1,6 @@
 // Portfolio.js
 // Code for charting 
 
-var ctx = document.getElementById("portfolio-pie")
-
-// A combined portfolio that represents the entire portfolio of the user
-
-var data = {
-    datasets: [{
-        data: portfolioHistories[1][portfolioHistories[1].length - 1].balances.filter(b => b.btcValue != '0.0').map(b => b.btcValue),
-        backgroundColor: [
-            "#FF6384",
-            "#36A2EB",
-            "#FFCE56"
-        ],
-        hoverBackgroundColor: [
-            "#FF6384",
-            "#36A2EB",
-            "#FFCE56"
-        ]
-    }],
-    labels: portfolioHistories[1][portfolioHistories[1].length - 1].balances.filter(b => b.btcValue != '0.0').map(b => b.currency),
-
-    // These labels appear in the legend and in the tooltips when hovering
-    // different arcs labels: cryptoBalances.map((x) => x.currency)
-};
-
-var portfolioPieChart = new Chart(ctx, {
-    type: 'pie',
-    data: data,
-    options: {}
-})
-
 var series = portfolioHistories.map(ph => {
     return ph.map((p) => {
 
