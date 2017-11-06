@@ -5,12 +5,53 @@ import axios from 'axios'
 class App extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      portfolioHistories: null
+    }
+
+    this.fetchPortfolioHistory()
+  }
+
+  getPortfoliosAtTime(date) {
+    if (this.state.portfolioHistories) {
+      return this.state.portfolioHistories
+      .map(ph => { // Map to their most recent portfolio
+        var portfoliosAtTime = ph.filter(p => Date.parse(p.timestamp) < date)
+        if (portfoliosAtTime.length)
+          return portfoliosAtTime[portfoliosAtTime.length - 1]
+      })
+      .filter(p => !!p) // Remove empty portfolios
+    }
+  }
+
+  fetchPortfolioHistory() {
+    var portfolioHistoryPromise = axios.get('/portfolio/api/portfolio-history/')
+
+    portfolioHistoryPromise.then(portfolioHistories => {
+      this.setState({portfolioHistories: portfolioHistories.data})
+    })
+  }
+
+  portfolioValueAtTime(date) {
+    if (!this.state.portfolioHistories) {
+      return null
+    }
+    else {
+      var value = this.getPortfoliosAtTime(date)
+      .map(p => { // Reduce portfolios to their btcValue
+        return p.balances.map(b => parseFloat(b.btcValue)).reduce((b, acc) => b+acc)
+      })
+      .reduce((b, acc) => b+acc)
+
+      return Number(value).toFixed(3)
+    }
   }
 
   render() {
     return (
       <div>
-        <h1>Your Portfolio - 20BTC</h1>
+        <h1>Your Portfolio - {this.portfolioValueAtTime(new Date)} BTC</h1>
         <div className="row" style={{ height: "20em" }}>
           <div className="col-sm-9">
             <table className="table">

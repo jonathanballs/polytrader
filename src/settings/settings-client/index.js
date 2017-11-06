@@ -32,7 +32,17 @@ class App extends React.Component {
         <br />
         <h2>General</h2>
         <form method="post" action="/account">
-          <div className="form-group row"><label className="col-md-2 col-form-label" htmlFor="email">Email</label><input className="col-md-10 form-control" id="email" type="email" name="email" placeholder="Email" required defaultValue="jonathanballs@protonmail.com" /></div>
+          <div className="form-group row">
+            <label className="col-md-2 col-form-label" htmlFor="email">Email</label>
+            <input
+              className="col-md-10 form-control"
+              id="email"
+              type="email"
+              name="email"
+              placeholder="Email"
+              required
+              defaultValue="jonathanballs@protonmail.com" />
+          </div>
           <div className="form-group row">
             <label className="col-md-2 col-form-label" htmlFor="password-change">Password</label>
             <div className="col-md-3" style={{padding: 0}}><button className="btn btn-block" type="button" data-toggle="modal" data-target="#passwordModal">Change Password</button></div>
