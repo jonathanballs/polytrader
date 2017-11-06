@@ -163,6 +163,17 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
                     return { c, rb, cb, diff: cb - rb }
                 }).filter(b => Math.abs(b.rb - b.cb) > 0.001)
 
+                // Rename antcoin to neocoin
+                for (var p of portfolioHistory) {
+                    var antBalance = p.balances.filter(b => b.currency == 'ANS')[0]
+                    if (antBalance) {
+                        var neoBalance = p.balanceOf("NEO")
+                        neoBalance.amount = Big(neoBalance.amount).plus(antBalance.amount).toFixed(15)
+                        // Remove antshares
+                        p.balances = p.balances.filter(b => b.currency != 'ANS')
+                    }
+                }
+
                 // Find first impossible portfolio and fix errors
                 outerloop:
                 for (var p of portfolioHistory) {

@@ -15,6 +15,7 @@ setup(
     install_requires=[
         'humanize==0.5.1',
         'pymongo==3.5.1',
-        'requests==2.18.4'
+        'requests==2.18.4',
+        'python-dateutil==2.6.1'
     ]
 )

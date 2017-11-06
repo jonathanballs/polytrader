@@ -4,11 +4,13 @@
 # as a command or as a service to continuously update the datastore.
 
 from datetime import datetime
+import dateutil.parser
 import os
 import sys
 import time
 import json
 import pprint
+import subprocess
 
 import requests
 import humanize
@@ -16,47 +18,14 @@ from pymongo import MongoClient
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/")
 CURRENCIES_META_FILE_PATH = os.path.join(DATA_DIR, 'currencies.json')
-
-TOP_CURRENCIES_API_URL = 'https://api.coinmarketcap.com/v1/ticker/?limit=200'
-PRICE_HISTORY_URL = 'https://cryptocoincharts.info/fast/2fh_period.php?pair=%s-btc&market=bittrex&time=alltime&resolution=1h'
-
 MONGO_URL = 'mongodb://db:27017/'
 
-# Returns True or False depending on success
-def update_backup_file(currency):
+POLONIEX_MARKETS_URL = 'https://poloniex.com/public?command=return24hVolume'
+BITTREX_MARKETS_URL = 'https://bittrex.com/api/v2.0/pub/Markets/GetMarketSummaries'
 
-    # TODO: use &time=3d in order to limit stress on server
-    data = requests.get(PRICE_HISTORY_URL % currency).json()
-
-    # Data is returned with a,b,c,d key names
-    if not data or len(data['a']) == 0:
-        return False
-
-    start_time = data['a'][0][0] / 1000
-
-    data = zip(data['a'], data['c'])
-
-    backup_file_location = os.path.join(DATA_DIR, "{}.csv".format(currency))
-    if os.path.exists(backup_file_location):
-        with open(backup_file_location, 'r') as f:
-            # Set the start time as 1 second after the last record in
-            # the backup file
-            start_time = int(f.readlines()[-1].split(',')[0]) + 1
-    
-    print("Updating {} cache file from {}...".format(
-        currency.ljust(4),
-        humanize.naturaltime(datetime.fromtimestamp(start_time))
-        ))
-    
-    # Create the data directory if necessary
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
-
-    with open(backup_file_location, 'w') as f:
-        for rec in data:
-            f.write("{},{:.15f},{}\n".format(int(rec[0][0] / 1000), rec[0][1], rec[1][1]))
-
-    return True
+POLONIEX_PRICE_HISTORY_URL = "https://poloniex.com/public?" + \
+       "command=returnChartData&currencyPair=BTC_%s&start=%d&end=%d&period=300"
+BITTREX_PRICE_HISTORY_URL = 'https://bittrex.com/Api/v2.0/pub/market/GetTicks?marketName=BTC-%s&tickInterval=day&_=1509971318614'
 
 def print_help():
     print("Usage: ./priceUpdater.py COMMAND")
@@ -74,80 +43,129 @@ if __name__ == '__main__':
         exit()
 
     if sys.argv[1] == 'update_cache':
-        # Fetch a list of all BTC pairs
-        raw_pairs = requests.get(TOP_CURRENCIES_API_URL).json()
-        currencies_meta = []
-
-        for c in raw_pairs:
-            if(update_backup_file(c['symbol'])):
-                currencies_meta.append({
-                    'symbol': c['symbol'],
-                    'name': c['name'],
-                    'available_supply': c['available_supply'],
-                    'total_supply': c['total_supply']
-                })
-
-        with open(DATA_DIR + 'currencies.json', 'w+') as f:
-            f.write(json.dumps(currencies_meta, indent=4))
-            f.write('\n')
+        print("Updating cache...")
     
+        # Get Poloniex currencies
+        poloniex_markets = requests.get(POLONIEX_MARKETS_URL).json()
+        poloniex_currencies = sorted([pair[4:] for pair in poloniex_markets if pair.startswith("BTC_")])
+
+        # Get Bittrex currenices (minus poloniex ones)
+        bittrex_markets = requests.get(BITTREX_MARKETS_URL).json()
+        bittrex_currencies = [market["Market"]["MarketCurrency"] for market in bittrex_markets["result"]]
+        bittrex_currencies = sorted(list(set(bittrex_currencies).difference(set(poloniex_currencies))))
+
+        # Create the data directory if necessary
+        if not os.path.exists(DATA_DIR):
+            os.makedirs(DATA_DIR)
+
+        # Get last ticks in cache history. Dictionary of currency symbols to unix timestamps
+        recent_ticks = dict()
+        for f in os.listdir(DATA_DIR):
+            path = os.path.join(DATA_DIR, f)
+            currency_name = f[:-4]
+
+            if not path.endswith('csv'):
+                continue
+
+            last_line = subprocess.check_output(['tail', '-1', path]).decode('utf-8')
+            if len(last_line) == 0:
+                os.remove(path)
+                continue
+
+            recent_ticks[currency_name] = int(last_line.split(',')[0])
+        
+        # Update cache from poloniex
+        for currency in poloniex_currencies:
+            start_time = recent_ticks[currency] if currency in recent_ticks else 0
+            end_time = int(time.time())
+            url = POLONIEX_PRICE_HISTORY_URL % (currency, start_time, end_time)
+
+            print("Updating BTC_{} cache file from {}...".format(
+                currency.ljust(4),
+                "scratch" if currency not in recent_ticks else humanize.naturaltime(datetime.fromtimestamp(start_time))
+                ))
+            
+            backup_file_location = os.path.join(DATA_DIR, currency + '.csv')
+            data = requests.get(url).json()
+            if data[0]['date'] != 0:
+                with open(backup_file_location, 'a') as f:
+                    for rec in data:
+                        f.write("{},{:.10f}\n".format(rec["date"], rec["weightedAverage"]))
+        
+        # Update history from bittrex
+        for currency in bittrex_currencies:
+            if currency == 'BTC':
+                continue
+
+            start_time = recent_ticks[currency] if currency in recent_ticks else 0
+            end_time = int(time.time())
+            url = BITTREX_PRICE_HISTORY_URL % (currency)
+
+            print("Updating BTC_{} cache file from {}...".format(
+                currency.ljust(4),
+                "scratch" if currency not in recent_ticks else humanize.naturaltime(datetime.fromtimestamp(start_time))
+                ))
+
+            backup_file_location = os.path.join(DATA_DIR, currency + '.csv')
+            data = requests.get(url).json()
+            with open(backup_file_location, 'a') as f:
+                for rec in data["result"]:
+                    timestamp = int(dateutil.parser.parse(rec["T"]).strftime('%s'))
+                    if timestamp > start_time:
+                        f.write("{},{:.10f}\n".format(timestamp, rec["O"]))
+
     elif sys.argv[1] == 'load_cache':
+        print("Loading Cache...")
         client = MongoClient(MONGO_URL)
         price_history = client['polytrader']['price_history']
 
-        with open(CURRENCIES_META_FILE_PATH) as meta_file:
-            currencies = json.load(meta_file)
-            for currency in currencies:
-                currency_pair = 'BTC_' + currency['symbol']
+        for f in sorted(os.listdir(DATA_DIR)):
+            path = os.path.join(DATA_DIR, f)
+            currency_name = f[:-4]
+            currency_pair = 'BTC_' + currency_name
 
-                with open(os.path.join(DATA_DIR, currency['symbol']) + '.csv', 'r') as f:
-                    current_date = datetime.fromtimestamp(0)
-                    current_record = {}
-                    price_records = []
-                    for line in f.readlines():
-                        l_sp = line.split(',')
-                        l_date = datetime.fromtimestamp(int(l_sp[0]))
-                        l_price = float(l_sp[1])
+            if not path.endswith('csv'):
+                continue
 
-                        l_volume = float(l_sp[2]) # TODO: put this in the db
+            # Delete the old entries
+            price_history.delete_many({ 'currency_pair': currency_pair })
 
-                        # Push the old day if necessary and create new record
-                        if l_date.date() != current_date.date():
-                            if current_record:
-                                current_record['daily_average'] = \
-                                    float(sum(current_record['price_history'])) \
-                                    / len(current_record['price_history'])
-                                price_records.append(current_record)
+            with open(path, 'r') as f:
+                current_date = datetime.fromtimestamp(0)
+                current_record = {}
+                price_records = []
+                for line in f.readlines():
+                    l_sp = line.split(',')
+                    l_date = datetime.fromtimestamp(int(l_sp[0]))
+                    l_price = float(l_sp[1])
 
-                            current_record = {
-                                'date': l_date,
-                                'currency_pair': currency_pair,
-                                'daily_average': None,
-                                'period': 3600,
-                                'price_history': []
-                            }
-                            current_date = l_date
-                        current_record['price_history'].append(l_price)
-                    
-                    if len(current_record['price_history']) > 0:
-                        current_record['daily_average'] = \
-                            float(sum(current_record['price_history'])) \
-                            / len(current_record['price_history'])
-                        price_records.append(current_record)
+                    # Push the old day if necessary and create new record
+                    if l_date.date() != current_date.date():
+                        if current_record:
+                            current_record['daily_average'] = \
+                                float(sum(current_record['price_history'])) \
+                                / len(current_record['price_history'])
+                            price_records.append(current_record)
 
-                    print("Filling database from {} cache ({} records)".format(
-                                currency_pair.ljust(8), len(price_records)))
+                        current_record = {
+                            'date': l_date,
+                            'currency_pair': currency_pair,
+                            'daily_average': None,
+                            'period': 300,
+                            'price_history': []
+                        }
+                        current_date = l_date
+                    current_record['price_history'].append(l_price)
 
-                    price_history.insert_many(price_records)
+                print("Filling database from {} cache ({} records)".format(
+                            currency_pair.ljust(8), len(price_records)))
+                price_history.insert_many(price_records)
+
 
     elif sys.argv[1] == 'start':
         client = MongoClient(MONGO_URL)
-        print("Connected to Mongo Database")
-        db = client['polytrader']
-        collection = db['users']
-        for u in collection.find():
-            pprint.pprint(u)
-    
+        print("Price updater connected to database...")
+
     else:
         print("Error couldn't understand arguments")
         print_help()
