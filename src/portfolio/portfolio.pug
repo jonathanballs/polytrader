@@ -29,14 +29,17 @@ block content
 
     .row
       .col-md-12
-        h1 Value History
-        canvas#portfolio-value-history
+        #portfolio-value-history
 
     // Set variables and include code for charting
+    script(src="https://code.highcharts.com/stock/highstock.src.js")
+    script(src="https://code.highcharts.com/stock/modules/exporting.js")
     script.
       var portfolioHistories = !{JSON.stringify(portfolioHistories)}
     script(src='/static/js/portfolio.js')
 
+    br
+    br
     .row
       .col-md-12
         table.table
@@ -57,17 +60,3 @@ block content
             tr
               td Percentage fees
               td Uncalculated
-
-    .row
-      .col-md-12
-        h1 Your Portfolio according to value history simulations
-        table.table
-          thead
-            tr
-              th Currency
-              th Balance
-          tbody
-            //- each b in portfolioHistory[portfolioHistory.length-1].balances
-            //-   tr
-            //-     td=b["currency"]
-            //-     td=b["amount"]

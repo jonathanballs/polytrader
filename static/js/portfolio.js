@@ -7,7 +7,7 @@ var ctx = document.getElementById("portfolio-pie")
 
 var data = {
     datasets: [{
-        data: [],//cryptoBalances.map((x) => x.btcValue),
+        data: portfolioHistories[1][portfolioHistories[1].length - 1].balances.filter(b => b.btcValue != '0.0').map(b => b.btcValue),
         backgroundColor: [
             "#FF6384",
             "#36A2EB",
@@ -19,6 +19,7 @@ var data = {
             "#FFCE56"
         ]
     }],
+    labels: portfolioHistories[1][portfolioHistories[1].length - 1].balances.filter(b => b.btcValue != '0.0').map(b => b.currency),
 
     // These labels appear in the legend and in the tooltips when hovering
     // different arcs labels: cryptoBalances.map((x) => x.currency)
@@ -30,59 +31,80 @@ var portfolioPieChart = new Chart(ctx, {
     options: {}
 })
 
-var historyCtx = document.getElementById("portfolio-value-history");
+var series = portfolioHistories.map(ph => {
+    return ph.map((p) => {
 
-var historyData = {
-    labels: portfolioHistories[0].map((x) => x.timestamp),
-    datasets: portfolioHistories.map(ph => {
-        return {
-            data: ph.map((p) => {
-                if (!p.balances.length)
-                    return {x: p.timestamp, y: 0.0}
+        if (!p.balances.length)
+            return [Date.parse(p.timestamp), 0.0]
 
-                var btc_balance = p.balances
-                    .map(b=>parseFloat(b.btcValue))
-                    .reduce((a,b)=>a+b,0.0)
-                return {x: p.timestamp, y: btc_balance}
-            })
+        var btc_balance = p.balances
+            .map(b => parseFloat(b.btcValue))
+            .reduce((a, b) => a + b, 0.0)
+
+        return [Date.parse(p.timestamp), btc_balance]
+    })
+})
+
+var dates = new Set()
+series.forEach(d => {
+    d.forEach(p => {
+        dates.add(p[0])
+    })
+})
+dates = Array.from(dates).sort()
+
+var data1 = dates.map(date => {
+    var portfoliosAtTime = series.map(s => {
+        var portfoliosToDate = s.filter(p => p[0] < date)
+        if (!portfoliosToDate.length) {
+            return null
         }
-    }),
-}
+        else {
+            return portfoliosToDate[portfoliosToDate.length -1]
+        }
+    })
+    return portfoliosAtTime
+})
 
-var historyOptions = {
-    title:{
-        text: "Bitcoin balance over time"
+var data = data1.map(d => {
+    var ps = d.filter(a => !!a)
+    if (ps.length == 0)
+        return null
+
+    return ps.reduce((b, acc) => {
+        acc[1] += b[1]
+        return acc
+    })
+})
+
+data = data.map(d => {
+    if (d)
+        d[1] = Math.abs(d[1])
+    return d
+})
+
+$('#portfolio-value-history').highcharts('StockChart', {
+
+
+    rangeSelector: {
+        selected: 1,
+        inputEnabled: $('#container').width() > 480
     },
-    scales: {
-        xAxes: [{
-            type: "time",
-            time: {
-                unit: 'month',
-                tooltipFormat: 'll HH:mm'
-            },
-            scaleLabel: {
-                display: true,
-                labelString: 'Date'
-            }
-        }, ],
-        yAxes: [{
-            scaleLabel: {
-                display: true,
-                labelString: 'value'
-            }
-        }]
+
+    title: {
+        text: 'Value History',
     },
-    elements: { point: { radius: 0 }},
-    tooltips: {
-        mode: 'x',
-        intersect: false
-    }
-}
 
-
-var portfolioPriceHistoryChart = new Chart(historyCtx, {
-    type: 'line',
-    data: historyData,
-    options: historyOptions
+    series: [{
+        name: 'Portfolio Value (BTC)',
+        data,
+        marker: {
+            enabled: false,
+            radius: 3
+        },
+        shadow: true,
+        tooltip: {
+            valueDecimals: 2
+        }
+    }]
 });
-
