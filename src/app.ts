@@ -68,6 +68,10 @@ app.use(passport.session());
 app.use('/static', express.static('static')) // Serve static files
 app.use('/static', express.static('dist/static')) // Serve compiled static files
 app.use(expressValidator())
+app.use(function(req, res, next) {
+    res.locals.user = req.user;
+    next();
+});
 
 app.use('/account', settingsRouter)
 app.use('/auth', authRouter)
