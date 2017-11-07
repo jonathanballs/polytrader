@@ -73,31 +73,36 @@ portfolioEventHistorySchema.statics.findOneOrCreate = function (condition, doc) 
                 resolve(peh)
                 return
             } else {
-                resolve(self.create({accountID: condition.accountID,
-                                                events: []}, (err, peh) => {
-                                                            resolve(peh)
-                                                        }))
+                resolve(self.create({
+                    accountID: condition.accountID,
+                    events: []
+                }, (err, peh) => {
+                    resolve(peh)
+                }))
             }
         })
     })
 };
 
 // Convert event history to a portfolio history
-portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
-    function getAnnotatedPortfolioHistory(): Promise<Portfolio[]> {
-
+portfolioEventHistorySchema.methods.getPortfolioHistory =
+    function getPortfolioHistory(
+        resolution: Number = 86400,                 // One day
+        from = new Date(0),                         // Start of portfolio
+        to = new Date()): Promise<Portfolio[]>      // Today
+    {
         return new Promise<Portfolio[]>((resolve, reject) => {
 
             if (!this.events.length) {
                 resolve([])
                 return
             }
-
             // Construct portfolio history based on portfolio events
+
             var portfolioHistory: Portfolio[] = new Array()
             this.events.forEach(ev => {
                 var portfolio = portfolioHistory.length
-                    ? clone(portfolioHistory[portfolioHistory.length-1])
+                    ? clone(portfolioHistory[portfolioHistory.length - 1])
                     : new Portfolio([], ev.timestamp)
 
                 portfolio.timestamp = ev.timestamp
@@ -119,27 +124,23 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
                     var oldSoldBalance = portfolio.balanceOf(ev.data.soldCurrency)
 
                     oldBoughtBalance.amount = Big(oldBoughtBalance.amount)
-                                                .plus(ev.data.boughtAmount)
-                                                .minus(ev.data.fees)
-                                                .toFixed(15)
+                        .plus(ev.data.boughtAmount)
+                        .minus(ev.data.fees)
+                        .toFixed(15)
 
                     oldSoldBalance.amount = Big(oldSoldBalance.amount)
-                                                .minus(ev.data.soldAmount)
-                                                .toFixed(15)
+                        .minus(ev.data.soldAmount)
+                        .toFixed(15)
                 }
                 portfolioHistory.push(portfolio)
             })
 
             // Get list of currencies in portfolio
-            var currencyPairs = new Set(portfolioHistory.map(p => {
-                return p.balances.map(b => 'BTC_' + b.currency)
-            }).reduce((acc, p) => acc.concat(p), []))
-
             // Error correction
             // Sometimes exchange and polytrader bugs lead to missing events.
             // This should identify, report and (hopefully) correct them
-            UserModel.findOne({ "accounts._id": this.accountID } , (err, user) => {
-                if(!portfolioHistory.length) {
+            UserModel.findOne({ "accounts._id": this.accountID }, (err, user) => {
+                if (!portfolioHistory.length) {
                     return
                 }
 
@@ -158,7 +159,7 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
 
                     var cb: number = parseFloat(
                         portfolioHistory[portfolioHistory.length - 1]
-                        .balanceOf(c).amount)
+                            .balanceOf(c).amount)
 
                     return { c, rb, cb, diff: cb - rb }
                 }).filter(b => Math.abs(b.rb - b.cb) > 0.001)
@@ -188,23 +189,45 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
 
                             // Update portfolios
                             portfolioHistory
-                            .filter(p => {
-                                return p.timestamp > newPortfolio.timestamp
-                            })
-                            .forEach(p => {
-                                for (var bDiscrep of balanceDiscrepencies) {
-                                    p.balanceOf(bDiscrep.c).amount =
-                                        Big(p.balanceOf(bDiscrep.c).amount)
-                                        .minus(bDiscrep.diff).toFixed(20)
-                                }
-                            })
+                                .filter(p => {
+                                    return p.timestamp > newPortfolio.timestamp
+                                })
+                                .forEach(p => {
+                                    for (var bDiscrep of balanceDiscrepencies) {
+                                        p.balanceOf(bDiscrep.c).amount =
+                                            Big(p.balanceOf(bDiscrep.c).amount)
+                                                .minus(bDiscrep.diff).toFixed(20)
+                                    }
+                                })
 
                             break outerloop;
                         }
                     }
                 }
 
-                // Perform price annotation
+                resolve(portfolioHistory)
+            })
+        })
+    }
+
+
+// Convert event history to an annotated portfolio history which includes
+// btcValue's for every balance
+portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
+    function getAnnotatedPortfolioHistory(
+        resolution: Number = 86400,                 // One day
+        from = new Date(0),                         // Start of portfolio
+        to = new Date()): Promise<Portfolio[]>      // Today
+    {
+
+        return new Promise<Portfolio[]>((resolve, reject) => {
+
+            this.getPortfolioHistory(resolution, from, to).then(portfolioHistory => {
+
+                var currencyPairs = new Set(portfolioHistory.map(p => {
+                    return p.balances.map(b => 'BTC_' + b.currency)
+                }).reduce((acc, p) => acc.concat(p), []))
+
                 let prices = []
                 PriceModel.aggregate([
                     {
@@ -291,7 +314,7 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
 
                         resolve(portfolioHistoriesProcessed)
                     })
-            }).catch( err => reject(err) )
+            }).catch(err => reject(err))
         })
     }
 
