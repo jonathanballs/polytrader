@@ -12,6 +12,6 @@ You will need docker and docker-compose installed
     $ docker-compose run price_updater load_cache
 
     # Start watching files for changes
-    $ grunt watch
+    $ webpack --watch
 
 This will build the necessary containers and launch them.
