@@ -160,7 +160,7 @@ nav .navbar-nav>.open>a, nav .navbar-nav>.open>a:focus, nav .navbar-nav>.open>a:
 .booking-section{padding-top: 0px;}
 .form-block{background-color: #fff; padding: 60px;-webkit-box-shadow: 0px 0px 6px 0px rgba(192,203,212,0.35);
 -moz-box-shadow: 0px 0px 6px 0px rgba(192,203,212,0.35);
-box-shadow: 0px 0px 6px 0px rgba(192,203,212,0.35); border-radius: 6px; position: relative;bottom: -100px;}
+box-shadow: 0px 0px 6px 0px rgba(192,203,212,0.35); border-radius: 6px; position: relative;};
 .form-content{padding-top: 100px;}
 .btn-big{padding-top: 20px;padding-bottom: 20px; letter-spacing: 3px; font-size: 18px;}
 .form-block .form-control{margin-bottom: 15px;}

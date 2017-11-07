@@ -1,42 +1,43 @@
-.container
-  .row
-    .col-md-6
-      .form-block
-        h1 Sign up and connect your poloniex account
-        form(method='post', action='/auth/signup')
-          if formErrors
-            - var err = formErrors.filter((x) => x.param == 'email')
-            if err.length != 0 && err[0].msg
-              .alert.alert-danger
-                i.fa.fa-exclamation-triangle(style="padding-right: 1em;")
-                span=err[0].msg
-            .form-group
-              label.sr-only(for='name') Email
-              - var email_val = err[0] ? err[0].value : "";
-              input#email.form-control(type='email', name='email', placeholder='Email', required='', value=email_val)
+.row(style='padding: 3em;')
+  .col-md-6
+    .form-block
+      h1 Sign Up and Connect Your Accounts
+      form(method='post', action='/auth/signup')
+        if formErrors
+          - var err = formErrors.filter((x) => x.param == 'email')
+          if err.length != 0 && err[0].msg
+            .alert.alert-danger
+              i.fa.fa-exclamation-triangle(style="padding-right: 1em;")
+              span=err[0].msg
+          .form-group
+            label.sr-only(for='name') Email
+            - var email_val = err[0] ? err[0].value : "";
+            input#email.form-control(type='email', name='email', placeholder='Email', required='', value=email_val)
 
-          else
-            .form-group
-              label.sr-only(for='name') Email
-              input#email.form-control(type='email', name='email', placeholder='Email', required='')
+        else
+          .form-group
+            label.sr-only(for='name') Email
+            input#email.form-control(type='email', name='email', placeholder='Email', required='')
 
-          if formErrors
-            - var err = formErrors.filter((x) => x.param == 'password1')
-            if err.length != 0 && err[0].msg
-              .alert.alert-danger
-                i.fa.fa-exclamation-triangle(style="padding-right: 1em;")
-                span=err[0].msg
-          .form-group
-            label.sr-only(for='password1') Password
-            input#password1.form-control(type='password', name='password1', placeholder='Password', required='')
-          .form-group
-            label.sr-only(for='password2') Confirm Password
-            input#password2.form-control(type='password', name='password2', placeholder='Confirm Password', required='')
-          .form-group
-            button.btn.btn-block.btn-default.btn-big(type='submit', value='submit') Get Started
-    .col-md-offset-1.col-md-5.form-content
-      h1 Analyse your trading in five minutes.
-      p
-        | Simply sign up and entered your poloniex API key and you will have access to a wide arrange of analytical tools and graphs to help you understand your trading capabilities.
-      p Elaborate features.
+        if formErrors
+          - var err = formErrors.filter((x) => x.param == 'password1')
+          if err.length != 0 && err[0].msg
+            .alert.alert-danger
+              i.fa.fa-exclamation-triangle(style="padding-right: 1em;")
+              span=err[0].msg
+        .form-group
+          label.sr-only(for='password1') Password
+          input#password1.form-control(type='password', name='password1', placeholder='Password', required='')
+        .form-group
+          label.sr-only(for='password2') Confirm Password
+          input#password2.form-control(type='password', name='password2', placeholder='Confirm Password', required='')
+        .form-group
+          button.btn.btn-block.btn-default.btn-big(type='submit', value='submit') Get Started
+  .col-md-offset-1.col-md-5.form-content
+    br
+    br
+    h1 Analyse your trading in five minutes.
+    p
+      | Simply sign up and entered your poloniex API key and you will have access to a wide arrange of analytical tools and graphs to help you understand your trading capabilities.
+    p Elaborate features.
 

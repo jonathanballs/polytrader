@@ -3,11 +3,12 @@ extends base.pug
 block page
   #home.hero-slide
     .container
-      .row
-        .col-md-offset-1.col-md-10.hero-section
+      .row.justify-content-md-center
+        .col-md-10.hero-section
           h1.hero-title Visualise your trading history & increase your performance
           p
             | Get personalised analysis of your cryptocurrency trading history and tips to increase your returns.
           a.btn.btn-default.btn-lg.page-scroll(href='#signup') Sign up now
   #signup.section-color.booking-section
-    include auth/includes/signupform.pug
+    .container
+      include auth/includes/signupform.pug
