@@ -23,7 +23,7 @@ router.get('/api/portfolio-history', loginRequiredApi, (req, res) => {
     })
     Promise.all(eventHistoryPromises).then(eventHistories => {
         Promise.all(eventHistories.map(eh => {
-            return eh.getAnnotatedPortfolioHistory()
+            return (<any>eh).getAnnotatedPortfolioHistory()
         })).then(portfolioHistories => {
             res.send(portfolioHistories)
         })
