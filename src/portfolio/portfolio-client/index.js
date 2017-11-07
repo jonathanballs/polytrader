@@ -164,15 +164,16 @@ class App extends React.Component {
     ])
 
     var portfolioHistoryLineChartConfig = {
+      chart: {
+        height: 600,
+      },
       rangeSelector: {
         selected: 1,
         inputEnabled: $('#container').width() > 480
       },
-
       title: {
         text: 'Value History',
       },
-
       series: [{
         name: 'Portfolio Value (BTC)',
         data: combinedPortfolios,
