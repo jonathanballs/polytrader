@@ -3,6 +3,7 @@ import { render } from 'react-dom';
 import axios from 'axios'
 import * as Big from 'big.js'
 import * as ReactHighcharts from 'react-highcharts'
+import * as ReactHighstocks from 'react-highcharts/ReactHighstock.src'
 
 class App extends React.Component {
   constructor(props) {
@@ -158,7 +159,7 @@ class App extends React.Component {
       return this.mergePortfolios(this.getPortfoliosAtTime(new Date(Date.parse(d))))
     }) .filter(p => !!p)
     .map(p => [
-      Date.parse(p.timestamp) / 1000,
+      Date.parse(p.timestamp),
       p.balances.reduce((acc, b) => acc += parseFloat(b.btcValue), 0.0)
     ])
 
@@ -183,12 +184,13 @@ class App extends React.Component {
         tooltip: {
           valueDecimals: 2
         }
-      }]
+      }],
+      credits: false
     }
 
     return (
       <div>
-        <div className="row" style={{ height: "27em" }}>
+        <div className="row" style={{ height: "23em" }}>
           <div className="col-sm-9">
             <h1>Your Portfolio - {this.portfolioValueAtTime(new Date)} BTC</h1>
             <br />
@@ -212,10 +214,10 @@ class App extends React.Component {
         </div>
         <div className="row">
           <div className="col-sm-12">
-            <ReactHighcharts config={portfolioHistoryLineChartConfig} />
+            <ReactHighstocks config={portfolioHistoryLineChartConfig} />
           </div>
         </div>
-        <div className="row">
+        {/* <div className="row">
           <div className="col-md-12">
             <table className="table">
               <thead>
@@ -244,7 +246,7 @@ class App extends React.Component {
               </tbody>
             </table>
           </div>
-        </div>
+        </div> */}
       </div>
     );
   }
