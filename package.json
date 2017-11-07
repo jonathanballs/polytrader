@@ -52,6 +52,7 @@
     "react": "^16.0.0",
     "react-bootstrap": "^0.31.3",
     "react-dom": "^16.0.0",
+    "react-highcharts": "^13.0.0",
     "react-transition-group": "^2.2.1",
     "reactstrap": "^5.0.0-alpha.3",
     "request": "^2.81.0",

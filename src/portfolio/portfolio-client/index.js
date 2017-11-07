@@ -1,6 +1,8 @@
 import React from 'react';
 import { render } from 'react-dom';
 import axios from 'axios'
+import * as Big from 'big.js'
+import * as ReactHighcharts from 'react-highcharts'
 
 class App extends React.Component {
   constructor(props) {
@@ -13,6 +15,14 @@ class App extends React.Component {
     this.fetchPortfolioHistory()
   }
 
+  fetchPortfolioHistory() {
+    var portfolioHistoryPromise = axios.get('/portfolio/api/portfolio-history/')
+
+    portfolioHistoryPromise.then(portfolioHistories => {
+      this.setState({portfolioHistories: portfolioHistories.data})
+    })
+  }
+
   getPortfoliosAtTime(date) {
     if (this.state.portfolioHistories) {
       return this.state.portfolioHistories
@@ -23,14 +33,6 @@ class App extends React.Component {
       })
       .filter(p => !!p) // Remove empty portfolios
     }
-  }
-
-  fetchPortfolioHistory() {
-    var portfolioHistoryPromise = axios.get('/portfolio/api/portfolio-history/')
-
-    portfolioHistoryPromise.then(portfolioHistories => {
-      this.setState({portfolioHistories: portfolioHistories.data})
-    })
   }
 
   portfolioValueAtTime(date) {
@@ -48,30 +50,169 @@ class App extends React.Component {
     }
   }
 
+  mergePortfolios(portfolios) {
+
+    if (portfolios.length == 0) {
+      return
+    }
+
+    // Create return value
+    var p = {
+      timestamp: portfolios[0].timestamp
+    }
+
+    // Get a list of currency symbols in all portfolios
+    var currencies = Array.from(new Set(portfolios
+      .map(p => p.balances.map(b => b.currency))
+      .reduce((acc, cs) => acc.concat(cs))))
+
+    var balancesList = portfolios.map(p => p.balances)
+
+    p.balances = currencies.map(c => {
+      var amount = 0.0
+      var btcValue = 0.0
+
+      balancesList.map(bl => {
+        return bl.filter(b => b.currency == c)[0]
+      })
+      .forEach(b => {
+        if (b) {
+          amount += parseFloat(b.amount)
+          btcValue += parseFloat(b.btcValue)
+        }
+      })
+
+      return {
+        currency: c,
+        btcValue: Number(btcValue).toFixed(3),
+        amount: Number(amount).toFixed(3)
+      }
+    })
+    .filter(b => {
+      return Big(b.btcValue).gt(0.001)
+    })
+
+    return p
+  }
+
   render() {
+
+    if (!this.state.portfolioHistories) {
+      return <h1>Loading...</h1>
+    }
+
+    var currentBalances = this.mergePortfolios(this.getPortfoliosAtTime(new Date))
+      .balances.map((b, i) => {
+        return <tr key={i}>
+          <td>{ b.currency }</td>
+          <td>{ b.amount }</td>
+          <td>{ b.btcValue }</td>
+          <td>{ Big(b.btcValue).times(7500.0).toFixed(2) }</td>
+          </tr>
+      })
+
+    var balancesPieChartConfig = {
+      chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+      },
+      title: {
+        text: null
+      },
+      tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: {
+            enabled: true,
+            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+            style: {
+              color: 'black'
+            }
+          }
+        }
+      },
+      series: [{
+        data: this.mergePortfolios(this.getPortfoliosAtTime(new Date)).balances.map(b => {
+          return {
+            name: b.currency,
+            y: parseFloat(b.btcValue)
+          }
+        })
+      }],
+      credits: false
+    }
+
+    // Create value history chart
+    var dates = new Set()
+    this.state.portfolioHistories.forEach(ph => {
+        ph.forEach(p => dates.add(p.timestamp))
+    })
+    var dates = Array.from(dates).sort()
+    var combinedPortfolios = dates.map(d => {
+      return this.mergePortfolios(this.getPortfoliosAtTime(new Date(Date.parse(d))))
+    }) .filter(p => !!p)
+    .map(p => [
+      Date.parse(p.timestamp) / 1000,
+      p.balances.reduce((acc, b) => acc += parseFloat(b.btcValue), 0.0)
+    ])
+
+    var portfolioHistoryLineChartConfig = {
+      rangeSelector: {
+        selected: 1,
+        inputEnabled: $('#container').width() > 480
+      },
+
+      title: {
+        text: 'Value History',
+      },
+
+      series: [{
+        name: 'Portfolio Value (BTC)',
+        data: combinedPortfolios,
+        marker: {
+          enabled: false,
+          radius: 3
+        },
+        shadow: true,
+        tooltip: {
+          valueDecimals: 2
+        }
+      }]
+    }
+
     return (
       <div>
-        <h1>Your Portfolio - {this.portfolioValueAtTime(new Date)} BTC</h1>
-        <div className="row" style={{ height: "20em" }}>
+        <div className="row" style={{ height: "27em" }}>
           <div className="col-sm-9">
+            <h1>Your Portfolio - {this.portfolioValueAtTime(new Date)} BTC</h1>
+            <br />
             <table className="table">
               <thead>
                 <tr>
                   <th>Currency</th>
                   <th>Balance</th>
                   <th>Bitcoin Value</th>
+                  <th>USD Value</th>
                 </tr>
               </thead>
-              <tbody />
+              <tbody>
+                {currentBalances}
+              </tbody>
             </table>
           </div>
-          <div className="col-sm-3">
-            Pie chart goes here
+          <div className="col-sm-3" style={{ height: "20em" }}>
+            <ReactHighcharts config={balancesPieChartConfig} />
           </div>
         </div>
         <div className="row">
           <div className="col-sm-12">
-            <div id="portfolio-value-history"></div>
+            <ReactHighcharts config={portfolioHistoryLineChartConfig} />
           </div>
         </div>
         <div className="row">
