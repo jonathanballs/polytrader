@@ -61,6 +61,8 @@ router.get('/api/update-portfolios/', loginRequiredApi, (req, res) => {
                         { $push: { events: { $each : his } } }).then().catch( err => {
                             console.log(err)
                         })
+                    
+                    res.send("Success")
 
                     }).catch(err => console.log(service.key + " returnHistory error :" + err))
             }).catch(err => console.log(service.key + " returnBalances error :" + err))

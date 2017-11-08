@@ -137,75 +137,81 @@ export default class Bittrex implements IWrapper {
             // Read order history csv file
             var filePath = this.userAuth.portfolioHistory.path
 
-            fs.createReadStream(filePath)
-                .pipe(csv({
-                    quote: '"',
-                    headers: ["timestampClosed",
-                        "timestampOpened",
-                        "market",
-                        "type",
-                        "ask",
-                        "unitsFilled",
-                        "unitsTotal",
-                        "rate",
-                        "cost"]
-                }))
-                .on('data', data => {
-                    var isSell = data.type.toLowerCase().includes('sell')
+            fs.exists(filePath, exists => {
+                if (!exists) {
+                    return
+                }
+                fs.createReadStream(filePath)
+                    .pipe(csv({
+                        quote: '"',
+                        headers: ["timestampClosed",
+                            "timestampOpened",
+                            "market",
+                            "type",
+                            "ask",
+                            "unitsFilled",
+                            "unitsTotal",
+                            "rate",
+                            "cost"]
+                    }))
+                    .on('data', data => {
+                        var isSell = data.type.toLowerCase().includes('sell')
 
-                    // Sometimes it parses the headers as a row
-                    if (data.type == 'Type') {
-                        return
-                    }
-
-
-                    if (isSell) {
-                        var trade: Trade = {
-                            soldCurrency: data.market.split('-')[1],
-                            boughtCurrency: data.market.split('-')[0],
-                            soldAmount: Big(data.unitsFilled).abs().toFixed(15),
-                            boughtAmount: data.cost,
-                            rate: data.rate,
-                            fees: "0.0"
+                        // Sometimes it parses the headers as a row
+                        if (data.type == 'Type') {
+                            resolve([])
                         }
 
-                        var portfolioEvent: PortfolioEvent = {
-                            timestamp: new Date(Date.parse(data.timestampClosed)),
-                            type: 'trade',
-                            permanent: data.unitsFilled == data.unitsTotal,
-                            data: trade,
-                        }
 
-                        portfolioHistory.push(portfolioEvent)
-                    }
-                    else {
-                        var trade: Trade = {
-                            soldCurrency: data.market.split('-')[0],
-                            boughtCurrency: data.market.split('-')[1],
-                            soldAmount: Big(data.cost).abs().toFixed(15),
-                            boughtAmount: data.unitsFilled,
-                            rate: data.rate,
-                            fees: "0.0"
-                        }
+                        if (isSell) {
+                            var trade: Trade = {
+                                soldCurrency: data.market.split('-')[1],
+                                boughtCurrency: data.market.split('-')[0],
+                                soldAmount: Big(data.unitsFilled).abs().toFixed(15),
+                                boughtAmount: data.cost,
+                                rate: data.rate,
+                                fees: "0.0"
+                            }
 
-                        var portfolioEvent: PortfolioEvent = {
-                            timestamp: new Date(Date.parse(data.timestampClosed)),
-                            type: 'trade',
-                            permanent: data.unitsFilled == data.unitsTotal,
-                            data: trade,
-                        }
+                            var portfolioEvent: PortfolioEvent = {
+                                timestamp: new Date(Date.parse(data.timestampClosed)),
+                                type: 'trade',
+                                permanent: data.unitsFilled == data.unitsTotal,
+                                data: trade,
+                            }
 
-                        portfolioHistory.push(portfolioEvent)
-                    }
-                })
-                .on('end', _ => {
-                    this.returnDepositsWithdrawals().then(depositsWithdrawals => {
-                        var ret: PortfolioEvent[] = portfolioHistory.concat(depositsWithdrawals)
-                                                            .sort((a, b) => a.timestamp.getTime() -
-                                                                b.timestamp.getTime())
-                        resolve(ret)
+                            portfolioHistory.push(portfolioEvent)
+                        }
+                        else {
+                            var trade: Trade = {
+                                soldCurrency: data.market.split('-')[0],
+                                boughtCurrency: data.market.split('-')[1],
+                                soldAmount: Big(data.cost).abs().toFixed(15),
+                                boughtAmount: data.unitsFilled,
+                                rate: data.rate,
+                                fees: "0.0"
+                            }
+
+                            var portfolioEvent: PortfolioEvent = {
+                                timestamp: new Date(Date.parse(data.timestampClosed)),
+                                type: 'trade',
+                                permanent: data.unitsFilled == data.unitsTotal,
+                                data: trade,
+                            }
+
+                            portfolioHistory.push(portfolioEvent)
+                        }
                     })
-                })
+                    .on('end', _ => {
+                        this.returnDepositsWithdrawals().then(depositsWithdrawals => {
+                            var ret: PortfolioEvent[] = portfolioHistory.concat(depositsWithdrawals)
+                                .sort((a, b) => a.timestamp.getTime() -
+                                    b.timestamp.getTime())
+                            resolve(ret)
+                        })
+                    })
+            })
+
         })
     }
 

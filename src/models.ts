@@ -366,8 +366,6 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
                             return p
                         }).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
 
-                        console.log(portfolioHistoriesProcessed[0])
-
                         resolve(portfolioHistoriesProcessed)
                     })
                 }).catch(err => reject(err))
