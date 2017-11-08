@@ -1,3 +1,4 @@
+// Beware. This code is MEGA cancer
 // Mongoose models
 import * as mongoose from 'mongoose'
 import * as clone from 'clone'
@@ -32,6 +33,87 @@ var priceSchema = new mongoose.Schema({
     currency_pair: String,
     price: Number
 }, { collection: 'price_history' })
+
+priceSchema.statics.getPriceHistory =
+    function getPriceHistory(
+        currencies: string[],
+        resolution: number = 86400,          // One day
+        from = new Date(0),                  // Start of portfolio
+        to = new Date())                     // Today
+    {
+        return new Promise((resolve, reject) => {
+
+            let prices = []
+            this.aggregate([
+                {
+                    $match: {
+                        'currency_pair': { $in: currencies },
+                        'date': { $gte: from, $lte: to }
+                    }
+                },
+                {
+                    $project: {
+                        yearMonthDay: {
+                            $dateToString: {
+                                format: "%Y-%m-%d", date: "$date"
+                            }
+                        },
+                        currency_pair: "$currency_pair",
+                        price_history: "$price_history",
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$yearMonthDay",
+                        prices: {
+                            $push: {
+                                currency_pair: "$currency_pair",
+                                price_history: "$price_history",
+                            }
+                        }
+                    }
+                },
+                {
+                    $sort: {
+                        _id: 1
+                    }
+                }
+            ]).cursor({}).exec()
+                .on('data', doc => prices.push(doc))
+                .on('end', _ => {
+
+                    prices = prices.map(currencyDayPrices => {
+                        // return list of prices
+                        // price = {date, prices: [currency: price]}
+                        var pd_sp = currencyDayPrices._id.split('-')
+                        var price_date = new Date(pd_sp[0], pd_sp[1] - 1, pd_sp[2])
+
+                        var newPricesList = []
+                        var numElementsNeeded = Math.floor(86400 / resolution)
+                        for (var i=0; i<numElementsNeeded; i++) {
+
+                            var accuratePricesList = {
+                                timestamp: new Date(price_date.getTime() + i*resolution*1000),
+                                prices: {}
+                            }
+
+                            currencyDayPrices.prices.forEach(priceHistory => {
+                                accuratePricesList.prices[priceHistory.currency_pair] =
+                                            priceHistory.price_history[Math.floor(
+                                            (i / numElementsNeeded) * priceHistory.price_history.length) ]
+                            })
+
+                            newPricesList.push(accuratePricesList)
+                        }
+
+                        return newPricesList
+                    }).reduce((prev, acc) => acc.concat(prev))
+
+                    resolve(prices)
+                })
+        })
+    }
+
 export var PriceModel = mongoose.model('Price', priceSchema);
 
 
@@ -222,51 +304,27 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
 
         return new Promise<Portfolio[]>((resolve, reject) => {
 
-            this.getPortfolioHistory(resolution, from, to).then(portfolioHistory => {
+            var portfolioHistoryPromise = this.getPortfolioHistory(resolution, from, to)
 
-                var currencyPairs = new Set(portfolioHistory.map(p => {
-                    return p.balances.map(b => 'BTC_' + b.currency)
-                }).reduce((acc, p) => acc.concat(p), []))
+            this.getPortfolioHistory(resolution, from, to).then(
+                (portfolioHistory: Portfolio[]) => {
 
-                let prices = []
-                PriceModel.aggregate([
-                    {
-                        $match: {
-                            'currency_pair': { $in: Array.from(currencyPairs) },
-                            'date': { $gt: portfolioHistory[0].timestamp }
-                        }
-                    },
-                    {
-                        $project: {
-                            yearMonthDay: {
-                                $dateToString: {
-                                    format: "%Y-%m-%d", date: "$date"
-                                }
-                            },
-                            currency_pair: "$currency_pair",
-                            daily_average: "$daily_average"
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: "$yearMonthDay",
-                            prices: {
-                                $push: {
-                                    currency_pair: "$currency_pair",
-                                    daily_average: "$daily_average"
-                                }
-                            }
-                        }
-                    },
-                    {
-                        $sort: {
-                            _id: 1
-                        }
+                    // Make sure that is not an empty portfolio History
+                    if (!portfolioHistory.length) {
+                        resolve([])
+                        return
                     }
-                ]).cursor({}).exec()
-                    .on('data', doc => prices.push(doc))
-                    .on('end', _ => {
 
+                    // Limit range to that of the portfolio
+                    if (portfolioHistory[0].timestamp > from)
+                        from = portfolioHistory[0].timestamp
+
+                    var currencyPairs = Array.from(new Set(portfolioHistory.map(p => {
+                        return p.balances.map(b => 'BTC_' + b.currency)
+                    }).reduce((acc, p) => acc.concat(p), [])))
+
+
+                    PriceModel.getPriceHistory(currencyPairs, resolution, from, to).then(prices => {
                         // Helper function to get the user's portfolio at a certain time
                         var portfolioAtTime = (portfolioHistory: Portfolio[],
                             time: Date) => {
@@ -282,10 +340,9 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
 
                         var portfolioHistoriesProcessed = prices.map(price => {
                             // Get users portfolio on date
-                            var pd_sp = price._id.split('-')
-                            var price_date = new Date(pd_sp[0], pd_sp[1] - 1, pd_sp[2])
-                            var p = clone(portfolioAtTime(portfolioHistory, price_date))
-                            p.timestamp = price_date
+
+                            var p = clone(portfolioAtTime(portfolioHistory, price.timestamp))
+                            p.timestamp = price.timestamp
 
                             p.balances.forEach(b => {
                                 if (b.currency == "BTC") {
@@ -296,27 +353,27 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
                                     b.btcValue = "0.0"
                                     return;
                                 }
-
-                                var b_price = price.prices.filter(p => {
-                                    return p.currency_pair == "BTC_" + b.currency
-                                })[0]
-
-                                if (typeof (b_price) != 'undefined') {
-                                    b.btcValue = new Big(b_price.daily_average)
-                                        .times(b.amount)
-                                        .toFixed(10)
-                                } else {
-                                    b.btcValue = '0.0'
+                                else {
+                                    var b_price = price.prices["BTC_" + b.currency]
+                                    if (b_price) {
+                                        b.btcValue = Number(b_price * parseFloat(b.amount)).toFixed(15)
+                                    } else {
+                                        b.btcValue = "0.0"
+                                    }
                                 }
                             })
+
                             return p
-                        })
+                        }).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+
+                        console.log(portfolioHistoriesProcessed[0])
 
                         resolve(portfolioHistoriesProcessed)
                     })
-            }).catch(err => reject(err))
+                }).catch(err => reject(err))
         })
     }
+
 
 export var PortfolioEventHistoryModel = mongoose.model(
     'portfolio_event_history', portfolioEventHistorySchema)

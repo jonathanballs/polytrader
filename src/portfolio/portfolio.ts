@@ -23,7 +23,7 @@ router.get('/api/portfolio-history', loginRequiredApi, (req, res) => {
     })
     Promise.all(eventHistoryPromises).then(eventHistories => {
         Promise.all(eventHistories.map(eh => {
-            return (<any>eh).getAnnotatedPortfolioHistory()
+            return (<any>eh).getAnnotatedPortfolioHistory(86400 / 2)
         })).then(portfolioHistories => {
             res.send(portfolioHistories)
         })
@@ -48,8 +48,6 @@ router.get('/api/update-portfolios/', loginRequiredApi, (req, res) => {
                         if (err)
                             console.log("Error finding account events" + err)
                     })
-
-
 
                 PortfolioEventHistoryModel.findOneOrCreate({accountID: a._id})
                 .then(peh => {

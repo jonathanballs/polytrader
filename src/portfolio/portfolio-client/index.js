@@ -163,6 +163,10 @@ class App extends React.Component {
       p.balances.reduce((acc, b) => acc += parseFloat(b.btcValue), 0.0)
     ])
 
+    console.log(this.getPortfoliosAtTime(new Date()))
+
+    console.log(combinedPortfolios)
+
     var portfolioHistoryLineChartConfig = {
       chart: {
         height: 600,
