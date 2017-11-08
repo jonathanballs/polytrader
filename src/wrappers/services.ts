@@ -4,6 +4,7 @@ import * as clone from 'clone'
 import Poloniex from './poloniex-wrapper'
 import Etherscan from './etherscan-wrapper'
 import Bittrex from './bittrex-wrapper'
+import Coinbase from './coinbase-wrapper'
 import IWrapper from './'
 
 interface WrapperConstructor {
@@ -34,6 +35,15 @@ var services : [Service] = [
             { name: 'apiSecret', description: 'API Secret', placeholder: 'Bittrex API Secret' }],
         serverAuth: {},
         wrapper: Bittrex
+    },
+    {
+        name: 'Coinbase',
+        key: 'coinbase',
+        formFields: [
+            { name: 'apiKey', description: 'API Key', placeholder: 'Coinbase API Key' },
+            { name: 'apiSecret', description: 'API Secret', placeholder: 'Coinbase API Secret' }],
+        serverAuth: {},
+        wrapper: Coinbase
     },
     {
         name: 'Poloniex',
