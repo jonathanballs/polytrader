@@ -14,3 +14,4 @@ COPY . .
 # Expose ports
 EXPOSE 8080
 CMD ["npm", "start"]
+

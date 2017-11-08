@@ -8,6 +8,7 @@ services:
             - db
         volumes:
             - ./dist:/usr/src/app/dist
+            - ./test:/usr/src/app/test
             - ./static:/usr/src/app/static
 
     price_updater:
