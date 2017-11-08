@@ -1,4 +1,6 @@
 # polytrader
+[![Build Status](https://travis-ci.com/bonniejools/polytrader.svg?token=VAYBPkwVgL1ZLFqJKe6n&branch=master)](https://travis-ci.com/bonniejools/polytrader)
+
 A simple website to analyse poloniex trading history
 
 You will need docker and docker-compose installed
