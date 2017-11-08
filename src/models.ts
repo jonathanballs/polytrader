@@ -148,7 +148,7 @@ priceSchema.statics.getPriceHistory =
                         }
 
                         return newPricesList
-                    }).reduce((prev, acc) => acc.concat(prev))
+                    }).reduce((prev, acc) => acc.concat(prev), [])
 
                     resolve(prices)
                 })
