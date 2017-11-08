@@ -185,9 +185,12 @@ router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) 
         userAuth
     }
 
-    UserModel.update({ email: req.user.email },
+    UserModel.findOneAndUpdate({ email: req.user.email },
         { $push: { accounts: newAccount } },
-        (err, numAffected, rawResponse) => {
+        { new: true },
+        (err, updatedUser) => {
+            // Update the account
+            updatedUser.accounts[updatedUser.accounts.length -1].sync()
             if (err) {
                 res.status(400).send(err + '')
             }
