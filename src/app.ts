@@ -90,3 +90,16 @@ app.get('/', (req, res) => {
 app.use((req, res, next) => {
     res.status(404).render('404') // 404 handler
 })
+
+// Update accounts every 5 minutes
+setInterval(_ => {
+    UserModel.find({})
+    .then(users => {
+        users.forEach(u => {
+            console.log("Syncing accounts for", u.email)
+            u.accounts.forEach(a => {
+                a.sync()
+            })
+        })
+    })
+}, 5 * 60 * 1000)
