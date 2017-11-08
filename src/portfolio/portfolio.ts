@@ -43,7 +43,8 @@ router.get('/api/update-portfolios/', loginRequiredApi, (req, res) => {
                     { "_id": req.user._id, 
                         "accounts._id": a._id },
                     {
-                        $set: { "accounts.$.balances": balances }
+                        $set: { "accounts.$.balances": balances,
+                                "accounts.$.timestampLastSuccessfulSync": new Date }
                     }, (err) => {
                         if (err)
                             console.log("Error finding account events" + err)
