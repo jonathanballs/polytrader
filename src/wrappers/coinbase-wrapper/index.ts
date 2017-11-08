@@ -59,8 +59,6 @@ export default class Etherscan implements IWrapper {
         return new Promise((resolve, reject) => {
             this.api.getAccount(accountID, (err, account) => {
                 account.getTransactions(pagination, (err, transactions, pagination) => {
-
-                    console.log(pagination)
                     var history = transactions.map(tx => {
                         switch(tx.type) {
                         case 'sell':

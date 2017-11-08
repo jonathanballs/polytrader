@@ -32,42 +32,8 @@ router.get('/api/portfolio-history', loginRequiredApi, (req, res) => {
 })
 
 router.get('/api/update-portfolios/', loginRequiredApi, (req, res) => {
-    // Update the accounts
     req.user.accounts.forEach(a => {
-        var service = servicesList.filter(s => s.key == a.service)[0]
-        var wrapper = new service.wrapper(service.serverAuth, a.userAuth)
-        wrapper.returnHistory().then(his => {
-            wrapper.returnBalances().then(balances => {
-                // Update account balances
-                UserModel.findOneAndUpdate(
-                    { "_id": req.user._id, 
-                        "accounts._id": a._id },
-                    {
-                        $set: { "accounts.$.balances": balances,
-                                "accounts.$.timestampLastSuccessfulSync": new Date }
-                    }, (err) => {
-                        if (err)
-                            console.log("Error finding account events" + err)
-                    })
-
-                PortfolioEventHistoryModel.findOneOrCreate({accountID: a._id})
-                .then(peh => {
-                    var lastTimestamp = peh.events.length 
-                        ? peh.events[peh.events.length-1].timestamp
-                        : new Date(0)
-
-                    his = his.filter(ev => ev.timestamp > lastTimestamp)
-                    PortfolioEventHistoryModel.update(
-                        {_id: peh._id},
-                        { $push: { events: { $each : his } } }).then().catch( err => {
-                            console.log(err)
-                        })
-                    
-                    res.send("Success")
-
-                    }).catch(err => console.log(service.key + " returnHistory error :" + err))
-            }).catch(err => console.log(service.key + " returnBalances error :" + err))
-        }).catch(err => console.log(service.key + " returnHistory error :" + err))
+        a.sync().then(_ => { res.send("success") })
     })
 })
 
