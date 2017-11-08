@@ -40,8 +40,7 @@ class App extends React.Component {
               type="email"
               name="email"
               placeholder="Email"
-              required
-              defaultValue="jonathanballs@protonmail.com" />
+              required />
           </div>
           <div className="form-group row">
             <label className="col-md-2 col-form-label" htmlFor="password-change">Password</label>

@@ -52,7 +52,6 @@ export default class Account extends React.Component {
                         ? moment(this.props.account.timestampLastSuccessfulSync).fromNow()
                         : "Never"
         )}
-        { this.makeRow('Last Synced', '24 seconds ago') }
       </div>
     )
   }
