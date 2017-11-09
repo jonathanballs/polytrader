@@ -7,9 +7,11 @@ RUN mkdir /upload
 # Copy package.json and install deps
 COPY package.json .
 RUN npm install
+RUN npm install -g webpack
 
-# Copy application files over
+# Copy application files over and build
 COPY . .
+RUN webpack
 
 # Expose ports
 EXPOSE 8080
