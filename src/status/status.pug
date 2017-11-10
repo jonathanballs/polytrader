@@ -3,3 +3,19 @@ extends ../base.pug
 block content
   h1 Status
   hr
+  p This status page should report the success rate of various exchange apis
+  table.table
+    thead
+      tr
+        th Service
+        th Status
+        th Last syncs
+        th Sync success rate
+    tbody
+      each service in services
+        tr
+          td=service.name
+          td
+            span.badge.badge-success Good
+          td 30 seconds ago
+          td 89%
