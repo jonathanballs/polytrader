@@ -34,7 +34,10 @@ export default class Account extends React.Component {
     })
 
     var syncStatus = null
-    if (this.props.account.lastSyncWasSuccessful === true) {
+    if (this.props.account.timestampLastSync == null) {
+      syncStatus = <span className="badge badge-info">Never synced</span>
+    }
+    else if (this.props.account.lastSyncWasSuccessful === true) {
       syncStatus = <span className="badge badge-success">{ moment(this.props.account.timestampLastSync).fromNow() }</span>
     }
     else {
