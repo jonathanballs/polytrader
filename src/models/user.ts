@@ -12,20 +12,27 @@ var balanceSchema = mongoose.Schema({
     currency: String,
     balance: String
 })
+
 var linkedAccountSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     service: String, // Rename this to serviceKey
     timestampCreated: Date,
-    timestampLastSuccessfulSync: Date,
     userAuth: mongoose.Schema.Types.Mixed,
-    balances: [mongoose.Schema.Types.Mixed]
+    balances: [mongoose.Schema.Types.Mixed],
+
+    timestampLastSuccessfulSync: Date,
+    lastSyncWasSuccessful: Boolean,
+    lastSyncErrorMessage: String,
 })
+
 linkedAccountSchema.methods.sync = function sync() {
+
     return new Promise((resolve, reject) => {
         var service = servicesList.filter(s => s.key == this.service)[0]
         var wrapper = new service.wrapper(service.serverAuth, this.userAuth)
         wrapper.returnHistory().then(his => {
             wrapper.returnBalances().then(balances => {
+
                 // Update account balances
                 UserModel.findOneAndUpdate(
                     { "accounts._id": this._id },
@@ -35,8 +42,9 @@ linkedAccountSchema.methods.sync = function sync() {
                             "accounts.$.timestampLastSuccessfulSync": new Date
                         }
                     }, (err) => {
-                        if (err)
-                            console.log("Error finding account events" + err)
+                        if (err) {
+                            reject("Error updating account balance in db" + err)
+                        }
                     })
 
                 PortfolioEventHistoryModel.findOneOrCreate({ accountID: this._id })
@@ -49,13 +57,17 @@ linkedAccountSchema.methods.sync = function sync() {
                         PortfolioEventHistoryModel.update(
                             { _id: peh._id },
                             { $push: { events: { $each: his } } }).then().catch(err => {
-                                console.log(err)
+                                console.log("Error inserting portfolio history into db:", err)
                             })
 
                         resolve()
                     }).catch(err => reject(err))
-            }).catch(err => reject(err))
-        }).catch(err => reject(err))
+                }).catch(err => reject(err))
+        }).catch(err => {
+            this.lastSyncWasSuccessful = false
+            this.lastSyncErrorMessage = err + ''
+            reject(err)
+        })
     })
 }
 

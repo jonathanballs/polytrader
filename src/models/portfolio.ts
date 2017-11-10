@@ -43,10 +43,15 @@ portfolioEventHistorySchema.statics.findOneOrCreate = function (condition, doc) 
     const self = this;
     return new Promise((resolve, reject) => {
         self.findOne(condition, (err, peh) => {
-            if (peh) {
+            if (err) {
+                reject(err)
+                return
+            }
+            else if (peh) {
                 resolve(peh)
                 return
-            } else {
+            }
+            else {
                 resolve(self.create({
                     accountID: condition.accountID,
                     events: []

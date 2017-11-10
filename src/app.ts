@@ -20,6 +20,7 @@ import portfolioRouter from './portfolio/portfolio'
 import statusRouter from './status/status'
 import servicesList from './wrappers/services'
 
+mongoose.Promise = global.Promise
 mongoose.connect('mongodb://db/polytrader', {useMongoClient: true});
 
 // Local strategy to fetch user from database

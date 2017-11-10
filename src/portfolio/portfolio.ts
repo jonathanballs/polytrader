@@ -28,14 +28,34 @@ router.get('/api/portfolio-history', loginRequiredApi, (req, res) => {
             return (<any>eh).getAnnotatedPortfolioHistory(86400 / 2)
         })).then(portfolioHistories => {
             res.send(portfolioHistories)
-        })
-    })
+        }).catch(err => console.log("Error annotating history", err))
+    }).catch(err => console.log("Error getting history ", err))
 
 })
 
 router.get('/api/update-portfolios/', loginRequiredApi, (req, res) => {
-    req.user.accounts.forEach(a => {
-        a.sync().then(_ => { res.send("success") })
+    var updateStatuses = {}
+
+    var updatePromises = req.user.accounts.map(a => {
+        return a.sync()
+        .then(_ => {
+            console.log("Service ", a.service, "succeeded")
+            updateStatuses[a._id] = {service: a.service, success: true}
+        })
+        .catch(err => {
+            console.log("Service ", a.service, "failed: ", err)
+            updateStatuses[a._id] = {service: a.service, success: false, reason: err}
+        })
+    })
+
+    Promise.all(updatePromises)
+    .then(_ => {
+        req.user.save()
+        res.send(updateStatuses)
+    })
+    .catch(_ => {
+        req.user.save()
+        res.send(updateStatuses)
     })
 })
 

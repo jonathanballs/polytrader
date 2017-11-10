@@ -54,6 +54,9 @@ export default class Etherscan implements IWrapper {
     }
 
     returnHistory(startDate: Date = new Date(0)) : Promise<PortfolioEvent[]> {
+        // REMOVE THIS
+        return Promise.resolve([])
+
         var requestURL : string = this.apiURL + qs.stringify({
             module: 'account',
             action: 'txlist',

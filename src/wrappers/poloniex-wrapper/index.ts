@@ -305,7 +305,7 @@ export default class Poloniex implements IWrapper {
         return new Promise<{[currencyPair: string] : Ticker}>((resolve, reject) => {
             this._public('returnTicker', {}, (err, ticker) => {
                 if (err = err || ticker.error) {
-                    reject(Error("Error in return24hVolume: " + err))
+                    reject("Error in return24hVolume: " + err)
                     return;
                 }
 
@@ -968,11 +968,13 @@ export default class Poloniex implements IWrapper {
                             })
 
                             resolve(portfolioEvents)
-                        })
 
+                        }).catch(err => reject(err))
                     }).catch(err => reject(err))
                 }).catch(err => reject(err))
-            }).catch(err => reject(err))
+            }).catch(err => {
+                reject(err)
+            })
 
         })
 

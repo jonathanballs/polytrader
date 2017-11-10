@@ -139,6 +139,7 @@ export default class Bittrex implements IWrapper {
 
             fs.exists(filePath, exists => {
                 if (!exists) {
+                    reject("Unable to find history file: " + this.userAuth.portfolioHistory.originalFilename)
                     return
                 }
                 fs.createReadStream(filePath)
