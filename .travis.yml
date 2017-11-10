@@ -14,3 +14,5 @@ before_install:
 script:
     - docker-compose run polytrader npm test
 
+notifications:
+    email: false
