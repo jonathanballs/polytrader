@@ -17,6 +17,7 @@ import UserModel from "./models/user"
 import settingsRouter from './settings/settings'
 import authRouter from './auth/auth'
 import portfolioRouter from './portfolio/portfolio'
+import statusRouter from './status/status'
 import servicesList from './wrappers/services'
 
 mongoose.connect('mongodb://db/polytrader', {useMongoClient: true});
@@ -76,6 +77,7 @@ app.use(function(req, res, next) {
 app.use('/account', settingsRouter)
 app.use('/auth', authRouter)
 app.use('/portfolio', portfolioRouter)
+app.use('/status', statusRouter)
 
 app.get('/', (req, res) => {
     if (req.user) {

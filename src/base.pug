@@ -55,21 +55,22 @@ html(lang='en')
         #div(style="padding-top: 120px;")
           #div.container
             block content
-      #contactus.footer
+
+      footer
         .container
           .row.justify-content-md-center
-            .col-lg-3.footer-block.mail-block
-              p
-                i.fa.fa-envelope
-                |  info@polytrader.io
-            .col-lg-2
+            .col-md-3.footer-block Polytrader @ 2017
               a.ft-social(href='#')
                 i.fa.fa-twitter-square
-          .tiny-footer
-            .row
-              .col-md-12.copyright  Polytrader @ 2017 copyrights all reserved
-  // Include all compiled plugins (below), or include individual files as needed
+
+          .row.justify-content-md-center
+            .col-lg-12.footer-block
+              span
+                i.fa.fa-envelope
+                a(href='mailto:info@polytrader.io') info@polytrader.io
+              span
+                a(href='/status') Status
+
   script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js')
   script(src='/static/js/bootstrap.min.js')
-  script(src='/static/js/jquery.easing.min.js')
   script(src='/static/js/scrolling-nav.js')
