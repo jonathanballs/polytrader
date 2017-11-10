@@ -20,7 +20,7 @@ var linkedAccountSchema = mongoose.Schema({
     userAuth: mongoose.Schema.Types.Mixed,
     balances: [mongoose.Schema.Types.Mixed],
 
-    timestampLastSuccessfulSync: Date,
+    timestampLastSync: Date,
     lastSyncWasSuccessful: Boolean,
     lastSyncErrorMessage: String,
 })
@@ -39,7 +39,9 @@ linkedAccountSchema.methods.sync = function sync() {
                     {
                         $set: {
                             "accounts.$.balances": balances,
-                            "accounts.$.timestampLastSuccessfulSync": new Date
+                            "accounts.$.timestampLastSync": new Date,
+                            "accounts.$.lastSyncWasSuccessful": true,
+                            "accounts.$.lastSyncErrorMessage": null
                         }
                     }, (err) => {
                         if (err) {
@@ -54,23 +56,33 @@ linkedAccountSchema.methods.sync = function sync() {
                             : new Date(0)
 
                         his = his.filter(ev => ev.timestamp > lastTimestamp)
+
                         PortfolioEventHistoryModel.update(
                             { _id: peh._id },
                             { $push: { events: { $each: his } } })
-
                         .then(_ => {
-                            this.lastSyncWasSuccessful = true
-                            this.lastSyncErrorMessage = null
-                            this.save()
                             resolve()
                         }).catch(err => {
                             reject("Error inserting portfolio history into db:" + err)
                         })
+
                     }).catch(err => reject(err))
                 }).catch(err => reject(err))
         }).catch(err => {
-            this.lastSyncWasSuccessful = false
-            this.lastSyncErrorMessage = err + ''
+
+            // Save failure details to database
+            UserModel.findOneAndUpdate(
+                { "accounts._id": this._id },
+                { $set: {
+                        "accounts.$.timestampLastSync": new Date,
+                        "accounts.$.lastSyncWasSuccessful": false,
+                        "accounts.$.lastSyncErrorMessage": err + '',
+                    }
+                }
+            ).catch(err => {
+                console.log("Failed to update account lastSyncStatus.")
+            })
+
             reject(err)
         })
     })

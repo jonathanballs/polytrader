@@ -61,5 +61,9 @@ router.get('/api/update-portfolios/', loginRequiredApi, (req, res) => {
 
 // Get poloniex data
 router.get('/', loginRequired, (req, res) => {
-    res.render('portfolio/portfolio')
+    if (req.user.accounts.length == 0) {
+        res.redirect('/account')
+    } else {
+        res.render('portfolio/portfolio')
+    }
 });

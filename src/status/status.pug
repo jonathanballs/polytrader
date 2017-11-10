@@ -8,14 +8,14 @@ block content
     thead
       tr
         th Service
-        th Status
-        th Last syncs
+        th API Status
+        th Last sync
         th Sync success rate
     tbody
       each service in services
         tr
           td=service.name
           td
-            span.badge.badge-success Good
+            span.badge.badge-success Fully Operational
           td 30 seconds ago
           td 89%

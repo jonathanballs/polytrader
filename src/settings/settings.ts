@@ -180,7 +180,7 @@ router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) 
         _id: mongoose.Types.ObjectId(),
         service: req.body.service,
         timestampCreated: new Date(),
-        timestampLastSuccessfulSync: null,
+        timestampLastSync: null,
         balances: [],
         userAuth
     }

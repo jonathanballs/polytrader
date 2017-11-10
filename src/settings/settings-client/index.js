@@ -29,7 +29,6 @@ class App extends React.Component {
       <div className="container" id="div">
         <h1>Account Settings</h1>
         <hr />
-        <br />
         <h2>General</h2>
         <form method="post" action="/account">
           <div className="form-group row">
@@ -70,6 +69,10 @@ class App extends React.Component {
             updateAccountList={this.makeApiRequest.bind(this)} />
 
         })}
+
+        { this.state.accounts.length == 0
+          ? <div className="no-accounts-message">You'll need to add an account before using Polytrader.</div>
+          : null }
 
         <div className="modal fade" id="passwordModal" tabIndex={-1} role="dialog" aria-labelledby="passwordModal" aria-hidden="true">
           <div className="modal-dialog modal-lg" role="document">

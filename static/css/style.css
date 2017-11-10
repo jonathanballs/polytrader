@@ -225,7 +225,7 @@ box-shadow: 0px 0px 6px 0px rgba(192,203,212,0.35); border-radius: 6px; position
 
 .footer {background-color: #242b33; padding-top: 80px; padding-bottom: 20px;}
 .footer-block {margin-bottom: 20px; text-align: center;}
-.footer-block i{color: #06c2cd; font-size: 20px;}
+.footer-block i{font-size: 20px;}
 .address-block i{margin-bottom: 30px;}
 .call-block, .mail-block{}
 .call-block i, .mail-block i{padding-right: 10px;}

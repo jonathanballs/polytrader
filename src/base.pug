@@ -59,17 +59,19 @@ html(lang='en')
       footer
         .container
           .row.justify-content-md-center
-            .col-md-3.footer-block Polytrader @ 2017
-              a.ft-social(href='#')
-                i.fa.fa-twitter-square
+            .col-md-12.footer-block
+              span Polytrader @ 2017
+              span
+                a(href='/status') Status
+              span
+                a(style='padding-left: 0.5em;' href='mailto:info@polytrader.io')
+                  i.fa.fa-envelope
+              span
+                a.ft-social(href='#')
+                  i.fa.fa-twitter-square
 
           .row.justify-content-md-center
             .col-lg-12.footer-block
-              span
-                i.fa.fa-envelope
-                a(href='mailto:info@polytrader.io') info@polytrader.io
-              span
-                a(href='/status') Status
 
   script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js')
   script(src='/static/js/bootstrap.min.js')

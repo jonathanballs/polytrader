@@ -33,14 +33,14 @@ export default class Account extends React.Component {
       return this.makeRow(ff.description, varValue)
     })
 
-    console.log(this.props.account)
-
     var syncStatus = null
     if (this.props.account.lastSyncWasSuccessful === true) {
-      syncStatus = <span className="badge badge-success">{ moment(this.props.account.timestampLastSuccessfulSync).fromNow() }</span>
+      syncStatus = <span className="badge badge-success">{ moment(this.props.account.timestampLastSync).fromNow() }</span>
     }
     else {
       syncStatus = <span className="badge badge-danger">
+        { moment(this.props.account.timestampLastSync).fromNow() }
+
         { this.props.account.lastSyncErrorMessage
           ? this.props.account.lastSyncErrorMessage
           : "Failed for unknown reason"
