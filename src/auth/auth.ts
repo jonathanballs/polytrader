@@ -1,5 +1,5 @@
 import * as express from 'express';
-import {UserModel} from '../models'
+import UserModel from '../models/user'
 import Poloniex from '../wrappers/poloniex-wrapper'
 import * as passwordHasher from 'password-hash';
 import * as passport from 'passport'

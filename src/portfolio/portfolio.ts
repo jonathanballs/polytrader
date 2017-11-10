@@ -1,14 +1,16 @@
 import * as express from 'express';
-import { loginRequired, loginRequiredApi } from '../auth/auth'
-import servicesList from '../wrappers/services'
-import { UserModel, PriceModel } from "../models";
-import { Portfolio } from '../wrappers'
 import * as clone from 'clone';
 import * as Big from 'big.js'
 import * as mongoose from 'mongoose'
 
 import Etherscan from '../wrappers/etherscan-wrapper'
-import { PortfolioEventHistoryModel } from '../models'
+import { Portfolio } from '../wrappers'
+import { loginRequired, loginRequiredApi } from '../auth/auth'
+import servicesList from '../wrappers/services'
+
+import UserModel from '../models/user'
+import PortfolioEventHistoryModel from '../models/portfolio'
+import PriceModel from '../models/price'
 
 var router = express.Router()
 export default router

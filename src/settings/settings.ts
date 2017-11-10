@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { loginRequired, loginRequiredApi } from '../auth/auth'
-import { UserModel } from '../models'
+import UserModel from '../models/user'
 import * as mongoose from 'mongoose'
 import services from '../wrappers/services'
 import { servicesClient } from '../wrappers/services'
