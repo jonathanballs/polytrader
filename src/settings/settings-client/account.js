@@ -33,6 +33,21 @@ export default class Account extends React.Component {
       return this.makeRow(ff.description, varValue)
     })
 
+    console.log(this.props.account)
+
+    var syncStatus = null
+    if (this.props.account.lastSyncWasSuccessful === true) {
+      syncStatus = <span className="badge badge-success">{ moment(this.props.account.timestampLastSuccessfulSync).fromNow() }</span>
+    }
+    else {
+      syncStatus = <span className="badge badge-danger">
+        { this.props.account.lastSyncErrorMessage
+          ? this.props.account.lastSyncErrorMessage
+          : "Failed for unknown reason"
+        }
+      </span>
+    }
+
     return (
       <div className="exchange-settings">
         <div className="row">
@@ -48,10 +63,7 @@ export default class Account extends React.Component {
         </div>
         { userVariables }
         { this.makeRow('Added', moment(this.props.account.timestampCreated).fromNow()) }
-        { this.makeRow('Last Synced', this.props.account.timestampLastSuccessfulSync
-                        ? moment(this.props.account.timestampLastSuccessfulSync).fromNow()
-                        : "Never"
-        )}
+        { this.makeRow('Syncronisation', syncStatus)}
       </div>
     )
   }

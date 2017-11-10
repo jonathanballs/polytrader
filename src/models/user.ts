@@ -56,11 +56,16 @@ linkedAccountSchema.methods.sync = function sync() {
                         his = his.filter(ev => ev.timestamp > lastTimestamp)
                         PortfolioEventHistoryModel.update(
                             { _id: peh._id },
-                            { $push: { events: { $each: his } } }).then().catch(err => {
-                                console.log("Error inserting portfolio history into db:", err)
-                            })
+                            { $push: { events: { $each: his } } })
 
-                        resolve()
+                        .then(_ => {
+                            this.lastSyncWasSuccessful = true
+                            this.lastSyncErrorMessage = null
+                            this.save()
+                            resolve()
+                        }).catch(err => {
+                            reject("Error inserting portfolio history into db:" + err)
+                        })
                     }).catch(err => reject(err))
                 }).catch(err => reject(err))
         }).catch(err => {
