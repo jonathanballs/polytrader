@@ -8,16 +8,27 @@ import AddAccountButton from './addAccountButton'
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { loading: true, serviceList: Array(), accounts: Array() };
-    this.makeApiRequest();
+    this.state = {
+      loading: true,
+      serviceList: Array(),
+      accounts: Array(),
+      user: null,
+    };
+    this.fetchAccountSettings();
   }
 
-  makeApiRequest() {
+  fetchAccountSettings() {
     var accounts = axios.get('/account/api/accounts')
     var serviceList = axios.get('/account/api/services')
+    var user = axios.get('/account/api/user/')
 
-    Promise.all([accounts, serviceList]).then(values => {
-      this.setState({ accounts: values[0].data, serviceList: values[1].data, loading: false })
+    Promise.all([accounts, serviceList, user]).then(values => {
+      this.setState({
+        accounts: values[0].data,
+        serviceList: values[1].data,
+        user: values[2].data,
+        loading: false
+      })
     }).catch(err => console.log(err))
   }
 
@@ -38,6 +49,7 @@ class App extends React.Component {
               id="email"
               type="email"
               name="email"
+              defaultValue={this.state.user.email}
               placeholder="Email"
               required />
           </div>
@@ -54,7 +66,7 @@ class App extends React.Component {
 
             <AddAccountButton
               serviceList={this.state.serviceList}
-              updateAccountList={this.makeApiRequest.bind(this)} />
+              updateAccountList={this.fetchAccountSettings.bind(this)} />
 
           </div>
         </form>
@@ -66,7 +78,7 @@ class App extends React.Component {
             key={account._id}
             service={this.state.serviceList.filter(s=>s.key == account.service)[0]}
             account={account}
-            updateAccountList={this.makeApiRequest.bind(this)} />
+            updateAccountList={this.fetchAccountSettings.bind(this)} />
 
         })}
 

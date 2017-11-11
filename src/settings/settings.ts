@@ -225,3 +225,13 @@ router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) 
             res.send('OK')
         });
 })
+
+router.get('/api/user/', loginRequiredApi, (req, res) => {
+    res.send({
+        email: req.user.email
+    })
+})
+
+router.post('/api/user/', loginRequiredApi, (req, res) => {
+    // Deal with updating the email address
+})
