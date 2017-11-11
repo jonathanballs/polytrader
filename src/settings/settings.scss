@@ -50,3 +50,9 @@ $error-message-font: "Lucida Console", Monaco, monospace;
 	text-align: center;
 	color: gray;
 }
+
+.error-message {
+	color: red;
+	font-family: $error-message-font;
+	font-size: 0.9em;
+}

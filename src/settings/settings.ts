@@ -81,13 +81,6 @@ router.get('/', loginRequired, (req, res) => {
 });
 
 router.post('/api/email/', loginRequiredApi, (req, res) => {
-    var email = req.body.email;
-    UserModel.update({ email: req.user.email }, {
-        email: email
-    }, (err, numAffected, rawResponse) => {
-        req.login(req.user, () => res.redirect('/account'));
-    });
-
     return;
 });
 
@@ -233,5 +226,19 @@ router.get('/api/user/', loginRequiredApi, (req, res) => {
 })
 
 router.post('/api/user/', loginRequiredApi, (req, res) => {
-    // Deal with updating the email address
+
+    req.checkBody('email').isEmail()
+
+    if (req.validationErrors()) {
+        res.status(400).send("Not a valid email address")
+        return
+    }
+
+    var email = req.body.email;
+    UserModel.update({ _id: req.user._id }, {
+        email: email
+    }, (err, numAffected, rawResponse) => {
+        res.send("SUCCESS")
+    });
+
 })
