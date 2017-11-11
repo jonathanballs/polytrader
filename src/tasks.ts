@@ -11,12 +11,16 @@ var queue = kue.createQueue({
 
 queue.process('sync-account', (job, done) => {
 
+    console.log(job.data.title)
     UserModel.findOne(
-        { "accounts._id": job.data.accountID }
+        { "accounts._id": job.data.accountID },
+        { "accounts.$": 1 }
     )
     .then(user => {
-        console.log(job.data.title)
         user.accounts[0].sync()
+    })
+    .then(_ => {
+        console.log(job.data.title, " DONE ")
         done()
     })
     .catch(err => {

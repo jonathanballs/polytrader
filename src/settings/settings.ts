@@ -143,7 +143,7 @@ router.post('/api/accounts/:accountID/', loginRequiredApi,
             res.send(req.user.accounts)
 
             queue.create('sync-account', {
-                title: 'Syncing ' + service + 
+                title: 'Syncing ' + service.key + 
                                         ' account for ' + req.user.email,
                 accountID: req.params.accountID
             }).save(err => {
@@ -193,6 +193,8 @@ router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) 
         service: req.body.service,
         timestampCreated: new Date(),
         timestampLastSync: null,
+        lastSyncErrorMessage: null,
+        lastSyncWasSuccessful: null,
         balances: [],
         userAuth
     }
