@@ -195,7 +195,7 @@ class App extends React.Component {
 
     return (
       <div>
-        <div className="row" style={{ height: "23em" }}>
+        <div className="row" style={{ minHeight: "23em" }}>
           <div className="col-sm-9">
             <h1>Your Portfolio - {this.portfolioValueAtTime(new Date)} BTC</h1>
             <br />
