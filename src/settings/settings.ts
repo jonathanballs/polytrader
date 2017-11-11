@@ -5,6 +5,7 @@ import * as mongoose from 'mongoose'
 import services from '../wrappers/services'
 import { servicesClient } from '../wrappers/services'
 import * as multiparty from 'multiparty'
+import queue from '../tasks'
 
 var router = express.Router()
 export default router
@@ -30,8 +31,6 @@ function validateAccountForm(req, res, next) {
             delete files[key][0].headers
             req.body[key] = files[key][0]
         }
-
-        console.log(req.body)
 
         // Check that the service type is valid
         req.checkBody('service').notEmpty().isAscii()
@@ -113,11 +112,13 @@ router.get('/api/accounts/:accountID/', loginRequiredApi, (req, res) => {
 })
 
 // UPDATE an account
-router.post('/api/accounts/:accountID/', loginRequiredApi, validateAccountForm,
-                                                                   (req, res) => {
-    var account = req.user.accounts.filter(a => a._id == req.params.accountID)[0]
+router.post('/api/accounts/:accountID/', loginRequiredApi,
+                                    validateAccountForm, (req, res) => {
+    var account = req.user.accounts.filter(
+                                    a => a._id == req.params.accountID)[0]
     if (!account) {
-        res.status(404).send("Unable to find account with ID " + req.params.accountID)
+        res.status(404).send("Unable to find account with ID " +
+                                                    req.params.accountID)
         return
     }
 
@@ -140,6 +141,17 @@ router.post('/api/accounts/:accountID/', loginRequiredApi, validateAccountForm,
                 return
             }
             res.send(req.user.accounts)
+
+            queue.create('sync-account', {
+                title: 'Syncing ' + service + 
+                                        ' account for ' + req.user.email,
+                accountID: req.params.accountID
+            }).save(err => {
+                if (err) {
+                    console.log("Error creating sync-account task on " +
+                                " when user updates account")
+                }
+            })
         }
     )
 })
@@ -185,17 +197,29 @@ router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) 
         userAuth
     }
 
-    UserModel.findOneAndUpdate({ email: req.user.email },
+    UserModel.findOneAndUpdate({ _id: req.user._id },
         { $push: { accounts: newAccount } },
         { new: true },
         (err, updatedUser) => {
             // Update the account
-            updatedUser.accounts[updatedUser.accounts.length -1].sync()
             if (err) {
                 res.status(400).send(err + '')
+                return
             }
-            else {
-                res.send('OK')
-            }
+
+            queue.create('sync-account', {
+                title: 'Syncing ' + newAccount.service +
+                                        ' account for ' + req.user.email,
+                accountID: updatedUser.accounts[
+                                    updatedUser.accounts.length - 1]._id,
+
+            }).save(err => {
+                if (err) {
+                    console.log("Error creating sync-account task on " +
+                                " when user updates account")
+                }
+            })
+
+            res.send('OK')
         });
 })

@@ -1,17 +1,21 @@
 //#!/usr/bin/env/ node
 
-import * as express from 'express';
-import * as http from 'http';
-import * as bodyParser from 'body-parser';
-import expressValidator = require('express-validator');
-import * as passwordHasher from 'password-hash';
-import * as session from 'express-session';
-import * as ms from 'connect-mongo';
-var MongoStore = ms(session);
+import * as express from 'express'
+import * as http from 'http'
+import * as bodyParser from 'body-parser'
+import expressValidator = require('express-validator')
+import * as passwordHasher from 'password-hash'
+import * as session from 'express-session'
+import * as ms from 'connect-mongo'
+var MongoStore = ms(session)
 import * as path from 'path'
-import * as mongoose from 'mongoose';
+import * as mongoose from 'mongoose'
 import * as passport from 'passport'
+import * as moment from 'moment'
 import { Strategy } from 'passport-local'
+
+import './tasks'
+import queue from './tasks'
 
 import UserModel from "./models/user"
 import settingsRouter from './settings/settings'
@@ -94,15 +98,25 @@ app.use((req, res, next) => {
     res.status(404).render('404') // 404 handler
 })
 
-// Update accounts every 5 minutes
+// Check for accounts that haven't been updated in five mins
 setInterval(_ => {
-    UserModel.find({})
-    .then(users => {
-        users.forEach(u => {
-            console.log("Syncing accounts for", u.email)
-            u.accounts.forEach(a => {
-                a.sync()
-            })
-        })
+    var fiveMinutesAgo = moment(new Date).subtract(5, 'm').toDate()
+
+    UserModel.find({
+        "accounts.timestampLastSync": { $lt: fiveMinutesAgo }
     })
-}, 5 * 60 * 1000)
+    .then(users => users.forEach( u => {
+        u.accounts.forEach(a => {
+
+            queue.create('sync-account', {
+                title: 'Syncing ' + a.service + ' account for ' + u.email,
+                accountID: a._id
+            }).save(err => {
+                if (err) {
+                    console.log("Error adding job to queue", err)
+                }
+            })
+
+        })
+    }))
+}, 5000)
