@@ -38,7 +38,9 @@ export default class Account extends React.Component {
       syncStatus = <span className="badge badge-info">Never synced</span>
     }
     else if (this.props.account.lastSyncWasSuccessful === true) {
-      syncStatus = <span className="badge badge-success">{ moment(this.props.account.timestampLastSync).fromNow() }</span>
+      syncStatus = <span title={this.props.account.timestampLastSync} className="badge badge-success">
+        { moment(this.props.account.timestampLastSync).fromNow() }
+      </span>
     }
     else {
       syncStatus = <span className="badge badge-danger">
@@ -65,7 +67,9 @@ export default class Account extends React.Component {
 
         </div>
         { userVariables }
-        { this.makeRow('Added', moment(this.props.account.timestampCreated).fromNow()) }
+        { this.makeRow('Added', <span title={this.props.account.timestampCreated}>
+          {moment(this.props.account.timestampCreated).fromNow()}
+        </span>) }
         { this.makeRow('Syncronisation', syncStatus)}
       </div>
     )
