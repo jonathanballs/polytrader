@@ -70,7 +70,7 @@ export default class AddAccountButton extends React.Component {
                 </div>
                 <div className="col-md-2" />
                 <div className="col-md-10">
-                    <span className="error-message">{this.state.emailSubmitErrorMessage}</span>
+                    <span className="error-message">{this.state.emailSubmitStatus == 'failure' ? this.state.emailSubmitErrorMessage : null}</span>
                 </div>
             </div>
         )
