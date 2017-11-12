@@ -5,6 +5,7 @@ import axios from 'axios'
 import Account from './account';
 import AddAccountButton from './addAccountButton'
 import EmailSettings from './emailSettings'
+import PasswordSettings from './passwordSettings'
 
 class App extends React.Component {
   constructor(props) {
@@ -45,13 +46,8 @@ class App extends React.Component {
         <form method="post" action="/account">
 
           <EmailSettings user={this.state.user} />
+          <PasswordSettings />
 
-          <div className="form-group row">
-            <label className="col-md-2 col-form-label" htmlFor="password-change">Password</label>
-            <div className="col-md-4" style={{padding: 0}}>
-              <button className="btn btn-block" type="button" data-toggle="modal" data-target="#passwordModal">Change Password</button>
-            </div>
-          </div>
           <hr />
           <br />
           <div className="row">

@@ -1,11 +1,13 @@
 import * as express from 'express';
-import { loginRequired, loginRequiredApi } from '../auth/auth'
-import UserModel from '../models/user'
+import * as passwordHasher from 'password-hash'
 import * as mongoose from 'mongoose'
-import services from '../wrappers/services'
-import { servicesClient } from '../wrappers/services'
 import * as multiparty from 'multiparty'
+
 import queue from '../tasks'
+import services from '../wrappers/services'
+import UserModel from '../models/user'
+import { servicesClient } from '../wrappers/services'
+import { loginRequired, loginRequiredApi } from '../auth/auth'
 
 var router = express.Router()
 export default router
@@ -220,9 +222,7 @@ router.post('/api/accounts/', loginRequiredApi, validateAccountForm, (req, res) 
 })
 
 router.get('/api/user/', loginRequiredApi, (req, res) => {
-    res.send({
-        email: req.user.email
-    })
+    res.send({ email: req.user.email })
 })
 
 router.post('/api/user/', loginRequiredApi, (req, res) => {
@@ -241,4 +241,34 @@ router.post('/api/user/', loginRequiredApi, (req, res) => {
         res.send("SUCCESS")
     });
 
+})
+
+router.post('/api/password', loginRequiredApi, (req, res) => {
+
+    req.checkBody('oldPassword').isAscii().notEmpty().isLength({ min: 8 })
+    req.checkBody('newPassword1').isAscii().notEmpty().isLength({ min: 8 })
+    req.checkBody('newPassword2').isAscii().notEmpty().isLength({ min: 8 })
+
+    if (req.validationErrors()) {
+        res.status(400).send("Passwords are too short")
+        return
+    } else if (req.body.newPassword1 != req.body.newPassword2) {
+        res.status(400).send("Passwords do not match")
+        return
+    }
+
+    // Test that the old password is correct
+    else if (!passwordHasher.verify(req.body.oldPassword, req.user.passwordHash)) {
+        res.status(400).send("Your old password is incorrect")
+        return
+    }
+
+    // Update the password
+    var passwordHash = passwordHasher.generate(req.body.newPassword1)
+    UserModel.update({ _id: req.user._id }, {
+        passwordHash
+    }, (err, numAffected, rawResponse) => {
+        console.log("Password updated to ", req.body.newPassword1)
+        res.send("SUCCESS")
+    });
 })

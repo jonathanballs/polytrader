@@ -58,6 +58,12 @@ export default class Etherscan implements IWrapper {
     private getAccountHistory(accountID: string, pagination = null): Promise<PortfolioEvent[]> {
         return new Promise((resolve, reject) => {
             this.api.getAccount(accountID, (err, account) => {
+                if (err) {
+                    reject(err)
+                    return
+                } else if (!account) {
+                    reject("Couldn't find account with id " + accountID)
+                }
                 account.getTransactions(pagination, (err, transactions, pagination) => {
                     var history = transactions.map(tx => {
                         switch(tx.type) {
