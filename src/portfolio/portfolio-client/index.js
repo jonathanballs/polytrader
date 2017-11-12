@@ -21,6 +21,7 @@ class App extends React.Component {
 
     portfolioHistoryPromise.then(portfolioHistories => {
       this.setState({portfolioHistories: portfolioHistories.data})
+      console.log(portfolioHistories.data)
     })
   }
 

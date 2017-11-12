@@ -49,31 +49,32 @@ linkedAccountSchema.methods.sync = function sync() {
                         }
                     })
 
+                his = his.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+
                 PortfolioEventHistoryModel.findOneOrCreate({ accountID: this._id })
                     .then(peh => {
-                        var lastTimestamp = peh.events.length
-                            ? peh.events[peh.events.length - 1].timestamp
-                            : new Date(0)
-
-                        his = his.filter(ev => ev.timestamp > lastTimestamp)
+                        
+                        var newHistory = peh.events.filter(e => e.timestamp < his[0].timestamp)
+                            .concat(his)
 
                         PortfolioEventHistoryModel.update(
                             { _id: peh._id },
-                            { $push: { events: { $each: his } } })
-                        .then(_ => {
-                            resolve()
-                        }).catch(err => {
-                            reject("Error inserting portfolio history into db:" + err)
-                        })
+                            { $set: { events: newHistory } })
+                            .then(_ => {
+                                resolve()
+                            }).catch(err => {
+                                reject("Error inserting portfolio history into db:" + err)
+                            })
 
                     }).catch(err => reject(err))
-                }).catch(err => reject(err))
+            }).catch(err => reject(err))
         }).catch(err => {
 
             // Save failure details to database
             UserModel.findOneAndUpdate(
                 { "accounts._id": this._id },
-                { $set: {
+                {
+                    $set: {
                         "accounts.$.timestampLastSync": new Date,
                         "accounts.$.lastSyncWasSuccessful": false,
                         "accounts.$.lastSyncErrorMessage": err + '',
