@@ -2,85 +2,87 @@
 // Actually has a lot more types than is strictly necessary
 // Jonathan Balls 2017
 
-import * as request from 'request'
-import * as crypto from 'crypto'
-import * as moment from 'moment'
-import * as clone from 'clone'
-import * as Big from 'big.js'
+import * as Big from "big.js";
+import * as clone from "clone";
+import * as crypto from "crypto";
+import * as moment from "moment";
+import * as request from "request";
 
-import IWrapper from '../'
-import { Trade, DepositWithdrawal, PortfolioEvent, Portfolio, Balance } from '../'
+import IWrapper from "../";
+import { Balance, DepositWithdrawal, Portfolio, PortfolioEvent, Trade } from "../";
 
 export class OrderBook {
-    asks: {price: string, amount: string}[]
-    bids: {price: string, amount: string}[]
-    isFrozen: boolean
-    seq: number
+    public asks: Array<{ price: string, amount: string }>;
+    public bids: Array<{ price: string, amount: string }>;
+    public isFrozen: boolean;
+    public seq: number;
 }
 
 export class Order {
-    orderNumber: number
-    type: string
-    rate: string
-    amount: string
-    total: string
+    public orderNumber: number;
+    public type: string;
+    public rate: string;
+    public amount: string;
+    public total: string;
 }
 
 export enum TradeType { Buy, Sell }
 
-function tradeStringToType(s: string) : TradeType {
-    return s=="buy" ? TradeType.Buy : TradeType.Sell
+function tradeStringToType(s: string): TradeType {
+    return s === "buy" ? TradeType.Buy : TradeType.Sell;
 }
 
 export enum AccountType {
     Exchange,
     Margin,
-    Lending
+    Lending,
 }
 
-function accountStringToType(s: string) : AccountType {
-    if (s == "lending")
-        return AccountType.Lending
-    if (s == "margin")
-        return AccountType.Margin
-    return AccountType.Exchange
+function accountStringToType(s: string): AccountType {
+    if (s === "lending") {
+        return AccountType.Lending;
+    }
+    if (s === "margin") {
+        return AccountType.Margin;
+    }
+    return AccountType.Exchange;
 }
 
 export class Deposit {
-    currency: string
-    address: string
-    amount: string
-    confirmations: number
-    txid: string
-    timestamp: Date
-    status: string
-    isComplete: boolean
+    public currency: string;
+    public address: string;
+    public amount: string;
+    public confirmations: number;
+    public txid: string;
+    public timestamp: Date;
+    public status: string;
+    public isComplete: boolean;
 }
 
 export class Withdrawal {
-    withdrawalNumber: number
-    currency: string
-    address: string
-    amount: string
-    fee: string
-    timestamp: Date
-    status: string
-    isComplete: boolean
-    ipAddress: string
+    public withdrawalNumber: number;
+    public currency: string;
+    public address: string;
+    public amount: string;
+    public fee: string;
+    public timestamp: Date;
+    public status: string;
+    public isComplete: boolean;
+    public ipAddress: string;
 }
 
 export class DepositsAndWithdrawals {
-    deposits: Deposit[]
-    withdrawals: Withdrawal[]
+    public deposits: Deposit[];
+    public withdrawals: Withdrawal[];
 }
 
 export class CompleteBalances {
-    [currency: string]: {available: string, onOrders: string, btcValue: string}
+    [currency: string]: { available: string, onOrders: string, btcValue: string }
 }
 
 export class NewAddress {
-    success: boolean
-    address: string
+    public success: boolean;
+    public address: string;
 }
 
 export class DepositAddresses {
@@ -88,57 +90,56 @@ export class DepositAddresses {
 }
 
 export class Currency {
-    txFee: string
-    name: string
-    minConf: number
-    disabled: boolean
+    public txFee: string;
+    public name: string;
+    public minConf: number;
+    public disabled: boolean;
 }
 
 export class LoanOrders {
-    offers:   {rate: string, amount: string, rangeMin: number, rangeMax: number}[]
-    demands:  {rate: string, amount: string, rangeMin: number, rangeMax: number}[]
+    public offers: Array<{ rate: string, amount: string, rangeMin: number, rangeMax: number }>;
+    public demands: Array<{ rate: string, amount: string, rangeMin: number, rangeMax: number }>;
 }
 
 export class Candlestick {
-    timestamp: Date
-    high: string
-    low: string
-    open: string
-    close: string
-    volume: string
-    quoteVolume: string
-    weightedAverage: string
+    public timestamp: Date;
+    public high: string;
+    public low: string;
+    public open: string;
+    public close: string;
+    public volume: string;
+    public quoteVolume: string;
+    public weightedAverage: string;
 }
 
-
 export class TradeResponse {
-    globalTradeID: number
-    tradeID: number
-    timestamp: Date
-    type: TradeType
-    rate: string
-    amount: string
-    total: string
+    public globalTradeID: number;
+    public tradeID: number;
+    public timestamp: Date;
+    public type: TradeType;
+    public rate: string;
+    public amount: string;
+    public total: string;
 }
 
 export class UserTrade {
-    globalTradeID: number
-    tradeID: number
-    timestamp: Date
-    type: TradeType
-    rate: string
-    amount: string
-    total: string
-    fee: string
-    orderNumber: number
-    category: AccountType
-    base: string
-    quote: string
+    public globalTradeID: number;
+    public tradeID: number;
+    public timestamp: Date;
+    public type: TradeType;
+    public rate: string;
+    public amount: string;
+    public total: string;
+    public fee: string;
+    public orderNumber: number;
+    public category: AccountType;
+    public base: string;
+    public quote: string;
 }
 
 export class Volume {
-    baseCurrency: string
-    quoteCurrency: string
+    public baseCurrency: string;
+    public quoteCurrency: string;
 
     constructor(baseCurrency: string, quoteCurrency: string) {
         this.baseCurrency = baseCurrency;
@@ -147,69 +148,71 @@ export class Volume {
 }
 
 export class VolumeList {
-    pair : {[currencyPair: string]: Volume}
-    totalBTC: string
-    totalETH: string
-    totalUSDT: string
-    totalXMR: string
-    totalXUSD: string
+    public pair: { [currencyPair: string]: Volume };
+    public totalBTC: string;
+    public totalETH: string;
+    public totalUSDT: string;
+    public totalXMR: string;
+    public totalXUSD: string;
 }
 
 export class Ticker {
-    id: number
-    last: string
-    lowestAsk: string
-    highestBid: string
-    percentChange: string
-    baseVolume: string
-    quoteVolume: string
-    high24hr: string
-    low24hr: string
+    public id: number;
+    public last: string;
+    public lowestAsk: string;
+    public highestBid: string;
+    public percentChange: string;
+    public baseVolume: string;
+    public quoteVolume: string;
+    public high24hr: string;
+    public low24hr: string;
 }
-
 
 export default class Poloniex implements IWrapper {
 
-    apiKey: string
-    apiSecret: string
+    public apiKey: string;
+    public apiSecret: string;
 
-    readonly version : string = '0.0.1'
-    readonly PUBLIC_API_URL : string = "https://poloniex.com/public"
-    readonly PRIVATE_API_URL: string = "https://poloniex.com/tradingApi"
-    readonly USER_AGENT : string = "poloniex-big" + this.version
-    readonly STRICT_SSL : boolean = true
+    public readonly version: string = "0.0.1";
+    public readonly PUBLIC_API_URL: string = "https://poloniex.com/public";
+    public readonly PRIVATE_API_URL: string = "https://poloniex.com/tradingApi";
+    public readonly USER_AGENT: string = "poloniex-big" + this.version;
+    public readonly STRICT_SSL: boolean = true;
+
+    public readonly NONCE_LENGTH: number = 15;
+    private lastNonce: number = null;
+    private repeatNonce: number = 0;
 
     constructor(serverAuth, userAuth) {
-        this.apiKey = userAuth.apiKey
-        this.apiSecret = userAuth.apiSecret
+        this.apiKey = userAuth.apiKey;
+        this.apiSecret = userAuth.apiSecret;
     }
 
-    validateCredentials() {
+    public validateCredentials() {
         return new Promise<boolean>((resolve, reject) => {
-            this.returnBalances().then(balances => {
-                resolve(true)
-            }).catch(e => {
-                reject(e)
-            })
-        })
+            this.returnBalances().then((balances) => {
+                resolve(true);
+            }).catch((e) => {
+                reject(e);
+            });
+        });
     }
 
     // Make an API request
-    _request(options, callback) {
+    public _request(options, callback) {
 
-
-        if (!('headers' in options)) {
+        if (!("headers" in options)) {
             options.headers = {};
         }
 
         options.json = true;
-        options.headers['User-Agent'] = this.USER_AGENT;
+        options.headers["User-Agent"] = this.USER_AGENT;
         options.strictSSL = this.STRICT_SSL;
 
-        request(options, function(err, response, body) {
+        request(options, (err, response, body) => {
             // Empty response
-            if (!err && (typeof body === 'undefined' || body === null)) {
-                err = 'Empty response';
+            if (!err && (typeof body === "undefined" || body === null)) {
+                err = "Empty response";
             }
 
             callback(err, body);
@@ -219,20 +222,20 @@ export default class Poloniex implements IWrapper {
     }
 
     // Make a public API request
-    _public(command, parameters, callback) {
-        var options;
+    public _public(command, parameters, callback) {
+        let options;
 
-        if (typeof parameters === 'function') {
+        if (typeof parameters === "function") {
             callback = parameters;
             parameters = {};
         }
 
-        parameters || (parameters = {});
+        parameters = parameters || {};
         parameters.command = command;
         options = {
-            method: 'GET',
+            method: "GET",
+            qs: parameters,
             url: this.PUBLIC_API_URL,
-            qs: parameters
         };
 
         options.qs.command = command;
@@ -240,268 +243,272 @@ export default class Poloniex implements IWrapper {
     }
 
     // Make a private API request
-    _private(command, parameters, callback) {
-        var options;
+    public _private(command, parameters, callback) {
+        let options;
 
-        if (typeof parameters === 'function') {
+        if (typeof parameters === "function") {
             callback = parameters;
             parameters = {};
         }
 
-        parameters || (parameters = {});
+        parameters = parameters || {};
         parameters.command = command;
         parameters.nonce = this.nonce();
 
         options = {
-            method: 'POST',
-            url: this.PRIVATE_API_URL,
             form: parameters,
-            headers: this._getPrivateHeaders(parameters)
+            headers: this._getPrivateHeaders(parameters),
+            method: "POST",
+            url: this.PRIVATE_API_URL,
         };
 
         return this._request(options, callback);
     }
 
     // The secret is encapsulated and never exposed
-    _getPrivateHeaders(parameters) {
-        var paramString, signature;
+    public _getPrivateHeaders(parameters) {
 
         if (!this.apiKey || !this.apiSecret) {
-            throw 'Poloniex: Error. API key and secret required';
+            throw new Error("Poloniex: Error. API key and secret required");
         }
 
         // Convert to `arg1=foo&arg2=bar`
-        paramString = Object.keys(parameters).map(function(param) {
-            return encodeURIComponent(param) + '=' + encodeURIComponent(parameters[param]);
-        }).join('&');
+        const paramString = Object.keys(parameters).map((param) => {
+            return encodeURIComponent(param) + "=" + encodeURIComponent(parameters[param]);
+        }).join("&");
 
-        signature = crypto.createHmac('sha512', this.apiSecret).update(paramString).digest('hex');
+        const signature = crypto.createHmac("sha512", this.apiSecret).update(paramString).digest("hex");
 
         return {
             Key: this.apiKey,
-            Sign: signature
+            Sign: signature,
         };
-    };
-
-    private lastNonce: number = null
-    private repeatNonce: number = 0
-    readonly NONCE_LENGTH: number = 15
-
-    nonce() : number {
-        var now : number = Math.pow(10, 2) * +new Date()
-
-        if (now == this.lastNonce) {
-            this.repeatNonce++
-        } else {
-            this.repeatNonce = 0
-            this.lastNonce = now
-        }
-
-        var s = (now + this.repeatNonce).toString()
-        return +s.substr(s.length - this.NONCE_LENGTH)
     }
 
-    returnTicker() {
-        return new Promise<{[currencyPair: string] : Ticker}>((resolve, reject) => {
-            this._public('returnTicker', {}, (err, ticker) => {
-                if (err = err || ticker.error) {
-                    reject("Error in return24hVolume: " + err)
+    public nonce(): number {
+        const now: number = Math.pow(10, 2) * +new Date();
+
+        if (now === this.lastNonce) {
+            this.repeatNonce++;
+        } else {
+            this.repeatNonce = 0;
+            this.lastNonce = now;
+        }
+
+        const s = (now + this.repeatNonce).toString();
+        return +s.substr(s.length - this.NONCE_LENGTH);
+    }
+
+    public returnTicker() {
+        return new Promise<{ [currencyPair: string]: Ticker }>((resolve, reject) => {
+            this._public("returnTicker", {}, (err, ticker) => {
+                if (err || ticker.error) {
+                    reject("Error in return24hVolume: " + (err || ticker.error));
                     return;
                 }
 
-                resolve(ticker)
-            })
-        })
+                resolve(ticker);
+            });
+        });
     }
 
     // Returns the 24-hour volume for all markets
-    return24hVolume() {
+    public return24hVolume() {
         return new Promise<VolumeList>((resolve, reject) => {
-            this._public('return24hVolume', {}, (err, volumeList) => {
-                if (err = err || volumeList.error) {
-                    reject(Error("Error in return24hVolume: " + err))
+            this._public("return24hVolume", {}, (err, volumeList) => {
+                const error = err || volumeList.error;
+                if (err) {
+                    reject(Error(err));
                     return;
                 }
 
-                var ret : VolumeList = new VolumeList()
-                ret.totalBTC = volumeList["totalBTC"];
-                ret.totalETH = volumeList["totalETH"];
-                ret.totalUSDT = volumeList["totalUSDT"];
-                ret.totalXMR = volumeList["totalXMR"];
-                ret.totalXUSD = volumeList["totalXUSD"];
-                ret.pair = {}
+                const ret: VolumeList = new VolumeList();
+                ret.totalBTC = volumeList.totalBTC;
+                ret.totalETH = volumeList.totalETH;
+                ret.totalUSDT = volumeList.totalUSDT;
+                ret.totalXMR = volumeList.totalXMR;
+                ret.totalXUSD = volumeList.totalXUSD;
+                ret.pair = {};
 
-                for (var key in volumeList) {
-                    var pair = key.split('_')
-                    if (pair.length != 2)
-                        continue
-                    ret.pair[key] = new Volume(pair[0], pair[1])
+                for (const key in volumeList) {
+                    if (volumeList.hasObservableProperty(key)) {
+                        const pair = key.split("_");
+                        if (pair.length !== 2) {
+                            continue;
+                        }
+                        ret.pair[key] = new Volume(pair[0], pair[1]);
+                    }
                 }
 
                 resolve(ret);
-            })
-        })
+            });
+        });
     }
 
-
     // Returns the order book. Pass no arguments to get all currencies
-    returnOrderBook() : Promise<{[currencyPair: string]: OrderBook}>
-    returnOrderBook(currencyPair: string, depth?: number) : Promise<OrderBook>
-    returnOrderBook(currencyPair?: string, depth?: number) {
+    public returnOrderBook(): Promise<{ [currencyPair: string]: OrderBook }>;
+    public returnOrderBook(currencyPair: string, depth?: number): Promise<OrderBook>;
+    public returnOrderBook(currencyPair?: string, depth?: number) {
 
-        var orderBookOptions: any = { currencyPair: currencyPair || 'all' }
-        if (depth)
+        const orderBookOptions: any = { currencyPair: currencyPair || "all" };
+        if (depth) {
             orderBookOptions.depth = depth;
+        }
 
         return new Promise<any>((resolve, reject) => {
 
             // Normalize an order book returned by poloniex
-            function normalizeOrderBook(orderBook) : OrderBook {
-                var ret = new OrderBook;
-                ret.isFrozen = orderBook["isFrozen"] == "1"
-                ret.seq = orderBook["seq"]
-                ret.asks = orderBook["asks"].map(a => {
+            function normalizeOrderBook(orderBook): OrderBook {
+                const ret = new OrderBook();
+                ret.isFrozen = orderBook.isFrozen === "1";
+                ret.seq = orderBook.seq;
+                ret.asks = orderBook.asks.map((a) => {
                     return {
+                        amount: String(a[1]),
                         price: a[0],
-                        amount: String(a[1])
-                    }
-                })
-                ret.bids = orderBook["bids"].map(a => {
+                    };
+                });
+                ret.bids = orderBook.bids.map((a) => {
                     return {
+                        amount: String(a[1]),
                         price: a[0],
-                        amount: String(a[1])
-                    }
-                })
+                    };
+                });
 
                 return ret;
             }
 
-            this._public('returnOrderBook', orderBookOptions, (err, data) => {
-                if (err = err || orderBookOptions.error) {
-                    reject(Error("Error in returnOrderBook: " + err))
+            this._public("returnOrderBook", orderBookOptions, (err, data) => {
+                const error = err || orderBookOptions.errors;
+                if (error) {
+                    reject(Error("Error in returnOrderBook: " + error));
                     return;
                 }
 
                 // Resolve complete order book
-                if (typeof currencyPair == 'undefined') {
+                if (typeof currencyPair === "undefined") {
                     // Normalize all currencies
-                    var orderBooks : {[currencyPair: string] : OrderBook} = {}
-                    for (var key in data) {
-                        orderBooks[key] = normalizeOrderBook(data[key])
+                    const orderBooks: { [currencyPair: string]: OrderBook } = {};
+                    for (const key in data) {
+                        if (data.hasObservableProperty(key)) {
+                            orderBooks[key] = normalizeOrderBook(data[key]);
+                        }
                     }
-                    resolve(orderBooks)
+                    resolve(orderBooks);
+                } else {
+                    resolve(normalizeOrderBook(data));
                 }
-                // Resolve currency specific order book
-                else {
-                    resolve(normalizeOrderBook(data))
-                }
-            })
-        })
+            });
+        });
     }
 
     // Returns trade history
     // TODO parse date not to local time but to UTC
-    returnTradeHistory(currencyPair: string, start?: Date, end?: Date) {
+    public returnTradeHistory(currencyPair: string, start?: Date, end?: Date) {
         return new Promise<TradeResponse[]>((resolve, reject) => {
 
-            var reqOptions: any  = {
-                currencyPair: currencyPair
-            }
+            const reqOptions: any = {
+                currencyPair,
+            };
 
             if (start) {
-                reqOptions.start = Math.ceil(start.getTime() / 1000)
+                reqOptions.start = Math.ceil(start.getTime() / 1000);
             }
             if (end) {
-                reqOptions.end = Math.floor(end.getTime() / 1000)
+                reqOptions.end = Math.floor(end.getTime() / 1000);
             }
 
-            this._public('returnTradeHistory', reqOptions, (err, tradeHistory) => {
-                if (err = err || tradeHistory.error) {
-                    reject(Error("Error in returnTradeHistory: " + err))
-                    return
+            this._public("returnTradeHistory", reqOptions, (err, tradeHistory) => {
+                const error = err || tradeHistory.error;
+                if (error) {
+                    reject(Error(error));
+                    return;
                 }
 
-                tradeHistory.forEach(t => {
-                    t.timestamp = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate()
-                    delete t.date
-                    t.type = tradeStringToType(t.type)
+                tradeHistory.forEach((t) => {
+                    t.timestamp = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate();
+                    delete t.date;
+                    t.type = tradeStringToType(t.type);
                 });
 
-                resolve(tradeHistory)
-            })
-        })
+                resolve(tradeHistory);
+            });
+        });
     }
 
     // Return candlestick data for a currency
-    returnChartData(currencyPair: string, period: number,
-                                            start: Date, end: Date) {
-        var reqOptions = {
+    public returnChartData(currencyPair: string, period: number,
+        start: Date, end: Date) {
+        const reqOptions = {
             currencyPair,
+            end: Math.floor(end.getTime() / 1000),
             period,
             start: Math.ceil(start.getTime() / 1000),
-            end: Math.floor(end.getTime() / 1000)
-        }
+        };
 
         return new Promise<Candlestick[]>((resolve, reject) => {
-            this._public('returnChartData', reqOptions, (err, candlestickData) => {
-                if (err = err || candlestickData.error) {
-                    reject(Error("Error in returnChartData: " + err))
-                    return
+            this._public("returnChartData", reqOptions, (err, candlestickData) => {
+                const error = err || candlestickData.error;
+                if (err) {
+                    reject(Error(err));
+                    return;
                 }
 
-                candlestickData.forEach(c => {
-                    c.timestamp = new Date(c.date * 1000)
-                    delete c.date
-                    c.high = String(c.high)
-                    c.low = String(c.low)
-                    c.open = String(c.open)
-                    c.close = String(c.close)
-                    c.volume = String(c.volume)
-                    c.quoteVolume = String(c.quoteVolume)
-                    c.weightedAverage = String(c.weightedAverage)
-                })
+                candlestickData.forEach((c) => {
+                    c.timestamp = new Date(c.date * 1000);
+                    delete c.date;
+                    c.high = String(c.high);
+                    c.low = String(c.low);
+                    c.open = String(c.open);
+                    c.close = String(c.close);
+                    c.volume = String(c.volume);
+                    c.quoteVolume = String(c.quoteVolume);
+                    c.weightedAverage = String(c.weightedAverage);
+                });
 
-                resolve(candlestickData)
-            })
-        })
+                resolve(candlestickData);
+            });
+        });
 
     }
 
     // Returns a list of all currencies
-    returnCurrencies() {
-        return new Promise<{[currency: string]: Currency}>((resolve, reject) => {
-            this._public('returnCurrencies', {}, (err, currencies) => {
-
-                if (err = err || currencies.error) {
-                    reject(Error("Error in returnCurrencies: " + err))
-                    return
+    public returnCurrencies() {
+        return new Promise<{ [currency: string]: Currency }>((resolve, reject) => {
+            this._public("returnCurrencies", {}, (err, currencies) => {
+                const error = err || currencies.error;
+                if (err) {
+                    reject(Error(err));
+                    return;
                 }
 
-                for (var currency in currencies) {
-                    var c = currencies[currency]
+                for (const currency in currencies) {
+                    if (currencies.hasObservableProperty(currency)) {
+                        const c = currencies[currency];
 
-                    c.disabled = !!c.disabled
-                    c.txFee = String(c.txFee)
+                        c.disabled = !!c.disabled;
+                        c.txFee = String(c.txFee);
+                    }
                 }
 
-                resolve(currencies)
-            })
-        })
+                resolve(currencies);
+            });
+        });
     }
 
     // Return the list of loan offers and demands for a given currency
-    returnLoanOrders(currency: string) {
+    public returnLoanOrders(currency: string) {
         return new Promise<LoanOrders>((resolve, reject) => {
-            this._public('returnLoanOrders', {currency}, (err, loanOrders) => {
-
-                if (err = err || loanOrders.error) {
-                    reject(Error("Error in returnLoanOrders: " + err))
-                    return
+            this._public("returnLoanOrders", { currency }, (err, loanOrders) => {
+                const error = err || loanOrders.error;
+                if (err) {
+                    reject(Error(err));
+                    return;
                 }
 
-                resolve(loanOrders)
-            })
-        })
+                resolve(loanOrders);
+            });
+        });
     }
 
     //
@@ -509,384 +516,336 @@ export default class Poloniex implements IWrapper {
     // These methods require api keys in order to work
     //
 
-    returnBalances() {
+    public returnBalances() {
         return new Promise<Balance[]>((resolve, reject) => {
-            this._private('returnBalances', {}, (err, balances) => {
-                if (err = err || balances.error) {
-                    reject(Error(err))
-                    return
+            this._private("returnBalances", {}, (err, balances) => {
+                const error = err || balances.error;
+                if (err) {
+                    reject(Error(err));
+                    return;
                 }
 
-                var ret: Balance[] = new Array()
-                for (var currency in balances) {
+                const ret: Balance[] = new Array();
+                for (const currency in balances) {
                     if (Big(balances[currency]).gt("0.0000001")) {
-                        ret.push(new Balance(currency, balances[currency]))
+                        ret.push(new Balance(currency, balances[currency]));
                     }
                 }
 
-                resolve(ret)
-            })
-        })
-    }
-
-    // Return balance for exchange account of specific account if asked
-    returnCompleteBalances(account?: string) {
-        account = account || 'all'
-
-        return new Promise<Balance[]>((resolve, reject) => {
-            this._private('returnCompleteBalances', {account}, (err, balancesRaw) => {
-                if (err = err || balancesRaw.error) {
-                    reject(Error("Error in returnCompleteBalances: " + err))
-                    return
-                }
-
-                var balances : Balance[] = []
-                for (var key in balancesRaw) {
-                    var newBalance = new Balance
-                    newBalance.currency = key
-                    newBalance.amount = balancesRaw[key].available
-                    newBalance.btcValue = balancesRaw[key].btcValue
-
-                    if (parseFloat(newBalance.amount) > 0.0)
-                        balances.push(newBalance)
-                }
-
-                resolve(balances)
-            })
-        })
+                resolve(ret);
+            });
+        });
     }
 
     // Get an object containing all deposit addresses for different currencies
     // Note that you may not have an address for a currency in which case it will
     // be undefined. You will need to generate a new address using the method
     // below
-    returnDepositAddresses() {
+    public returnDepositAddresses() {
         return new Promise<DepositAddresses>((resolve, reject) => {
-            this._private('returnDepositAddresses', {}, (err, addresses) => {
-                if (err = err || addresses.error) {
-                    reject(Error("Error in returnDepositAddresses: " + err))
-                    return
+            this._private("returnDepositAddresses", {}, (err, addresses) => {
+                const error = err || addresses.error;
+                if (error) {
+                    reject(Error(err));
+                    return;
                 }
 
-                resolve(addresses)
-            })
-        })
+                resolve(addresses);
+            });
+        });
     }
 
     // Generates a new deposit address for a currency
-    generateNewAddress(currency: string) {
+    public generateNewAddress(currency: string) {
         return new Promise<NewAddress>((resolve, reject) => {
-            this._private('generateNewAddress', {currency}, (err, newAddress) => {
-                if (err = err || newAddress.error) {
-                    reject(Error("Error in generateNewAddress: " + err))
-                    return
+            this._private("generateNewAddress", { currency }, (err, newAddress) => {
+                const error = err || newAddress.error;
+                if (error) {
+                    reject(Error(error));
+                    return;
                 }
-                
-                var ret = new NewAddress;
-                ret.success = newAddress.success == "1"
-                ret.address = newAddress.response
-                resolve(ret)
-            })
-        })
+
+                const ret = new NewAddress();
+                ret.success = newAddress.success === "1";
+                ret.address = newAddress.response;
+                resolve(ret);
+            });
+        });
     }
 
     // Returns the deposit and withdrawal history for the user
-    returnDepositsWithdrawals(start: Date, end: Date) {
+    public returnDepositsWithdrawals(start: Date, end: Date) {
 
-        var reqOptions = {
+        const reqOptions = {
+            end: Math.floor(end.getTime() / 1000),
             start: Math.ceil(start.getTime() / 1000),
-            end: Math.floor(end.getTime() / 1000)
-        }
+        };
 
         return new Promise<DepositsAndWithdrawals>((resolve, reject) => {
-            this._private('returnDepositsWithdrawals', reqOptions, (err, depositsWithdrawals) => {
-                if (err = err || depositsWithdrawals.error) {
-                    reject(Error("Error in returnDepositsWithdrawals: " + err))
-                    return
+            this._private("returnDepositsWithdrawals", reqOptions, (err, depositsWithdrawals) => {
+                const error = err || depositsWithdrawals.error;
+                if (error) {
+                    reject(Error(err));
+                    return;
                 }
 
-                depositsWithdrawals.deposits.forEach(deposit => {
-                    deposit.timestamp = new Date(deposit.timestamp * 1000)
-                    deposit.isComplete = deposit.status.startsWith('COMPLETE')
+                depositsWithdrawals.deposits.forEach((deposit) => {
+                    deposit.timestamp = new Date(deposit.timestamp * 1000);
+                    deposit.isComplete = deposit.status.startsWith("COMPLETE");
                 });
 
-                depositsWithdrawals.withdrawals.forEach(withdrawal => {
-                    withdrawal.timestamp = new Date(withdrawal.timestamp * 1000)
-                    withdrawal.isComplete = withdrawal.status.startsWith('COMPLETE')
-                })
+                depositsWithdrawals.withdrawals.forEach((withdrawal) => {
+                    withdrawal.timestamp = new Date(withdrawal.timestamp * 1000);
+                    withdrawal.isComplete = withdrawal.status.startsWith("COMPLETE");
+                });
 
-                resolve(depositsWithdrawals)
-            })
-        })
+                resolve(depositsWithdrawals);
+            });
+        });
     }
 
     // Return list of users orders for a currency pair or all currencies
-    returnOpenOrders() : Promise<{[currencyPair: string]: Order[]}>
-    returnOpenOrders(currencyPair) : Promise<Order[]>
-    returnOpenOrders(currencyPair?: string) {
+    public returnOpenOrders(): Promise<{ [currencyPair: string]: Order[] }>;
+    public returnOpenOrders(currencyPair): Promise<Order[]>;
+    public returnOpenOrders(currencyPair?: string) {
         return new Promise<any>((resolve, reject) => {
-            var reqOptions = {
-                currencyPair: currencyPair || 'all'
-            }
+            const reqOptions = {
+                currencyPair: currencyPair || "all",
+            };
 
             function normalizeOrder(order) {
-                order.orderNumber = parseInt(order.orderNumber)
+                order.orderNumber = parseInt(order.orderNumber, 10);
             }
 
-            this._private('returnOpenOrders', reqOptions, (err, openOrders) => {
-                if (err = err || openOrders.error) {
-                    reject(Error("Error in returnOpenOrders: " + err))
-                    return
+            this._private("returnOpenOrders", reqOptions, (err, openOrders) => {
+                const error = err || openOrders.error;
+                if (error) {
+                    reject(Error(err));
+                    return;
                 }
 
                 // Normalize all orders
                 if (!currencyPair) {
-                    for (var key in openOrders) {
-                        openOrders[key].forEach(o => normalizeOrder(o))
+                    for (const key in openOrders) {
+                        if (openOrders.hasObservableProperty(key)) {
+                            openOrders[key].forEach((o) => normalizeOrder(o));
+                        }
                     }
-                }
-                else {
-                    openOrders.forEach(o => normalizeOrder(o))
+                } else {
+                    openOrders.forEach((o) => normalizeOrder(o));
                 }
 
-                resolve(openOrders)
-            })
-        })
+                resolve(openOrders);
+            });
+        });
     }
 
     // Returns users historical trades. For now it returns all trades
-    returnUserTradeHistory(currencyPair?: string): Promise<UserTrade[]> {
+    public returnUserTradeHistory(currencyPair?: string): Promise<UserTrade[]> {
         return new Promise<any>((resolve, reject) => {
-            var reqOptions = {
-                currencyPair: currencyPair || 'all',
+            const reqOptions = {
+                currencyPair: currencyPair || "all",
+                end: Math.floor((new Date()).getTime() / 1000),
                 start: 0,
-                end: Math.floor((new Date).getTime() / 1000)
-            }
+            };
 
-            this._private('returnTradeHistory', reqOptions, (err, tradeHistory) => {
-                if (err = err || tradeHistory.error) {
-                    reject(Error("Error in returnTradeHistory: " + err))
-                    return
+            this._private("returnTradeHistory", reqOptions, (err, tradeHistory) => {
+                const error = err || tradeHistory.error;
+                if (error) {
+                    reject(Error(err));
+                    return;
                 }
 
                 function normalizeTrade(t, base: string, quote: string) {
-                    t.tradeID = parseInt(t.tradeID)
-                    t.orderNumber = parseInt(t.orderNumber)
-                    t.timestamp = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate()
-                    delete t.date
-                    t.type = tradeStringToType(t.type)
-                    t.category = accountStringToType(t.category)
+                    t.tradeID = parseInt(t.tradeID, 10);
+                    t.orderNumber = parseInt(t.orderNumber, 10);
+                    t.timestamp = moment.utc(t.date, "YYYY-MM-DD HH:mm:ss").toDate();
+                    delete t.date;
+                    t.type = tradeStringToType(t.type);
+                    t.category = accountStringToType(t.category);
 
-                    t.base = base
-                    t.quote = quote
+                    t.base = base;
+                    t.quote = quote;
                 }
 
                 // Normalize all trades
                 if (!currencyPair) {
-                    var allTrades: UserTrade[] = []
-                    for (var key in tradeHistory) {
-                        let base: string = key.split('_')[0]
-                        let quote: string = key.split('_')[1]
-                        tradeHistory[key].forEach(t => {
-                            normalizeTrade(t, base, quote)
-                            allTrades.push(t)
-                        })
+                    const allTrades: UserTrade[] = [];
+                    for (const key in tradeHistory) {
+                        if (tradeHistory.hasObservableProperty(key)) {
+                            const base: string = key.split("_")[0];
+                            const quote: string = key.split("_")[1];
+                            tradeHistory[key].forEach((t) => {
+                                normalizeTrade(t, base, quote);
+                                allTrades.push(t);
+                            });
+                        }
                     }
-                    allTrades.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
-                    resolve(allTrades)
+                    allTrades.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+                    resolve(allTrades);
+                } else {
+                    const base: string = currencyPair.split("_")[0];
+                    const quote: string = currencyPair.split("_")[1];
+                    tradeHistory.forEach((t) => normalizeTrade(t, base, quote));
+                    tradeHistory.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+                    resolve(tradeHistory);
                 }
-                else {
-                    let base: string = currencyPair.split('_')[0]
-                    let quote: string = currencyPair.split('_')[1]
-                    tradeHistory.forEach(t => normalizeTrade(t, base, quote))
-                    tradeHistory.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
-                    resolve(tradeHistory)
-                }
-            })
-        })
+            });
+        });
     }
 
     // Return trades associated with a given orderNumber
-    returnOrderTrades(orderNumber: number) {
+    public returnOrderTrades(orderNumber: number) {
         return new Promise<TradeResponse[]>((resolve, reject) => {
-            return []
-        })
+            return [];
+        });
     }
 
     // Place a buy order
-    buy(currencyPair: string, rate: string, amount: string) {
+    public buy(currencyPair: string, rate: string, amount: string) {
         class BuyOrder {
-            orderNumber: number
-            resultingTrades: TradeResponse[]
+            public orderNumber: number;
+            public resultingTrades: TradeResponse[];
         }
     }
 
-    sell(currencyPair: string, rate: string, amount: string) {
+    public sell(currencyPair: string, rate: string, amount: string) {
         class SellOrder {
-            orderNumber: number
-            resultingTrades: TradeResponse[]
+            public orderNumber: number;
+            public resultingTrades: TradeResponse[];
         }
     }
 
-    cancelOrder(orderNumber: number) {
+    public cancelOrder(orderNumber: number) {
         return new Promise<boolean>((resolve, reject) => {
-            resolve(true)
-        })
+            resolve(true);
+        });
     }
 
     // Cancels an order and places a new one of th esame type in a single atomic transaction
     // TODO add postOnly and immediateOrCancel
-    moveOrder(orderNumber: number, rate: string, amount?: string) {
+    public moveOrder(orderNumber: number, rate: string, amount?: string) {
         class MoveOrder {
-            success: boolean
-            orderNumber: number
-            resultingTrades: TradeResponse[]
+            public success: boolean;
+            public orderNumber: number;
+            public resultingTrades: TradeResponse[];
         }
-    }
-
-    // Places a withdraw request with no email confirmation. Requires withdrawing to be
-    // enabled by the api
-    withdraw(currency: string, amount: string, address: string) {
-        class Withdrawal {
-            response: string
-        }
-    }
-
-    // Returns fees (percentage) that user would have to pay
-    returnFeeInfo() {
-        class Fees {
-            makerFee: string
-            takerFee: string
-            thirtyDayVolume: string
-            nextTier: string
-        }
-    }
-
-    returnAvailableAccountBalances(account?: string) {
-        // Returns account balances
-    }
-
-    returnTradableBalances(account?: string) {
-        // Return tradable balances
-    }
-
-    transferBalance(currency: string, amount: string, fromAccount: AccountType, toAccount: AccountType) {
-        // Transfer balances between accounts
     }
 
     // Returns a summary of the users margin account
-    returnMarginAccountSummary() {
+    public returnMarginAccountSummary() {
         class MarginAccount {
-            totalValue: string
-            p1: string
-            lendingFees: string
-            netValue: string
-            totalBorrowedValue: string
-            currentMargin: string
+            public totalValue: string;
+            public p1: string;
+            public lendingFees: string;
+            public netValue: string;
+            public totalBorrowedValue: string;
+            public currentMargin: string;
         }
     }
 
-    marginBuy(currencyPair: string, rate: string, amount: string) {
+    public marginBuy(currencyPair: string, rate: string, amount: string) {
         class MarginOrder {
-            success: boolean
-            message: string
-            orderNumber: number
-            resultingTrades: TradeResponse[]
+            public success: boolean;
+            public message: string;
+            public orderNumber: number;
+            public resultingTrades: TradeResponse[];
         }
     }
 
-    marginSell(currencyPair: string, rate: string, amount: string) {
+    public marginSell(currencyPair: string, rate: string, amount: string) {
         class MarginOrder {
-            success: boolean
-            message: string
-            orderNumber: number
-            resultingTrades: TradeResponse[]
+            public success: boolean;
+            public message: string;
+            public orderNumber: number;
+            public resultingTrades: TradeResponse[];
         }
     }
 
-    getMarginPosition(currencyPair: string) {
+    public getMarginPosition(currencyPair: string) {
 
         enum MarginType {
             short,
-            long
+            long,
         }
 
         class MarginPosition {
-            amount: string
-            total: string
-            basePrice: string
-            liquidationPrice: string
-            p1: string
-            lendingFees: string
-            type: MarginType
+            public amount: string;
+            public total: string;
+            public basePrice: string;
+            public liquidationPrice: string;
+            public p1: string;
+            public lendingFees: string;
+            public type: MarginType;
         }
     }
 
-    closeMarginPosition(currencyPair: string) {
+    public closeMarginPosition(currencyPair: string) {
         class ClosedMarginPosition {
-            success: boolean
-            message: string
-            resultingTrades: TradeResponse[]
+            public success: boolean;
+            public message: string;
+            public resultingTrades: TradeResponse[];
         }
     }
 
     // Create a loan offer
-    createLoanOffer(currency: string, amount: string, duration: number, autoRenew: boolean, lendingRate: string) {
+    public createLoanOffer(currency: string, amount: string,
+        duration: number, autoRenew: boolean,
+        lendingRate: string) {
         class LoanOffer {
-            success: boolean
-            message: string
-            orderID: number
+            public success: boolean;
+            public message: string;
+            public orderID: number;
         }
     }
 
     // cancel a loan offer
-    cancelLoanOffer(orderNumber: number) {
+    public cancelLoanOffer(orderNumber: number) {
         class CancelledLoanOffer {
-            success: boolean
-            message: string
+            public success: boolean;
+            public message: string;
         }
     }
 
     // Return all open load offers that the user has made for all currencies
-    returnOpenLoanOffers() {
+    public returnOpenLoanOffers() {
         class LoanOffer {
-            id: number
-            rate: string
-            amount: string
-            duration: number
-            autoRenew: boolean
-            date: Date
+            public id: number;
+            public rate: string;
+            public amount: string;
+            public duration: number;
+            public autoRenew: boolean;
+            public date: Date;
         }
-        type LoanOffers = {[currency: string]: LoanOffer}
+        interface ILoanOffers { [currency: string]: LoanOffer; }
     }
 
     // Return active loans (provided and used) for all currencies
-    returnActiveLoans() {
+    public returnActiveLoans() {
         class ActiveLoan {
-            id: number
-            currency: string
-            rate: string
-            amount: string
-            range: number
-            autoRenew: boolean
-            date: Date
-            fees: string
+            public id: number;
+            public currency: string;
+            public rate: string;
+            public amount: string;
+            public range: number;
+            public autoRenew: boolean;
+            public date: Date;
+            public fees: string;
         }
 
         class ActiveLoans {
-            provided: {[currency: string] : ActiveLoan}
-            used: {[currency: string] : ActiveLoan}
+            public provided: { [currency: string]: ActiveLoan };
+            public used: { [currency: string]: ActiveLoan };
         }
     }
 
     // Return the users lending history
-    returnLendingHistory(start: Date, end: Date) {
+    public returnLendingHistory(start: Date, end: Date) {
         class FinishedLoan {
-            id: number
-            currency: string
+            public id: number;
+            public currency: string;
         }
     }
-
 
     //
     // WRAPPER METHODS
@@ -894,97 +853,84 @@ export default class Poloniex implements IWrapper {
     // multiple api methods to provide more complex data.
     //
 
-    returnHistory(startDate: Date = new Date(0)) : Promise<PortfolioEvent[]> {
+    public returnHistory(startDate: Date = new Date(0)): Promise<PortfolioEvent[]> {
 
-        type RawEvent = Withdrawal | Deposit | UserTrade
+        type RawEvent = Withdrawal | Deposit | UserTrade;
         function isWithdrawal(e: RawEvent): e is Withdrawal {
-            return (<Withdrawal>e).withdrawalNumber !== undefined }
+            return (e as Withdrawal).withdrawalNumber !== undefined;
+        }
 
         function isDeposit(e: RawEvent): e is Deposit {
-            return (<Deposit>e).confirmations != undefined }
+            return (e as Deposit).confirmations !== undefined;
+        }
 
         function isUserTrade(e: RawEvent): e is UserTrade {
-            return (<UserTrade>e).globalTradeID != undefined }
-
+            return (e as UserTrade).globalTradeID !== undefined;
+        }
 
         return new Promise<PortfolioEvent[]>((resolve, reject) => {
-            this.returnDepositsWithdrawals(startDate, new Date).then(depositsWithdrawals => {
-                this.returnUserTradeHistory().then(userTrades => {
-                    this.returnCompleteBalances().then(completeBalances => {
-                        this.returnCurrencies().then(currencies => {
+            this.returnDepositsWithdrawals(startDate, new Date()).then((depositsWithdrawals) => {
+                this.returnUserTradeHistory().then((userTrades) => {
+                    this.returnCurrencies().then((currencies) => {
 
-                            var rawEvents: RawEvent[] = depositsWithdrawals.deposits
-                            rawEvents = rawEvents.concat(depositsWithdrawals.withdrawals)
-                            rawEvents = rawEvents.concat(userTrades)
+                        let rawEvents: RawEvent[] = depositsWithdrawals.deposits;
+                        rawEvents = rawEvents.concat(depositsWithdrawals.withdrawals);
+                        rawEvents = rawEvents.concat(userTrades);
 
-                            var portfolioEvents: PortfolioEvent[] = rawEvents.map(ev => {
-                                if (isWithdrawal(ev) || isDeposit(ev)) {
-                                    var depositsWithdrawal : DepositWithdrawal = {
-                                        currency: ev.currency,
-                                        amount: ev.amount,
-                                        txid: "TODO",
-                                        address: ev.address,
-                                        fees: isWithdrawal(ev) ? currencies[ev.currency].txFee : "0.0",
-                                    }
+                        const portfolioEvents: PortfolioEvent[] = rawEvents.map((ev) => {
+                            if (isWithdrawal(ev) || isDeposit(ev)) {
+                                const depositsWithdrawal: DepositWithdrawal = {
+                                    address: ev.address,
+                                    amount: ev.amount,
+                                    currency: ev.currency,
+                                    fees: isWithdrawal(ev) ? currencies[ev.currency].txFee : "0.0",
+                                    txid: "TODO",
+                                };
 
-                                    var portfolioEvent : PortfolioEvent = {
-                                        timestamp: ev.timestamp,
-                                        permanent: ev.status.includes('COMPLETE'),
-                                        type: isDeposit(ev) ? 'deposit' : 'withdrawal',
-                                        data: depositsWithdrawal
-                                    }
+                                const portfolioEvent: PortfolioEvent = {
+                                    data: depositsWithdrawal,
+                                    permanent: ev.status.includes("COMPLETE"),
+                                    timestamp: ev.timestamp,
+                                    type: isDeposit(ev) ? "deposit" : "withdrawal",
+                                };
 
-                                    return portfolioEvent
-                                }
-                                else if (isUserTrade(ev)) {
-                                    var isSale = ev.type == TradeType.Sell
+                                return portfolioEvent;
+                            } else if (isUserTrade(ev)) {
+                                const isSale = ev.type === TradeType.Sell;
 
-                                    var trade : Trade = {
-                                        soldCurrency: isSale ? ev.quote : ev.base,
-                                        boughtCurrency: isSale ? ev.base : ev.quote,
-                                        rate: ev.rate,
-                                        soldAmount: isSale ? ev.amount : ev.total,
-                                        boughtAmount: isSale ? ev.total : ev.amount,
-                                        fees: Big(isSale ? ev.total : ev.amount).times(ev.fee).toFixed(15)
-                                    }
+                                const trade: Trade = {
+                                    boughtAmount: isSale ? ev.total : ev.amount,
+                                    boughtCurrency: isSale ? ev.base : ev.quote,
+                                    fees: Big(isSale ? ev.total : ev.amount).times(ev.fee).toFixed(15),
+                                    rate: ev.rate,
+                                    soldAmount: isSale ? ev.amount : ev.total,
+                                    soldCurrency: isSale ? ev.quote : ev.base,
+                                };
 
-                                    var portfolioEvent : PortfolioEvent = {
-                                        timestamp: ev.timestamp,
-                                        permanent: true,
-                                        type: 'trade',
-                                        data: trade
-                                    }
+                                const portfolioEvent: PortfolioEvent = {
+                                    data: trade,
+                                    permanent: true,
+                                    timestamp: ev.timestamp,
+                                    type: "trade",
+                                };
 
-                                    return portfolioEvent
-                                }
-                                
-                                else {
-                                    console.log("WARNING: Unknown event" + JSON.stringify(ev))
-                                }
-                            })
+                                return portfolioEvent;
+                            } else {
+                                console.log("WARNING: Unknown event" + JSON.stringify(ev));
+                            }
+                        });
 
-                            portfolioEvents.sort((a, b) => {
-                                return a.timestamp.getTime() - b.timestamp.getTime()
-                            })
+                        portfolioEvents.sort((a, b) => {
+                            return a.timestamp.getTime() - b.timestamp.getTime();
+                        });
 
-                            resolve(portfolioEvents)
+                        resolve(portfolioEvents);
 
-                        }).catch(err => reject(err))
-                    }).catch(err => reject(err))
-                }).catch(err => reject(err))
-            }).catch(err => {
-                reject(err)
-            })
-
-        })
-
-    }
-
-    // Return historical balances each date at specific intervals (in seconds)
-    // By default it returns all
-    returnBalanceChart(period: number, start?: Date, end?: Date) {
-    }
-
-    returnFeesHistory() {
+                    }).catch((err) => reject(err));
+                }).catch((err) => reject(err));
+            }).catch((err) => {
+                reject(err);
+            });
+        });
     }
 }

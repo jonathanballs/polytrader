@@ -1,72 +1,71 @@
 // Base interface for api wrappers
 
 export default interface IWrapper {
-    returnBalances() : Promise<Balance[]>
-    returnHistory(startDate?: Date) : Promise<PortfolioEvent[]>
-    validateCredentials() : Promise<boolean>
+    returnBalances(): Promise<Balance[]>;
+    returnHistory(startDate?: Date): Promise<PortfolioEvent[]>;
+    validateCredentials(): Promise<boolean>;
 }
 
 export class Portfolio {
-    timestamp: Date;
-    balances: Balance[];
+    public balances: Balance[];
+    public timestamp: Date;
 
     constructor(balances: Balance[], timestamp: Date) {
         this.timestamp = timestamp;
         this.balances = balances;
     }
 
-    balanceOf(currency: string) : Balance {
-        var b: Balance = null
-        if (b = this.balances.filter((x) => x.currency == currency)[0]) {
-            return b
-        }
+    public balanceOf(currency: string): Balance {
+        const b: Balance = this.balances.filter((x) => x.currency === currency)[0];
+        if (b) { return b; }
 
         this.balances.push(new Balance(currency, "0.0"));
-        return this.balanceOf(currency)
+        return this.balanceOf(currency);
     }
 
-    removeCurrency(currency: string) {
-        this.balances = this.balances.filter(b => b.currency == currency);
+    public removeCurrency(currency: string) {
+        this.balances = this.balances.filter((b) => b.currency === currency);
     }
 
-    getValue() : number {
-        return null
+    public getValue(): number {
+        return null;
     }
 }
 
 export class Balance {
-    currency: string;
-    amount: string;
-    btcValue: string;
+    public currency: string;
+    public amount: string;
+    public btcValue: string;
 
     constructor(currency?, amount?) {
-        if(currency)
-            this.currency = currency
+        if (currency) {
+            this.currency = currency;
+        }
 
-        this.amount = amount ? amount : '0.0'
+        this.amount = amount ? amount : "0.0";
     }
 }
 
 export class DepositWithdrawal {
-    amount: string
-    currency: string
-    txid: string
-    address: string
-    fees: string
+    public amount: string;
+    public currency: string;
+    public txid: string;
+    public address: string;
+    public fees: string;
 }
 
 export class Trade {
-    soldCurrency: string
-    boughtCurrency: string
-    rate: string
-    soldAmount: string
-    boughtAmount: string
-    fees: string
+    public soldCurrency: string;
+    public boughtCurrency: string;
+    public rate: string;
+    public soldAmount: string;
+    public boughtAmount: string;
+    public fees: string;
 }
 
 export class PortfolioEvent {
-    timestamp: Date
-    permanent: boolean
-    type: string
-    data: DepositWithdrawal | Trade
+    public timestamp: Date;
+    public permanent: boolean;
+    public type: string;
+    public data: DepositWithdrawal | Trade;
 }

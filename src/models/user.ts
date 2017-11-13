@@ -1,37 +1,36 @@
 // Mongoose models
-import * as mongoose from 'mongoose'
-import * as clone from 'clone'
-import * as Big from 'big.js'
-import { Portfolio, Balance } from '../wrappers'
-import servicesList from '../wrappers/services'
+import * as Big from "big.js";
+import * as clone from "clone";
+import * as mongoose from "mongoose";
 
-import PortfolioEventHistoryModel from './portfolio'
+import { Balance, Portfolio } from "../wrappers";
+import servicesList from "../wrappers/services";
+import PortfolioEventHistoryModel from "./portfolio";
 
 // User schema
-var balanceSchema = mongoose.Schema({
+const balanceSchema = mongoose.Schema({
+    balance: String,
     currency: String,
-    balance: String
-})
+});
 
-var linkedAccountSchema = mongoose.Schema({
+const linkedAccountSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
+    balances: [mongoose.Schema.Types.Mixed],
+    lastSyncErrorMessage: String,
+    lastSyncWasSuccessful: Boolean,
     service: String, // Rename this to serviceKey
     timestampCreated: Date,
-    userAuth: mongoose.Schema.Types.Mixed,
-    balances: [mongoose.Schema.Types.Mixed],
-
     timestampLastSync: Date,
-    lastSyncWasSuccessful: Boolean,
-    lastSyncErrorMessage: String,
-})
+    userAuth: mongoose.Schema.Types.Mixed,
+});
 
 linkedAccountSchema.methods.sync = function sync() {
 
     return new Promise((resolve, reject) => {
-        var service = servicesList.filter(s => s.key == this.service)[0]
-        var wrapper = new service.wrapper(service.serverAuth, this.userAuth)
-        wrapper.returnHistory().then(his => {
-            wrapper.returnBalances().then(balances => {
+        const service = servicesList.filter((s) => s.key === this.service)[0];
+        const wrapper = new service.wrapper(service.serverAuth, this.userAuth);
+        wrapper.returnHistory().then((history) => {
+            wrapper.returnBalances().then((balances) => {
 
                 // Update account balances
                 UserModel.findOneAndUpdate(
@@ -39,63 +38,67 @@ linkedAccountSchema.methods.sync = function sync() {
                     {
                         $set: {
                             "accounts.$.balances": balances,
-                            "accounts.$.timestampLastSync": new Date,
+                            "accounts.$.lastSyncErrorMessage": null,
                             "accounts.$.lastSyncWasSuccessful": true,
-                            "accounts.$.lastSyncErrorMessage": null
-                        }
+                            "accounts.$.timestampLastSync": new Date(),
+                        },
                     }, (err) => {
                         if (err) {
-                            reject("Error updating account balance in db" + err)
+                            reject("Error updating account balance in db" + err);
                         }
-                    })
+                    });
 
-                his = his.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+                history = history.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
                 PortfolioEventHistoryModel.findOneOrCreate({ accountID: this._id })
-                    .then(peh => {
-                        
-                        var newHistory = peh.events.filter(e => e.timestamp < his[0].timestamp)
-                            .concat(his)
+                    .then((peh) => {
+                        const newHistory = peh.events
+                            .filter((e) => e.timestamp < history[0].timestamp)
+                            .concat(history);
 
                         PortfolioEventHistoryModel.update(
                             { _id: peh._id },
                             { $set: { events: newHistory } })
-                            .then(_ => {
-                                resolve()
-                            }).catch(err => {
-                                reject("Error inserting portfolio history into db:" + err)
-                            })
+                            .then(() => {
+                                resolve("Successfully synced");
+                            }).catch((err) => {
+                                reject("Error inserting portfolio history into db:" + err);
+                            });
 
-                    }).catch(err => reject(err))
-            }).catch(err => reject(err))
-        }).catch(err => {
+                    }).catch((err) => reject(err));
+            }).catch((err) => reject(err));
+        }).catch((err) => {
 
             // Save failure details to database
             UserModel.findOneAndUpdate(
                 { "accounts._id": this._id },
                 {
                     $set: {
-                        "accounts.$.timestampLastSync": new Date,
+                        "accounts.$.lastSyncErrorMessage": err + "",
                         "accounts.$.lastSyncWasSuccessful": false,
-                        "accounts.$.lastSyncErrorMessage": err + '',
-                    }
-                }
-            ).catch(err => {
-                console.log("Failed to update account lastSyncStatus.")
-            })
+                        "accounts.$.timestampLastSync": new Date(),
+                    },
+                }).catch((saveError) => {
+                    console.log("Failed to update account lastSyncStatus.", saveError);
+                });
 
-            reject(err)
-        })
-    })
-}
+            reject(err);
+        });
+    });
+};
 
-var userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
+    accounts: [linkedAccountSchema],
     email: String,
     loginTimestamp: Date,
+    passwordHash: String,
     signupTimestamp: Date,
-    accounts: [linkedAccountSchema],
-    passwordHash: String
 });
 
-var UserModel = mongoose.model('User', userSchema);
-export default UserModel
+userSchema.methods.getAccountByID = function getAccountByID(id) {
+    const accList = this.accounts.filter((a) => a._id === id);
+    return accList.length === 0 ? null : accList[0];
+}
+    ;
+const UserModel = mongoose.model("User", userSchema);
+export default UserModel;

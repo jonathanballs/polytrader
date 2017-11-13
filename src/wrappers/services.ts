@@ -1,72 +1,72 @@
 // A mapping of services provided
-import * as clone from 'clone'
+import * as clone from "clone";
 
-import Poloniex from './poloniex-wrapper'
-import Etherscan from './etherscan-wrapper'
-import Bittrex from './bittrex-wrapper'
-import Coinbase from './coinbase-wrapper'
-import IWrapper from './'
+import IWrapper from "./";
+import Bittrex from "./bittrex-wrapper";
+import Coinbase from "./coinbase-wrapper";
+import Etherscan from "./etherscan-wrapper";
+import Poloniex from "./poloniex-wrapper";
 
-interface WrapperConstructor {
-    new(serverAuth: {[key: string] : string},
-                    userAuth: {[key: string] : string}) : IWrapper
+interface IWrapperConstructor {
+    new(serverAuth: { [key: string]: string },
+        userAuth: { [key: string]: string }): IWrapper;
 }
 
-interface Service {
-    name : string
-    key: string
+interface IService {
+    name: string;
+    key: string;
     formFields: [{
         name: string
         description: string
         placeholder: string
-        type?: string // Optional. Assume text
-    }]
-    serverAuth: { [key: string]: string }
-    wrapper: WrapperConstructor
+        type?: string, // Optional. Assume text
+    }];
+    serverAuth: { [key: string]: string };
+    wrapper: IWrapperConstructor;
 }
 
-var services : [Service] = [
+const services: [IService] = [
     {
-        name: 'Bittrex',
-        key: 'bittrex',
         formFields: [
-            { name: 'portfolioHistory', description: 'History CSV', placeholder: 'Bittrex History CSV', type: 'file'},
-            { name: 'apiKey', description: 'API Key', placeholder: 'Bittrex API Key' },
-            { name: 'apiSecret', description: 'API Secret', placeholder: 'Bittrex API Secret' }],
+            { name: "portfolioHistory", description: "History CSV", placeholder: "Bittrex History CSV", type: "file" },
+            { name: "apiKey", description: "API Key", placeholder: "Bittrex API Key" },
+            { name: "apiSecret", description: "API Secret", placeholder: "Bittrex API Secret" }],
+        key: "bittrex",
+        name: "Bittrex",
         serverAuth: {},
-        wrapper: Bittrex
+        wrapper: Bittrex,
     },
     {
-        name: 'Coinbase',
-        key: 'coinbase',
         formFields: [
-            { name: 'apiKey', description: 'API Key', placeholder: 'Coinbase API Key' },
-            { name: 'apiSecret', description: 'API Secret', placeholder: 'Coinbase API Secret' }],
+            { name: "apiKey", description: "API Key", placeholder: "Coinbase API Key" },
+            { name: "apiSecret", description: "API Secret", placeholder: "Coinbase API Secret" }],
+        key: "coinbase",
+        name: "Coinbase",
         serverAuth: {},
-        wrapper: Coinbase
+        wrapper: Coinbase,
     },
     {
-        name: 'Poloniex',
-        key: 'poloniex',
         formFields: [
-            { name: 'apiKey', description: 'API Key', placeholder: 'Poloniex API Key' },
-            { name: 'apiSecret', description: 'API Secret', placeholder: 'Poloniex API Secret' }],
+            { name: "apiKey", description: "API Key", placeholder: "Poloniex API Key" },
+            { name: "apiSecret", description: "API Secret", placeholder: "Poloniex API Secret" }],
+        key: "poloniex",
+        name: "Poloniex",
         serverAuth: {},
-        wrapper: Poloniex
+        wrapper: Poloniex,
     },
     {
-        name: 'Ethereum Wallet',
-        key: 'ethereum-wallet',
-        formFields: [{ name: 'walletAddress', description: 'Address', placeholder: 'Ethereum Wallet Address' }],
+        formFields: [{ name: "walletAddress", description: "Address", placeholder: "Ethereum Wallet Address" }],
+        key: "ethereum-wallet",
+        name: "Ethereum Wallet",
         serverAuth: { apiKey: "TW6UIF78AZDQDGJI1VDJXSQWHDFWKKQP15" },
-        wrapper: Etherscan
+        wrapper: Etherscan,
     },
-]
+];
 
-export var servicesClient = clone(services)
-servicesClient.forEach(s => {
-    delete s['serverAuth']
-    delete s['wrapper']
-})
+export let servicesClient = clone(services);
+servicesClient.forEach((s) => {
+    delete s.serverAuth;
+    delete s.wrapper;
+});
 
-export default services
+export default services;

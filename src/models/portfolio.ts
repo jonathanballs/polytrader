@@ -145,7 +145,7 @@ portfolioEventHistorySchema.methods.getPortfolioHistory =
                     const rbList = account.balances.filter((b) => b.currency === c);
 
                     const rb: number = parseFloat(rbList.length === 0
-                                                    ? "0.0" : rbList[0].amount);
+                        ? "0.0" : rbList[0].amount);
                     const cb: number = parseFloat(
                         portfolioHistory[portfolioHistory.length - 1]
                             .balanceOf(c).amount);
@@ -168,8 +168,8 @@ portfolioEventHistorySchema.methods.getPortfolioHistory =
 
                             // Update portfolios
                             portfolioHistory.filter((portfolio) => {
-                                    return portfolio.timestamp > newPortfolio.timestamp;
-                                })
+                                return portfolio.timestamp > newPortfolio.timestamp;
+                            })
                                 .forEach((portfolio) => {
                                     for (const bDiscrep of balanceDiscrepencies) {
                                         p.balanceOf(bDiscrep.c).amount =
