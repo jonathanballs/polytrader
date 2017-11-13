@@ -97,6 +97,9 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods.getAccountByID = function getAccountByID(id) {
     const accList = this.accounts.filter((a) => (a._id + "") === (id + ""));
+    if (accList.length === 0) {
+        console.log("Tried to find account with id", id + "", "but failed")
+    }
     return accList.length === 0 ? null : accList[0];
 };
 

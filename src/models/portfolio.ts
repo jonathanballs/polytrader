@@ -119,10 +119,10 @@ portfolioEventHistorySchema.methods.getPortfolioHistory =
 
                 // Rename antcoin to neocoin
                 for (const p of portfolioHistory) {
-                    const antBalance = p.balanceOf("ANS").amount;
+                    const antBalance = p.balances.filter((b) => b.currency === "ANS")[0];
                     if (antBalance) {
                         const neoBalance = p.balanceOf("NEO");
-                        neoBalance.amount = Big(neoBalance.amount).plus(antBalance).toFixed(15);
+                        neoBalance.amount = Big(neoBalance.amount).plus(antBalance.amount).toFixed(15);
                         // Remove antshares
                         p.balances = p.balances.filter((b) => b.currency !== "ANS");
                     }
@@ -167,13 +167,14 @@ portfolioEventHistorySchema.methods.getPortfolioHistory =
                             portfolioHistory.push(newPortfolio);
 
                             // Update portfolios
+
                             portfolioHistory.filter((portfolio) => {
                                 return portfolio.timestamp > newPortfolio.timestamp;
                             })
                                 .forEach((portfolio) => {
                                     for (const bDiscrep of balanceDiscrepencies) {
-                                        p.balanceOf(bDiscrep.c).amount =
-                                            Big(p.balanceOf(bDiscrep.c).amount)
+                                        portfolio.balanceOf(bDiscrep.c).amount =
+                                            Big(portfolio.balanceOf(bDiscrep.c).amount)
                                                 .minus(bDiscrep.diff).toFixed(20);
                                     }
                                 });
@@ -197,8 +198,6 @@ portfolioEventHistorySchema.methods.getAnnotatedPortfolioHistory =
         to = new Date()): Promise<Portfolio[]> {
 
         return new Promise<Portfolio[]>((resolve, reject) => {
-
-            const portfolioHistoryPromise = this.getPortfolioHistory(resolution, from, to);
 
             this.getPortfolioHistory(resolution, from, to).then(
                 (portfolioHistory: Portfolio[]) => {

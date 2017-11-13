@@ -153,49 +153,53 @@ export default class Bittrex implements IWrapper {
                         quote: '"',
                     }))
                     .on("data", (data) => {
-                        const isSell = data.type.toLowerCase().includes("sell");
+                        try {
+                            const isSell = data.type.toLowerCase().includes("sell");
 
-                        // Sometimes it parses the headers as a row
-                        if (data.type === "Type") {
-                            resolve([]);
-                        }
+                            // Sometimes it parses the headers as a row
+                            if (data.type === "Type") {
+                                resolve([]);
+                            }
 
-                        if (isSell) {
-                            const trade: Trade = {
-                                boughtAmount: data.cost,
-                                boughtCurrency: data.market.split("-")[0],
-                                fees: "0.0",
-                                rate: data.rate,
-                                soldAmount: Big(data.unitsFilled).abs().toFixed(15),
-                                soldCurrency: data.market.split("-")[1],
-                            };
+                            if (isSell) {
+                                const trade: Trade = {
+                                    boughtAmount: data.cost,
+                                    boughtCurrency: data.market.split("-")[0],
+                                    fees: "0.0",
+                                    rate: data.rate,
+                                    soldAmount: Big(data.unitsFilled).abs().toFixed(15),
+                                    soldCurrency: data.market.split("-")[1],
+                                };
 
-                            const portfolioEvent: PortfolioEvent = {
-                                data: trade,
-                                permanent: data.unitsFilled === data.unitsTotal,
-                                timestamp: new Date(Date.parse(data.timestampClosed)),
-                                type: "trade",
-                            };
+                                const portfolioEvent: PortfolioEvent = {
+                                    data: trade,
+                                    permanent: data.unitsFilled === data.unitsTotal,
+                                    timestamp: new Date(Date.parse(data.timestampClosed)),
+                                    type: "trade",
+                                };
 
-                            portfolioHistory.push(portfolioEvent);
-                        } else {
-                            const trade: Trade = {
-                                boughtAmount: data.unitsFilled,
-                                boughtCurrency: data.market.split("-")[1],
-                                fees: "0.0",
-                                rate: data.rate,
-                                soldAmount: Big(data.cost).abs().toFixed(15),
-                                soldCurrency: data.market.split("-")[0],
-                            };
+                                portfolioHistory.push(portfolioEvent);
+                            } else {
+                                const trade: Trade = {
+                                    boughtAmount: data.unitsFilled,
+                                    boughtCurrency: data.market.split("-")[1],
+                                    fees: "0.0",
+                                    rate: data.rate,
+                                    soldAmount: Big(data.cost).abs().toFixed(15),
+                                    soldCurrency: data.market.split("-")[0],
+                                };
 
-                            const portfolioEvent: PortfolioEvent = {
-                                data: trade,
-                                permanent: data.unitsFilled === data.unitsTotal,
-                                timestamp: new Date(Date.parse(data.timestampClosed)),
-                                type: "trade",
-                            };
+                                const portfolioEvent: PortfolioEvent = {
+                                    data: trade,
+                                    permanent: data.unitsFilled === data.unitsTotal,
+                                    timestamp: new Date(Date.parse(data.timestampClosed)),
+                                    type: "trade",
+                                };
 
-                            portfolioHistory.push(portfolioEvent);
+                                portfolioHistory.push(portfolioEvent);
+                            }
+                        } catch (e) {
+                            reject("Error parsing bittrex history file " + e);
                         }
                     })
                     .on("end", () => {
