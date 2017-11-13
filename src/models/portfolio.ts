@@ -111,7 +111,7 @@ portfolioEventHistorySchema.methods.getPortfolioHistory =
             });
 
             UserModel.findOne({ "accounts._id": this.accountID }, (err, user) => {
-                const account = user.accounts.filter((a) => a._id === this.accountID)[0];
+                const account = user.getAccountByID(this.accountID);
 
                 if (!portfolioHistory.length) {
                     return;

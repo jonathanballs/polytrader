@@ -96,9 +96,9 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.methods.getAccountByID = function getAccountByID(id) {
-    const accList = this.accounts.filter((a) => a._id === id);
+    const accList = this.accounts.filter((a) => (a._id + "") === (id + ""));
     return accList.length === 0 ? null : accList[0];
-}
-    ;
+};
+
 const UserModel = mongoose.model("User", userSchema);
 export default UserModel;

@@ -331,7 +331,7 @@ export default class Poloniex implements IWrapper {
                 ret.pair = {};
 
                 for (const key in volumeList) {
-                    if (volumeList.hasObservableProperty(key)) {
+                    if (volumeList.hasOwnProperty(key)) {
                         const pair = key.split("_");
                         if (pair.length !== 2) {
                             continue;
@@ -390,7 +390,7 @@ export default class Poloniex implements IWrapper {
                     // Normalize all currencies
                     const orderBooks: { [currencyPair: string]: OrderBook } = {};
                     for (const key in data) {
-                        if (data.hasObservableProperty(key)) {
+                        if (data.hasOwnProperty(key)) {
                             orderBooks[key] = normalizeOrderBook(data[key]);
                         }
                     }
@@ -438,7 +438,7 @@ export default class Poloniex implements IWrapper {
 
     // Return candlestick data for a currency
     public returnChartData(currencyPair: string, period: number,
-        start: Date, end: Date) {
+                           start: Date, end: Date) {
         const reqOptions = {
             currencyPair,
             end: Math.floor(end.getTime() / 1000),
@@ -483,7 +483,7 @@ export default class Poloniex implements IWrapper {
                 }
 
                 for (const currency in currencies) {
-                    if (currencies.hasObservableProperty(currency)) {
+                    if (currencies.hasOwnProperty(currency)) {
                         const c = currencies[currency];
 
                         c.disabled = !!c.disabled;
@@ -627,7 +627,7 @@ export default class Poloniex implements IWrapper {
                 // Normalize all orders
                 if (!currencyPair) {
                     for (const key in openOrders) {
-                        if (openOrders.hasObservableProperty(key)) {
+                        if (openOrders.hasOwnProperty(key)) {
                             openOrders[key].forEach((o) => normalizeOrder(o));
                         }
                     }
@@ -672,7 +672,7 @@ export default class Poloniex implements IWrapper {
                 if (!currencyPair) {
                     const allTrades: UserTrade[] = [];
                     for (const key in tradeHistory) {
-                        if (tradeHistory.hasObservableProperty(key)) {
+                        if (tradeHistory.hasOwnProperty(key)) {
                             const base: string = key.split("_")[0];
                             const quote: string = key.split("_")[1];
                             tradeHistory[key].forEach((t) => {
@@ -790,8 +790,8 @@ export default class Poloniex implements IWrapper {
 
     // Create a loan offer
     public createLoanOffer(currency: string, amount: string,
-        duration: number, autoRenew: boolean,
-        lendingRate: string) {
+                           duration: number, autoRenew: boolean,
+                           lendingRate: string) {
         class LoanOffer {
             public success: boolean;
             public message: string;
