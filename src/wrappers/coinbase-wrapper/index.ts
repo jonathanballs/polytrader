@@ -93,6 +93,13 @@ export default class Etherscan implements IWrapper {
                     reject("Couldn't find account with id " + accountID);
                 }
                 account.getTransactions(pagination, (transactionError, transactions, nextPagination) => {
+                    if (transactionError) {
+                        reject(transactionError);
+                        return;
+                    } else if (!transactions) {
+                        reject("Couldn't find more tranactions");
+                        return;
+                    }
                     const history = transactions.map((tx) => {
                         switch (tx.type) {
                             case "sell":
@@ -160,7 +167,8 @@ export default class Etherscan implements IWrapper {
 
                     if (nextPagination.next_uri) {
                         this.getAccountHistory(accountID, nextPagination)
-                            .then((nextHistory) => resolve(history.concat(nextHistory)));
+                            .then((nextHistory) => resolve(history.concat(nextHistory)))
+                            .catch(() => resolve(history));
                     } else {
                         resolve(history);
                     }
