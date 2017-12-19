@@ -44,9 +44,13 @@ export default class Etherscan implements IWrapper {
                 if (err) {
                     reject(err);
                 } else {
-                    const ethBalance = Big(JSON.parse(body).result)
-                        .div("10e" + this.exponent).toFixed(10);
-                    resolve([new Balance("ETH", ethBalance)]);
+                    try {
+                        const ethBalance = Big(JSON.parse(body).result)
+                            .div("10e" + this.exponent).toFixed(10);
+                        resolve([new Balance("ETH", ethBalance)]);
+                    } catch (e) {
+                        reject(e);
+                    }
                 }
             });
         });
