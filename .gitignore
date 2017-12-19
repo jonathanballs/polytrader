@@ -7,4 +7,5 @@ tscommand*
 .tscache/
 db/
 src/.sass-cache/
+stats.json
 
