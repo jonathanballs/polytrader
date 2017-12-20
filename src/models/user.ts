@@ -48,24 +48,24 @@ linkedAccountSchema.methods.sync = function sync() {
                         }
                     });
 
+                // Sort history properly
                 history = history.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
                 PortfolioEventHistoryModel.findOneOrCreate({ accountID: this._id })
-                    .then((peh) => {
-                        const newHistory = peh.events
-                            .filter((e) => e.timestamp < history[0].timestamp)
-                            .concat(history);
+                .then((peh) => {
+                    const newHistory = peh.events
+                        .filter((e) => e.timestamp < history[0].timestamp)
+                        .concat(history);
 
-                        PortfolioEventHistoryModel.update(
-                            { _id: peh._id },
-                            { $set: { events: newHistory } })
-                            .then(() => {
-                                resolve("Successfully synced");
-                            }).catch((err) => {
-                                reject("Error inserting portfolio history into db:" + err);
-                            });
-
-                    }).catch((err) => reject(err));
+                    PortfolioEventHistoryModel.update(
+                        { _id: peh._id },
+                        { $set: { events: newHistory } })
+                        .then(() => {
+                            resolve("Successfully synced");
+                        }).catch((err) => {
+                            reject("Error inserting portfolio history into db:" + err);
+                        });
+                }).catch((err) => reject(err));
             }).catch((err) => reject(err));
         }).catch((err) => {
 

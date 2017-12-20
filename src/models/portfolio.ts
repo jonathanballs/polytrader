@@ -54,7 +54,7 @@ portfolioEventHistorySchema.statics.findOneOrCreate = function(condition, doc) {
                     accountID: condition.accountID,
                     events: [],
                 }, (err1, newPeh) => {
-                    err1 ? reject(err1) : resolve(peh);
+                    err1 ? reject(err1) : resolve(newPeh);
                 });
             }
         });
