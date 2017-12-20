@@ -1,0 +1,30 @@
+version: "2"
+
+services:
+    polytrader:
+        image: polytrader/polytrader
+        ports: ["80:8080"]
+        fip: 185.207.112.102
+        depends_on:
+            - db
+            - redis
+        links:
+            - db
+            - redis
+
+    price_updater:
+        image: polytrader/price_updater
+        depends_on:
+            - db
+        links:
+            - db
+
+    db:
+        image: mongo:3.5
+        environment:
+            - MONGO_DATA_DIR=/data/db
+        volumes:
+            - dbdata:/data/db
+
+    redis:
+        image: redis:4.0.2
