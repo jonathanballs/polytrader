@@ -3,8 +3,8 @@ version: "2"
 services:
     polytrader:
         image: polytrader/polytrader
-        ports: ["80:8080"]
         fip: 185.207.112.102
+        ports: ["80:8080"]
         depends_on:
             - db
             - redis
@@ -23,8 +23,10 @@ services:
         image: mongo:3.5
         environment:
             - MONGO_DATA_DIR=/data/db
+        noauto_volume: true
         volumes:
             - dbdata:/data/db
 
     redis:
         image: redis:4.0.2
+        noauto_volume: true
