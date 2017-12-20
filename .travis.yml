@@ -10,9 +10,13 @@ before_install:
     - sudo mv docker-compose /usr/local/bin
     - docker-compose --version
 
-
 script:
     - docker-compose run polytrader npm test
+
+after_success:
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS
+    - docker tag polytrader_polytrader polytrader/polytrader
+    - docker push polytrader/polytrader
 
 notifications:
     email: false
