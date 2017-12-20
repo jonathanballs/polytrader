@@ -527,8 +527,14 @@ export default class Poloniex implements IWrapper {
 
                 const ret: Balance[] = new Array();
                 for (const currency in balances) {
-                    if (Big(balances[currency]).gt("0.0000001")) {
-                        ret.push(new Balance(currency, balances[currency]));
+                    if (balances.hasOwnProperty(currency)) {
+                        try {
+                            if (Big(balances[currency]).gt("0.0000001")) {
+                                ret.push(new Balance(currency, balances[currency]));
+                            }
+                        } catch (e) {
+                            reject(e);
+                        }
                     }
                 }
 
