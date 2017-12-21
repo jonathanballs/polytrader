@@ -175,14 +175,14 @@ class App extends React.Component {
 
     var portfolioHistoryLineChartConfig = {
       chart: {
-        height: 600,
+        height: 500,
       },
       rangeSelector: {
         selected: 1,
         inputEnabled: $('#container').width() > 480
       },
       title: {
-        text: 'Value History',
+        text: null,
       },
       series: [{
         name: 'Portfolio Value (BTC)',
@@ -201,9 +201,21 @@ class App extends React.Component {
 
     return (
       <div>
-        <div className="row" style={{ minHeight: "23em" }}>
+        <div className="row">
           <div className="col-sm-9">
             <h1>Your Portfolio - {this.portfolioValueAtTime(new Date)} BTC</h1>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-sm-12">
+            <ReactHighstocks config={portfolioHistoryLineChartConfig} />
+          </div>
+        </div>
+        <br />
+        <br />
+        <h2>Balances</h2>
+        <div className="row" style={{ minHeight: "23em" }}>
+          <div className="col-sm-9">
             <br />
             <table className="table">
               <thead>
@@ -219,45 +231,10 @@ class App extends React.Component {
               </tbody>
             </table>
           </div>
-          <div className="col-sm-3" style={{ height: "20em" }}>
+          <div className="col-sm-3" style={{ height: "20em", marginTop: "-3em" }}>
             <ReactHighcharts config={balancesPieChartConfig} />
           </div>
         </div>
-        <div className="row">
-          <div className="col-sm-12">
-            <ReactHighstocks config={portfolioHistoryLineChartConfig} />
-          </div>
-        </div>
-        {/* <div className="row">
-          <div className="col-md-12">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Statistic</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Total profit</td>
-                  <td>Uncalculated</td>
-                </tr>
-                <tr>
-                  <td>Percentage profit</td>
-                  <td>Uncalculated</td>
-                </tr>
-                <tr>
-                  <td>Total fees payed</td>
-                  <td>Uncalculated</td>
-                </tr>
-                <tr>
-                  <td>Percentage fees</td>
-                  <td>Uncalculated</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div> */}
       </div>
     );
   }
