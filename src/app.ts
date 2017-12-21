@@ -3,7 +3,9 @@ import * as ms from "connect-mongo";
 import * as express from "express";
 import * as session from "express-session";
 import expressValidator = require("express-validator");
+import * as fs from "fs";
 import * as http from "http";
+import * as https from "https";
 import * as moment from "moment";
 import * as mongoose from "mongoose";
 import * as passport from "passport";
@@ -23,6 +25,7 @@ import servicesList from "./wrappers/services";
 const MongoStore = ms(session);
 mongoose.Promise = global.Promise;
 mongoose.connect("mongodb://db/polytrader", { useMongoClient: true });
+
 
 // Local strategy to fetch user from database
 passport.use(new Strategy({ usernameField: "email" }, (email, password, done) => {
@@ -48,12 +51,36 @@ passport.deserializeUser((id, done) => {
 
 const verbose = false;
 const port = 8080;
+const httpsPort = 8443;
 const app = express();
-const server = http.createServer(app);
+let server = null;
 
-server.listen(port);
-console.log("Polytrader starting at " + new Date());
-console.log(":: Listening on port " + port);
+// https or http
+if (fs.existsSync("/certs/privkey.pem") && fs.existsSync("/certs/privkey.pem")) {
+
+    const privateKey  = fs.readFileSync("/certs/privkey.pem", "utf8");
+    const certificate = fs.readFileSync("/certs/fullchain.pem", "utf8");
+    const credentials = { key: privateKey, cert: certificate };
+
+    // Https server
+    server = https.createServer(credentials, app);
+    server.listen(httpsPort);
+
+    // Http redirect
+    http.createServer((req, res) => {
+        res.writeHead(302, { Location: "https://" + req.headers.host + req.url });
+        res.end();
+    }).listen(port);
+
+    console.log("Polytrader starting at " + new Date());
+    console.log(":: Listening on ports " + port + " and " + httpsPort);
+} else {
+    server = http.createServer(app);
+    server.listen(port);
+
+    console.log("Polytrader starting at " + new Date());
+    console.log(":: Listening on port " + port);
+}
 
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "/views"));

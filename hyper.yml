@@ -5,6 +5,8 @@ services:
         image: polytrader/polytrader
         fip: 185.207.112.102
         ports: ["80:8080"]
+        volumes:
+            - certs:/certs
         depends_on:
             - db
             - redis
