@@ -113,7 +113,7 @@ router.get("/api/accounts/:accountID/", loginRequiredApi, (req, res) => {
 router.post("/api/accounts/:accountID/", loginRequiredApi,
     validateAccountForm, (req, res) => {
 
-        const account = req.user.getAccountByID(req.params.accountId);
+        const account = req.user.getAccountByID(req.params.accountID);
         if (account === null) {
             res.status(404).send("Unable to find account with ID " +
                 req.params.accountID);
