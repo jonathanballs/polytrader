@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import ReactDom from 'react-dom';
 import axios from 'axios'
 import * as Big from 'big.js'
 import * as ReactHighcharts from 'react-highcharts'
@@ -263,4 +263,4 @@ class App extends React.Component {
   }
 }
 
-render(<App />, document.getElementById('portfolioApp'));
+ReactDom.render(<App />, document.getElementById('portfolioApp'));
