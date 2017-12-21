@@ -4,7 +4,7 @@ services:
     polytrader:
         image: polytrader/polytrader
         fip: 185.207.112.102
-        ports: ["80:8080"]
+        ports: ["80:8080", "443:8443"]
         volumes:
             - certs:/certs
         depends_on:
