@@ -13,6 +13,7 @@ services:
         links:
             - db
             - redis
+        command: node dist/app.js
 
     price_updater:
         image: polytrader/price_updater
