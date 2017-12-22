@@ -8,8 +8,8 @@ export default class Account extends React.Component {
   makeRow(title, content) {
     return(
         <div className="row" key={title}>
-          <div className="col-4 exchange-property">{title}</div>
-          <div className="col-8 exchange-property-val">{content}</div>
+          <div className="col-4 col-sm-3 col-lg-2 exchange-property">{title}</div>
+          <div className="col-8 col-sm-9 col-lg-10 exchange-property-val">{content}</div>
         </div>
 
     )
