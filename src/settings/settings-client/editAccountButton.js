@@ -108,7 +108,7 @@ export default class EditAccountButton extends React.Component {
     }
 
     return (
-      <div className="col-md-1" style={{ padding: 0 }}>
+      <div>
         <Button block={true}
           color="secondary"
           onClick={this.toggleModal}

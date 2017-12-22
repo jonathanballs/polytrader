@@ -51,13 +51,15 @@ class App extends React.Component {
           <hr />
           <br />
           <div className="row">
-            <div className="col-md-11">
-              <h2>Linked accounts and wallets</h2>
+            <div className="col-8 col-sm-9 col-lg-10">
+              <h2 className="d-inline">Linked accounts</h2><h2 className="d-md-inline d-none"> and wallets</h2>
             </div>
 
-            <AddAccountButton
-              serviceList={this.state.serviceList}
-              updateAccountList={this.fetchAccountSettings.bind(this)} />
+            <div className="col-4 col-sm-3 col-lg-2">
+              <AddAccountButton
+                serviceList={this.state.serviceList}
+                updateAccountList={this.fetchAccountSettings.bind(this)} />
+            </div>
 
           </div>
         </form>

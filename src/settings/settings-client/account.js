@@ -8,8 +8,8 @@ export default class Account extends React.Component {
   makeRow(title, content) {
     return(
         <div className="row" key={title}>
-          <div className="col-md-2 exchange-property">{title}</div>
-          <div className="col-md-10 exchange-property-val">{content}</div>
+          <div className="col-4 exchange-property">{title}</div>
+          <div className="col-8 exchange-property-val">{content}</div>
         </div>
 
     )
@@ -56,15 +56,15 @@ export default class Account extends React.Component {
     return (
       <div className="exchange-settings">
         <div className="row">
-          <div className="col-md-2"><img className="exchange-logo" src={"/static/images/exchange-logos/" + this.props.service.key + ".png"} /></div>
-          <div className="col-md-9" />
-          <EditAccountButton
-            service={ this.props.service }
-            errorMessage=""
-            formValues={ this.props.account.userAuth }
-            accountID={ this.props.account._id }
-            onSubmitted={ this.props.updateAccountList } />
-
+          <div className="col-6 col-lg-10"><img className="exchange-logo" src={"/static/images/exchange-logos/" + this.props.service.key + ".png"} /></div>
+          <div className="col-4 offset-2 col-sm-3 offset-sm-3 col-lg-2 offset-lg-0">
+            <EditAccountButton
+              service={ this.props.service }
+              errorMessage=""
+              formValues={ this.props.account.userAuth }
+              accountID={ this.props.account._id }
+              onSubmitted={ this.props.updateAccountList } />
+          </div>
         </div>
         { userVariables }
         { this.makeRow('Added', <span title={this.props.account.timestampCreated}>

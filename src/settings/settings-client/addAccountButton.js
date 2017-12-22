@@ -118,7 +118,7 @@ export default class AddAccountButton extends React.Component {
     ]
 
     return (
-      <div className="col-md-1" style={{ padding: 0 }}>
+      <div>
         <Button block={true} color="primary" onClick={this.toggleModal}>Add</Button>
 
         <Modal className="add-account-modal" onClosed={(() => {this.goToSlide(0)}).bind(this)} isOpen={this.state.showModal} size="lg" toggle={this.toggleModal}>

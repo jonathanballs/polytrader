@@ -98,8 +98,8 @@ export default class PasswordSettings extends React.Component {
 
         return (
             <div className="form-group row">
-                <label className="col-md-2 col-form-label" htmlFor="password-change">Password</label>
-                <div className="col-md-4" style={{ padding: 0 }}>
+                <label className="col-sm-2 col-form-label" htmlFor="password-change">Password</label>
+                <div className="col-sm-10 col-md-7 col-lg-6">
                     <button
                         className="btn btn-secondary btn-block"
                         onClick={evt => { evt.preventDefault(); this.toggleModal() }}>
