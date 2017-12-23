@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-# priceUpdater is part of polytrader. It fetches historic prices from the
-# poloniex api and inserts it into a mongodb database. It can be run either
-# as a command or as a service to continuously update the datastore.
+# priceUpdater is part of polytrader. It fetches historic prices from exchange
+# apis and inserts them into a mongodb database. It can be run either as a one
+# off command or as a service to continuously update the datastore.
 
 from datetime import datetime
 import dateutil.parser
