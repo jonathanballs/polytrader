@@ -23,7 +23,6 @@ after_success:
 
     - wget https://hyper-install.s3.amazonaws.com/hyper-linux-x86_64.tar.gz
     - tar xzf hyper-linux-x86_64.tar.gz
-    - OLD_CONTAINER=$(./hyper fip ls | grep $POLYTRADER_IP | tr -s \' \' | cut -d\' \' -f3-)
     - ./hyper config --accesskey $HYPER_ACCESS_KEY --secretkey $HYPER_SECRET_KEY --default-region eu-central-1
     - ./hyper login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
     - ./hyper pull $REPO
