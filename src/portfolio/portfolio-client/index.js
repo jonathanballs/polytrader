@@ -108,6 +108,17 @@ class App extends React.Component {
       </svg></div></div>
     }
 
+    // If the whole t
+    if (this.state.portfolioHistories.reduce((a, ph) => a+ph.length, 0) == 0) {
+      return(
+        <div class="alert alert-danger">
+          <b>Error! </b>
+          No data was returned from the server.
+          Check that your accounts have activity and that the currencies you trade are in the database.
+        </div>
+      )
+    }
+
     var currentBalances = this.mergePortfolios(this.getPortfoliosAtTime(new Date))
       .balances.map((b, i) => {
         return <tr key={i}>
