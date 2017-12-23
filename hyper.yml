@@ -15,7 +15,7 @@ services:
             - redis
         command: node dist/app.js
 
-    price_updater:
+    price-updater:
         image: polytrader/price_updater
         depends_on:
             - db
