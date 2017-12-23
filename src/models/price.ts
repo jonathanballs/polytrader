@@ -15,6 +15,36 @@ const priceSchema = new mongoose.Schema({
     price_history: [mongoose.Schema.Types.Mixed],
 }, { collection: "price_history" });
 
+priceSchema.statics.getCurrencyStats = function getCurrencyStats() {
+    return new Promise((resolve, reject) => {
+        const currencies = [];
+        this.aggregate([
+            {
+                $group: {
+                    _id: "$currency_pair",
+                    timestamps: {
+                        $push: "$date",
+                    },
+                },
+            },
+            {
+                $project: {
+                    currenyPair: "$currency_pair",
+                    newestTimestamp: { $max : "$timestamps" },
+                    oldestTimestamp: { $min : "$timestamps" },
+                },
+            },
+        ]).cursor({}).exec()
+        .on("data", (doc) => currencies.push(doc))
+        .on("error", (err) => console.log(err))
+        .on("end", () => {
+            currencies.map((c) => {c.currencyPair = c._id; } );
+            currencies.sort((a, b) => a.currencyPair.localeCompare(b.currencyPair));
+            resolve(currencies);
+        });
+    });
+};
+
 priceSchema.statics.getPriceHistory =
     function getPriceHistory(
         currencies: string[],

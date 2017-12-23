@@ -19,3 +19,18 @@ block content
             span.badge.badge-success Fully Operational
           td 30 seconds ago
           td 89%
+
+  h2 Currencies (#{currencies.length} in database)
+
+  table.table
+    thead
+      tr
+        th Pair
+        th Oldest Timestamp
+        th Newest Timestamp
+    tbody
+      each currency in currencies
+        tr
+          td=currency.currencyPair
+          td=currency.oldestTimestamp.toISOString()
+          td=currency.newestTimestamp.toISOString()
