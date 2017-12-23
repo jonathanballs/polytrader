@@ -3,10 +3,6 @@ sudo: required
 env:
     - DOCKER_COMPOSE_VERSION=1.16.1 # Same one as dev
 
-cache:
-  directories:
-    - node_modules
-
 before_install:
     - sudo rm /usr/local/bin/docker-compose
     - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
@@ -18,15 +14,20 @@ script:
     - docker-compose run polytrader npm test
 
 after_success:
+    - REPO=polytrader/polytrader
+    - TAG=build-$TRAVIS_BUILD_NUMBER-${TRAVIS_COMMIT:8}
+
     - docker login -u $DOCKER_USER -p $DOCKER_PASS
-    - docker tag polytrader_polytrader polytrader/polytrader
-    - docker push polytrader/polytrader
+    - docker tag polytrader_polytrader $REPO
+    - docker tag polytrader_polytrader $REPO:$TAG
+    - docker push $REPO
+
     - wget https://hyper-install.s3.amazonaws.com/hyper-linux-x86_64.tar.gz
     - tar xzf hyper-linux-x86_64.tar.gz
     - ./hyper config --accesskey $HYPER_ACCESS_KEY --secretkey $HYPER_SECRET_KEY --default-region eu-central-1
-    - cat ~/.hyper/config.json
     - ./hyper login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
-    - ./hyper pull polytrader/polytrader
+    - ./hyper pull $REPO:$TAG
 
 notifications:
     email: false
+
