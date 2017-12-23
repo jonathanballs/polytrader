@@ -9,6 +9,8 @@ before_install:
     - chmod +x docker-compose
     - sudo mv docker-compose /usr/local/bin
     - docker-compose --version
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS
+    - docker pull polytrader/polytrader:latest
 
 script:
     - docker-compose run polytrader npm test
@@ -17,8 +19,7 @@ after_success:
     - REPO=polytrader/polytrader
     - TAG=build-$TRAVIS_BUILD_NUMBER-${TRAVIS_COMMIT:8}
 
-    - docker login -u $DOCKER_USER -p $DOCKER_PASS
-    - docker tag polytrader_polytrader $REPO
+    - docker tag polytrader_polytrader $REPO:latest
     - docker tag polytrader_polytrader $REPO:$TAG
     - docker push $REPO
 
