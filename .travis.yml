@@ -17,7 +17,7 @@ script:
 
 after_success:
     - REPO=polytrader/polytrader
-    - TAG=build-$TRAVIS_BUILD_NUMBER-${TRAVIS_COMMIT:8}
+    - TAG=build-$TRAVIS_BUILD_NUMBER-${TRAVIS_COMMIT::8}
 
     - docker tag polytrader_polytrader $REPO:latest
     - docker tag polytrader_polytrader $REPO:$TAG
