@@ -13,6 +13,7 @@ before_install:
 
 script:
     - docker-compose run polytrader npm test
+    - docker-compose run price_updater echo "test"
 
 after_success:
     - REPO=polytrader/polytrader
@@ -20,12 +21,15 @@ after_success:
 
     - docker tag polytrader_polytrader $REPO
     - docker push $REPO
+    - docker tag polytrader_price_updater polytrader/price_updater
+    - docker push polytrader/price_updater
 
     - wget https://hyper-install.s3.amazonaws.com/hyper-linux-x86_64.tar.gz
     - tar xzf hyper-linux-x86_64.tar.gz
     - ./hyper config --accesskey $HYPER_ACCESS_KEY --secretkey $HYPER_SECRET_KEY --default-region eu-central-1
     - ./hyper login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
     - ./hyper pull $REPO
+    - ./hyper pull polytrader/price_updater
     - ./hyper compose down -p polytrader
     - ./hyper compose up -f hyper.yml -d
 
