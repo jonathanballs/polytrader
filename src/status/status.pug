@@ -3,7 +3,20 @@ extends ../base.pug
 block content
   h1 Status
   hr
-  p This status page should report the success rate of various exchange apis
+  p Polytrader version
+    if commitHash
+      code=commitHash.substring(0, 9)
+    else
+      code undefined
+    |  updated on
+
+    if commitTime
+      code=commitTime.replace(/^\s+|\s+$/g, '')
+    else
+      code undefined
+    | .
+
+  h2 Services (#{services.length} in database)
   table.table
     thead
       tr
