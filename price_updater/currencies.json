@@ -1,0 +1,404 @@
+[
+    {
+        "symbol": "BCN",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "BELA",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "BLK",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "BTCD",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "BTM",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "BTS",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "BURST",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "CLAM",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "DASH",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "DGB",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "DOGE",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "EMC2",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "FLDC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "FLO",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "GAME",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "GRC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "HUC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "LTC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "MAID",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "OMNI",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "NAV",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "NEOS",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "NMC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "NXT",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "PINK",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "POT",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "PPC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "RIC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "STR",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "SYS",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "VIA",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "XVC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "VRC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "VTC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "XBC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "XCP",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "XEM",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "XMR",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "XPM",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "XRP",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "ETH",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "SC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "BCY",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "EXP",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "FCT",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "RADS",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "AMP",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "DCR",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "LSK",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "LBC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "STEEM",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "SBD",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "ETC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "REP",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "ARDR",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "ZEC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "STRAT",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "NXC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "PASC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "GNT",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "GNO",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "BCH",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "ZRX",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "CVC",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "OMG",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "GAS",
+        "exchanges": [
+            "poloniex"
+        ]
+    },
+    {
+        "symbol": "STORJ",
+        "exchanges": [
+            "poloniex"
+        ]
+    }
+]
