@@ -111,7 +111,7 @@ ul.check-circle {margin-bottom: 30px;}
 
 .is-sticky .navbar-default {background-color: #242b33;}	
 {z-index: 9;}
-.navbar-brand {float: left; height: 50px; padding: 5px 15px; font-size: 18px; line-height: 20px;}
+.navbar-brand {float: left; height: 50px; font-size: 18px; line-height: 20px;}
 nav {background-color: transparent; border-color: transparent;}
 nav {padding-top: 15px; padding-bottom: 15px;}
 nav .navbar-nav>li>a {color: #667b90; text-transform: uppercase; font-size: 14px;
