@@ -42,15 +42,15 @@ export default class EmailSettings extends React.Component {
         var submitButton = <button className="btn btn-block btn-success float-right" disabled={!this.state.emailHasChanged} onClick={this.updateEmail}>Update</button>
 
         if (this.state.emailSubmitStatus == 'loading') {
-            submitButton = <button disabled className="btn btn-success float-right" disabled={!this.state.emailHasChanged} onClick={this.updateEmail}>
+            submitButton = <button disabled className="btn btn-block btn-success float-right" disabled={!this.state.emailHasChanged} onClick={this.updateEmail}>
             Saving...
             </button>
         }
         else if (this.state.emailSubmitStatus == 'success') {
-            submitButton = <button disabled className="btn btn-success float-right">Saved</button>
+            submitButton = <button disabled className="btn btn-block btn-success float-right">Saved</button>
         }
         else if (this.state.emailSubmitStatus == 'failure') {
-            submitButton = <button disabled className="btn btn-danger float-right">Error</button>
+            submitButton = <button disabled className="btn btn-block btn-danger float-right">Error</button>
         }
 
         return (
