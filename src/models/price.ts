@@ -12,7 +12,7 @@ const priceSchema = new mongoose.Schema({
     daily_average: Number,
     date: Date,
     period: Number,
-    price_history: [mongoose.Schema.Types.Mixed],
+    price_history: [Number],
 }, { collection: "price_history" });
 
 priceSchema.statics.getCurrencyStats = function getCurrencyStats() {

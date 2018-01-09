@@ -59,6 +59,7 @@
     "reactstrap": "^5.0.0-alpha.4",
     "request": "^2.81.0",
     "socket.io": "^2.0.3",
+    "sprintf-js": "^1.1.1",
     "tsc": "^1.20150623.0",
     "typescript": "^2.6.2"
   },

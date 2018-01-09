@@ -32,7 +32,14 @@ const backend = {
                 from: '**/*pug',
                 to: 'dist/views/'
             }
-        ])
+        ]),
+        new CopyWebpackPlugin([
+            {
+                context: 'src',
+                from: '**/*json',
+                to: 'dist/'
+            }
+        ]),
     ]
 
 }

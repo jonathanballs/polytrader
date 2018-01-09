@@ -11,13 +11,6 @@ services:
             - ./test:/usr/src/app/test
             - ./static:/usr/src/app/static
 
-    price_updater:
-        build: price_updater/
-        depends_on:
-            - db
-        volumes:
-            - ./price_updater:/usr/src/app
-
     db:
         image: mongo:3.5
         ports: ['27018:27017']

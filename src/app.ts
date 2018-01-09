@@ -6,6 +6,7 @@ import expressValidator = require("express-validator");
 import * as fs from "fs";
 import * as http from "http";
 import * as https from "https";
+import * as kue from "kue";
 import * as moment from "moment";
 import * as mongoose from "mongoose";
 import * as passport from "passport";
@@ -25,7 +26,6 @@ import servicesList from "./wrappers/services";
 const MongoStore = ms(session);
 mongoose.Promise = global.Promise;
 mongoose.connect("mongodb://db/polytrader", { useMongoClient: true });
-
 
 // Local strategy to fetch user from database
 passport.use(new Strategy({ usernameField: "email" }, (email, password, done) => {
@@ -121,6 +121,19 @@ app.use((req, res, next) => {
     res.status(404).render("404"); // 404 handler
 });
 
+// Clear the queue
+queue.inactive((err, ids) => {
+    ids.forEach((id) => {
+        kue.Job.get(id, (err1, job) => {
+            if (err1) {
+                console.log("Error getting job id ", id);
+            } else {
+                job.remove();
+            }
+        });
+    });
+});
+
 // Check for accounts that haven"t been updated in five mins
 setInterval(() => {
     const fiveMinutesAgo = moment(new Date()).subtract(5, "m").toDate();
@@ -136,10 +149,32 @@ setInterval(() => {
                     title: "Syncing " + a.service + " account for " + u.email,
                 }).save((err) => {
                     if (err) {
-                        console.log("Error adding job to queue", err);
+                        console.log("Error adding job to queue: ", err);
                     }
                 });
 
             });
         }));
 }, 5000);
+
+// Update currencies
+const currencies = JSON.parse(fs.readFileSync("dist/currencies.json").toString());
+let currencyIdx = Math.round(Math.random() * currencies.length - 1);
+
+setInterval(() => {
+    if (currencyIdx >= currencies.length) {
+        currencyIdx = 0;
+    }
+
+    const c = currencies[currencyIdx];
+    queue.create("update-price-history", {
+        currency: c,
+        title: "Updating price history for " + c.symbol,
+    }).save((err) => {
+        if (err) {
+            console.log("Error adding job to queue: ", err);
+        }
+    });
+
+    currencyIdx++;
+}, 4000);

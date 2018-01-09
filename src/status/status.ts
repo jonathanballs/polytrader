@@ -6,6 +6,7 @@ import * as process from "process";
 import { loginRequired, loginRequiredApi } from "../auth/auth";
 import PriceModel from "../models/price";
 import UserModel from "../models/user";
+import queue from "../tasks";
 import { servicesClient } from "../wrappers/services";
 import services from "../wrappers/services";
 
@@ -21,7 +22,15 @@ router.get("/", (req, res) => {
     PriceModel.getCurrencyStats().then((currencies) => {
         execute("git rev-parse HEAD", (commitHash) => {
             execute("git --no-pager log -1 --format=%cd", (commitTime) => {
-                res.render("status/status", { currencies, services, commitHash, commitTime });
+                queue.inactiveCount("update-price-history", (err, queueLength) => {
+                    res.render("status/status", {
+                        commitHash,
+                        commitTime,
+                        currencies,
+                        queueLength,
+                        services,
+                    });
+                });
             });
         });
     });
