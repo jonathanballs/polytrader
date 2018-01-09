@@ -15,13 +15,6 @@ services:
             - redis
         command: node dist/app.js
 
-    price-updater:
-        image: polytrader/price_updater
-        depends_on:
-            - db
-        links:
-            - db
-
     db:
         image: mongo:3.5
         environment:
