@@ -5,6 +5,22 @@ import { Modal, Button, Carousel, CarouselItem } from 'reactstrap'
 import axios from 'axios'
 import qs from 'qs'
 
+const propTypes = {
+    submissionState: PropTypes.oneOf(['none', 'failure', 'success', 'loading']),
+    setSubmissionState: PropTypes.func,
+    errorMessage: PropTypes.string,
+    formValues: PropTypes.object,
+    service: PropTypes.shape({
+        key: PropTypes.string,
+        name: PropTypes.string,
+        formFields: PropTypes.arrayOf(PropTypes.shape({
+            name: PropTypes.string,
+            description: PropTypes.string,
+            placeholder: PropTypes.string,
+        }))
+    }),
+}
+
 export default class AccountForm extends React.Component {
 
     constructor(props) {
@@ -52,9 +68,10 @@ export default class AccountForm extends React.Component {
                     <img className="exchange-logo" src={"/static/images/exchange-logos/" + this.props.service.key + ".png"} />
                 </div>
             </div>
-            <form>
+            <form onSubmit={e => { e.preventDefault(); }}>
                 {accountFormFields}
             </form>
+
             <div className="row">
                 <div className="col-md-12">
                     {this.props.submissionState == 'failure' ?
@@ -68,18 +85,4 @@ export default class AccountForm extends React.Component {
     }
 }
 
-AccountForm.propTypes = {
-    submissionState: PropTypes.oneOf(['none', 'failure', 'success', 'loading']),
-    setSubmissionState: PropTypes.func,
-    errorMessage: PropTypes.string,
-    formValues: PropTypes.object,
-    service: PropTypes.shape({
-        key: PropTypes.string,
-        name: PropTypes.string,
-        formFields: PropTypes.arrayOf(PropTypes.shape({
-            name: PropTypes.string,
-            description: PropTypes.string,
-            placeholder: PropTypes.string,
-        }))
-    }),
-}
+AccountForm.propTypes = propTypes;
