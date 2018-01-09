@@ -33,6 +33,8 @@ export default class AccountForm extends React.Component {
     }
 
     render() {
+
+        // Turn form fields into text inputs and file buttons
         var accountFormFields = this.props.service.formFields.map((ff, i) => {
             return (
                 <div key={i} className="form-group row">
@@ -61,6 +63,35 @@ export default class AccountForm extends React.Component {
                 </div>
             )
         })
+
+        // Coinbase oauth button
+        if (this.props.service.key == 'coinbase') {
+            const redirectUrl = window.location.protocol + "//" + window.location.host + "/account/api/coinbasecallback"
+            const permissionsRequired = ["wallet:accounts:read",
+                "wallet:addresses:read", "wallet:buys:read",
+                "wallet:checkouts:read", "wallet:contacts:read",
+                "wallet:deposits:read", "wallet:notifications:read",
+                "wallet:orders:read", "wallet:payment-methods:read",
+                "wallet:sells:read", "wallet:transactions:read",
+                "wallet:user:read", "wallet:withdrawals:read"].reduce((prev, curr) => {
+                    return prev + "," + curr
+                }, "").substr(1);
+
+            const authorisationUrl = "https://www.coinbase.com/oauth/authorize?" +
+                "client_id=8cc804e451eb2a636534f046a08bd55421865e6e5a05583391cacb262e5016ca" +
+                "&redirect_uri=" + redirectUrl +
+                "&account=all" +
+                "&response_type=code&scope=" + permissionsRequired;
+
+            accountFormFields = [
+                <div key="coinbaseinput" className="form-group row">
+                    <div className="col-12">
+                        {/* <button className="btn btn-block btn-secondary">Connect your Coinbase account</button> */}
+                        <a href={authorisationUrl}>Click here to connect your coinbase account</a>
+                    </div>
+                </div>
+            ]
+        }
 
         var accountForm = <div key="2">
             <div className="row">

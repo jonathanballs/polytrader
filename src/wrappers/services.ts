@@ -15,12 +15,13 @@ interface IWrapperConstructor {
 interface IService {
     name: string;
     key: string;
-    formFields: [{
+    formFields: Array<{
         name: string
         description: string
         placeholder: string
         type?: string, // Optional. Assume text
-    }];
+        secret?: boolean,
+    }>;
     serverAuth: { [key: string]: string };
     wrapper: IWrapperConstructor;
 }
@@ -30,16 +31,14 @@ const services: [IService] = [
         formFields: [
             { name: "portfolioHistory", description: "History CSV", placeholder: "Bittrex History CSV", type: "file" },
             { name: "apiKey", description: "API Key", placeholder: "Bittrex API Key" },
-            { name: "apiSecret", description: "API Secret", placeholder: "Bittrex API Secret" }],
+            { name: "apiSecret", description: "API Secret", placeholder: "Bittrex API Secret"}],
         key: "bittrex",
         name: "Bittrex",
         serverAuth: {},
         wrapper: Bittrex,
     },
     {
-        formFields: [
-            { name: "apiKey", description: "API Key", placeholder: "Coinbase API Key" },
-            { name: "apiSecret", description: "API Secret", placeholder: "Coinbase API Secret" }],
+        formFields: [],
         key: "coinbase",
         name: "Coinbase",
         serverAuth: {},

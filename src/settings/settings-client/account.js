@@ -44,9 +44,8 @@ export default class Account extends React.Component {
     }
     else {
       syncStatus = <span className="badge badge-danger">
-        { moment(this.props.account.timestampLastSync).fromNow() }
-
-        { this.props.account.lastSyncErrorMessage
+        Failed { moment(this.props.account.timestampLastSync).fromNow() } - {
+          this.props.account.lastSyncErrorMessage
           ? this.props.account.lastSyncErrorMessage
           : "Failed for unknown reason"
         }

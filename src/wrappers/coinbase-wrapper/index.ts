@@ -10,19 +10,19 @@ import IWrapper from "../";
 
 import { Balance, DepositWithdrawal, Portfolio, PortfolioEvent } from "../";
 
-export default class Etherscan implements IWrapper {
+export default class Coinbase implements IWrapper {
 
-    public apiKey: string;
-    public apiSecret: string;
+    public accessToken: string;
+    public refreshToken: string;
 
     public api: coinbase.Client;
 
     constructor(serverAuth, userAuth) {
-        this.apiKey = userAuth.apiKey;
-        this.apiSecret = userAuth.apiSecret;
+        this.accessToken = userAuth.access_token;
+        this.refreshToken = userAuth.refresh_token;
         this.api = coinbase.Client({
-            apiKey: this.apiKey,
-            apiSecret: this.apiSecret,
+            accessToken: this.accessToken,
+            refreshToken: this.refreshToken,
         });
     }
 

@@ -1,7 +1,9 @@
+import axios from "axios";
 import * as express from "express";
 import * as mongoose from "mongoose";
 import * as multiparty from "multiparty";
 import * as passwordHasher from "password-hash";
+import * as qs from "qs";
 
 import { loginRequired, loginRequiredApi } from "../auth/auth";
 import UserModel from "../models/user";
@@ -149,7 +151,7 @@ router.post("/api/accounts/:accountID/", loginRequiredApi,
                 }).save((saveErr) => {
                     if (saveErr) {
                         console.log("Error creating sync-account task on " +
-                            " when user updates account");
+                            " when user updates account: ", saveErr);
                     }
                 });
             },
@@ -271,5 +273,67 @@ router.post("/api/password", loginRequiredApi, (req, res) => {
     }, (err, numAffected, rawResponse) => {
         console.log("Password updated to ", req.body.newPassword1);
         res.send("SUCCESS");
+    });
+});
+
+// Coinbase callback
+router.get("/api/coinbasecallback", loginRequired, (req, res) => {
+    const coinbaseCode = req.query.code;
+    if (!coinbaseCode) {
+        res.status(400).send("Error: no coinbase code in request");
+        return;
+    }
+
+    axios.post("https://api.coinbase.com/oauth/token", qs.stringify({
+        client_id: "8cc804e451eb2a636534f046a08bd55421865e6e5a05583391cacb262e5016ca",
+        client_secret: "f1b367badd3e08f778df09a838308913671557a2c44929e86d2e1317f9861620",
+        code: coinbaseCode,
+        grant_type: "authorization_code",
+        redirect_uri: "http://localhost:8080/account/api/coinbasecallback",
+    }))
+    .then((accessTokenResponse) => {
+        console.log(accessTokenResponse.data);
+        const userAuth = accessTokenResponse.data;
+
+        const newAccount = {
+            _id: mongoose.Types.ObjectId(),
+            balances: [],
+            lastSyncErrorMessage: null,
+            lastSyncWasSuccessful: null,
+            service: "coinbase",
+            timestampCreated: new Date(),
+            timestampLastSync: null,
+            userAuth,
+        };
+
+        UserModel.findOneAndUpdate({ _id: req.user._id },
+            { $push: { accounts: newAccount } },
+            { new: true },
+            (err, updatedUser) => {
+                // Update the account
+                if (err) {
+                    res.status(400).send(err + "");
+                    return;
+                }
+
+                queue.create("sync-account", {
+                    accountID: updatedUser.accounts[
+                        updatedUser.accounts.length - 1]._id,
+                    title: "Syncing " + newAccount.service +
+                    " account for " + req.user.email,
+
+                }).save((saveErr) => {
+                    if (saveErr) {
+                        console.log("Error creating sync-account task on " +
+                            " when user updates account: ", saveErr);
+                    }
+                    res.redirect("/account");
+                });
+
+            },
+        );
+    })
+    .catch((err) => {
+        res.status(400).send(err);
     });
 });
