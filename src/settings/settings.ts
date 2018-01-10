@@ -291,7 +291,7 @@ router.get("/api/coinbasecallback", loginRequired, (req, res) => {
         client_secret: coinbaseService.serverAuth.clientSecret,
         code: coinbaseCode,
         grant_type: "authorization_code",
-        redirect_uri: (req.connection.encrypted ? "https" : "http") +
+        redirect_uri: ((req.connection as any).encrypted ? "https" : "http") +
             "://" + req.headers.host + "/account/api/coinbasecallback",
     }))
     .then((accessTokenResponse) => {
