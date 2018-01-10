@@ -66,31 +66,41 @@ export default class AccountForm extends React.Component {
 
         // Coinbase oauth button
         if (this.props.service.key == 'coinbase') {
-            const redirectUrl = window.location.protocol + "//" + window.location.host + "/account/api/coinbasecallback"
-            const permissionsRequired = ["wallet:accounts:read",
-                "wallet:addresses:read", "wallet:buys:read",
-                "wallet:checkouts:read",
-                "wallet:deposits:read", "wallet:notifications:read",
-                "wallet:orders:read", "wallet:payment-methods:read",
-                "wallet:sells:read", "wallet:transactions:read",
-                "wallet:user:read", "wallet:withdrawals:read"].reduce((prev, curr) => {
-                    return prev + "," + curr
-                }, "").substr(1);
 
-            const authorisationUrl = "https://www.coinbase.com/oauth/authorize?" +
-                "client_id=8cc804e451eb2a636534f046a08bd55421865e6e5a05583391cacb262e5016ca" +
-                "&redirect_uri=" + redirectUrl +
-                "&account=all" +
-                "&response_type=code&scope=" + permissionsRequired;
-
-            accountFormFields = [
-                <div key="coinbaseinput" className="form-group row">
-                    <div className="col-12">
-                        {/* <button className="btn btn-block btn-secondary">Connect your Coinbase account</button> */}
-                        <a href={authorisationUrl}>Click here to connect your coinbase account</a>
+            if (this.props.formValues) {
+                accountFormFields = [
+                    <div key="coinbaseinput" className="form-group row">
+                        <div className="col-12">
+                            <p>Your coinbase account is already connected</p>
+                        </div>
                     </div>
-                </div>
-            ]
+                ]
+            } else {
+                const redirectUrl = window.location.protocol + "//" + window.location.host + "/account/api/coinbasecallback"
+                const permissionsRequired = ["wallet:accounts:read",
+                    "wallet:addresses:read", "wallet:buys:read",
+                    "wallet:checkouts:read",
+                    "wallet:deposits:read", "wallet:notifications:read",
+                    "wallet:orders:read", "wallet:payment-methods:read",
+                    "wallet:sells:read", "wallet:transactions:read",
+                    "wallet:user:read", "wallet:withdrawals:read"].reduce((prev, curr) => {
+                        return prev + "," + curr
+                    }, "").substr(1);
+
+                const authorisationUrl = "https://www.coinbase.com/oauth/authorize?" +
+                    "client_id=8cc804e451eb2a636534f046a08bd55421865e6e5a05583391cacb262e5016ca" +
+                    "&redirect_uri=" + redirectUrl +
+                    "&account=all" +
+                    "&response_type=code&scope=" + permissionsRequired;
+
+                accountFormFields = [
+                    <div key="coinbaseinput" className="form-group row">
+                        <div className="col-12">
+                            <a href={authorisationUrl}>Click here to connect your coinbase account</a>
+                        </div>
+                    </div>
+                ]
+            }
         }
 
         var accountForm = <div key="2">
