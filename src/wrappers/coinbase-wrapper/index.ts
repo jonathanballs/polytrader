@@ -28,7 +28,6 @@ export default class Coinbase implements IWrapper {
     }
 
     public validateCredentials(): Promise<any> {
-        console.log(this.userAuth);
         return new Promise((resolve, reject) => {
             this.refreshAccessToken()
             .then(() => {
