@@ -291,7 +291,8 @@ router.get("/api/coinbasecallback", loginRequired, (req, res) => {
         client_secret: coinbaseService.serverAuth.clientSecret,
         code: coinbaseCode,
         grant_type: "authorization_code",
-        redirect_uri: "http://localhost:8080/account/api/coinbasecallback",
+        redirect_uri: (req.connection.encrypted ? "https" : "http") +
+            "://" + req.headers.host + "/account/api/coinbasecallback",
     }))
     .then((accessTokenResponse) => {
 
@@ -302,8 +303,6 @@ router.get("/api/coinbasecallback", loginRequired, (req, res) => {
             scope: accessTokenResponse.data.scope,
             tokenType: accessTokenResponse.data.token_type,
         };
-
-        console.log(userAuth);
 
         const newAccount = {
             _id: mongoose.Types.ObjectId(),
