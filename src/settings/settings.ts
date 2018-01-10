@@ -284,16 +284,26 @@ router.get("/api/coinbasecallback", loginRequired, (req, res) => {
         return;
     }
 
+    const coinbaseService = services.filter((s) => s.key === "coinbase")[0];
+
     axios.post("https://api.coinbase.com/oauth/token", qs.stringify({
-        client_id: "8cc804e451eb2a636534f046a08bd55421865e6e5a05583391cacb262e5016ca",
-        client_secret: "f1b367badd3e08f778df09a838308913671557a2c44929e86d2e1317f9861620",
+        client_id: coinbaseService.serverAuth.clientId,
+        client_secret: coinbaseService.serverAuth.clientSecret,
         code: coinbaseCode,
         grant_type: "authorization_code",
         redirect_uri: "http://localhost:8080/account/api/coinbasecallback",
     }))
     .then((accessTokenResponse) => {
-        console.log(accessTokenResponse.data);
-        const userAuth = accessTokenResponse.data;
+
+        const userAuth = {
+            accessToken: accessTokenResponse.data.access_token,
+            expiresIn: accessTokenResponse.data.expires_in,
+            refreshToken: accessTokenResponse.data.refresh_token,
+            scope: accessTokenResponse.data.scope,
+            tokenType: accessTokenResponse.data.token_type,
+        };
+
+        console.log(userAuth);
 
         const newAccount = {
             _id: mongoose.Types.ObjectId(),

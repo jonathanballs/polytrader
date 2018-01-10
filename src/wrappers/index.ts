@@ -3,7 +3,7 @@
 export default interface IWrapper {
     returnBalances(): Promise<Balance[]>;
     returnHistory(startDate?: Date): Promise<PortfolioEvent[]>;
-    validateCredentials(): Promise<boolean>;
+    validateCredentials(): Promise<any>; // returns credentials
 }
 
 export class Portfolio {

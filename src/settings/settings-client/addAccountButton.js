@@ -71,7 +71,6 @@ export default class AddAccountButton extends React.Component {
   }
 
   render() {
-
     var accountButton = null;
     if (this.state.activeSlide == 1) {
       switch (this.state.submissionState) {

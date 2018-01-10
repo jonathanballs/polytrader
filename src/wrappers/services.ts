@@ -41,7 +41,10 @@ const services: [IService] = [
         formFields: [],
         key: "coinbase",
         name: "Coinbase",
-        serverAuth: {},
+        serverAuth: {
+            clientId: "8cc804e451eb2a636534f046a08bd55421865e6e5a05583391cacb262e5016ca",
+            clientSecret: "f1b367badd3e08f778df09a838308913671557a2c44929e86d2e1317f9861620",
+        },
         wrapper: Coinbase,
     },
     {

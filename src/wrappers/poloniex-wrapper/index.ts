@@ -172,6 +172,7 @@ export default class Poloniex implements IWrapper {
 
     public apiKey: string;
     public apiSecret: string;
+    public userAuth;
 
     public readonly version: string = "0.0.1";
     public readonly PUBLIC_API_URL: string = "https://poloniex.com/public";
@@ -184,14 +185,15 @@ export default class Poloniex implements IWrapper {
     private repeatNonce: number = 0;
 
     constructor(serverAuth, userAuth) {
+        this.userAuth = userAuth;
         this.apiKey = userAuth.apiKey;
         this.apiSecret = userAuth.apiSecret;
     }
 
     public validateCredentials() {
-        return new Promise<boolean>((resolve, reject) => {
+        return new Promise<any>((resolve, reject) => {
             this.returnBalances().then((balances) => {
-                resolve(true);
+                resolve(this.userAuth);
             }).catch((e) => {
                 reject(e);
             });

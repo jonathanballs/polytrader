@@ -56,11 +56,11 @@ export default class Bittrex implements IWrapper {
         });
     }
 
-    public validateCredentials(): Promise<boolean> {
+    public validateCredentials(): Promise<any> {
         // Keep it always true for now
         return new Promise((resolve, reject) => {
             this.returnBalances().then(() => {
-                resolve(true);
+                resolve(this.userAuth);
             }).catch((e) => reject(e));
         });
     }

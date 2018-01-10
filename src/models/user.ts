@@ -29,60 +29,76 @@ linkedAccountSchema.methods.sync = function sync() {
     return new Promise((resolve, reject) => {
         const service = servicesList.filter((s) => s.key === this.service)[0];
         const wrapper = new service.wrapper(service.serverAuth, this.userAuth);
-        wrapper.returnHistory().then((history) => {
-            wrapper.returnBalances().then((balances) => {
-
-                // Update account balances
-                UserModel.findOneAndUpdate(
-                    { "accounts._id": this._id },
-                    {
-                        $set: {
-                            "accounts.$.balances": balances,
-                            "accounts.$.lastSyncErrorMessage": null,
-                            "accounts.$.lastSyncWasSuccessful": true,
-                            "accounts.$.timestampLastSync": new Date(),
-                        },
-                    }, (err) => {
-                        if (err) {
-                            reject("Error updating account balance in db" + err);
-                        }
-                    });
-
-                // Sort history properly
-                history = history.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-
-                PortfolioEventHistoryModel.findOneOrCreate({ accountID: this._id })
-                .then((peh) => {
-                    const newHistory = peh.events
-                        .filter((e) => e.timestamp < history[0].timestamp)
-                        .concat(history);
-
-                    PortfolioEventHistoryModel.update(
-                        { _id: peh._id },
-                        { $set: { events: newHistory } })
-                        .then(() => {
-                            resolve("Successfully synced");
-                        }).catch((err) => {
-                            reject("Error inserting portfolio history into db:" + err);
-                        });
-                }).catch((err) => reject(err));
-            }).catch((err) => reject(err));
-        }).catch((err) => {
-
-            // Save failure details to database
+        wrapper.validateCredentials().then((userAuth) => {
+            // Update the userAuth in db as it may have changed
             UserModel.findOneAndUpdate(
                 { "accounts._id": this._id },
                 {
                     $set: {
-                        "accounts.$.lastSyncErrorMessage": err + "",
-                        "accounts.$.lastSyncWasSuccessful": false,
-                        "accounts.$.timestampLastSync": new Date(),
+                        "accounts.$.userAuth": userAuth,
                     },
-                }).catch((saveError) => {
-                    console.log("Failed to update account lastSyncStatus.", saveError);
-                });
+                },
+            ).then(() => {
+                wrapper.returnHistory().then((history) => {
+                    wrapper.returnBalances().then((balances) => {
 
-            reject(err);
+                        // Update account balances
+                        UserModel.findOneAndUpdate(
+                            { "accounts._id": this._id },
+                            {
+                                $set: {
+                                    "accounts.$.balances": balances,
+                                    "accounts.$.lastSyncErrorMessage": null,
+                                    "accounts.$.lastSyncWasSuccessful": true,
+                                    "accounts.$.timestampLastSync": new Date(),
+                                },
+                            }, (err) => {
+                                if (err) {
+                                    reject("Error updating account balance in db" + err);
+                                }
+                            });
+
+                        // Sort history properly
+                        history = history.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+                        PortfolioEventHistoryModel.findOneOrCreate({ accountID: this._id })
+                        .then((peh) => {
+                            const newHistory = peh.events
+                                .filter((e) => e.timestamp < history[0].timestamp)
+                                .concat(history);
+
+                            PortfolioEventHistoryModel.update(
+                                { _id: peh._id },
+                                { $set: { events: newHistory } })
+                                .then(() => {
+                                    resolve("Successfully synced");
+                                }).catch((err) => {
+                                    reject("Error inserting portfolio history into db:" + err);
+                                });
+                        }).catch((err) => reject(err));
+                    }).catch((err) => reject(err));
+                }).catch((err) => {
+
+                    // Save failure details to database
+                    UserModel.findOneAndUpdate(
+                        { "accounts._id": this._id },
+                        {
+                            $set: {
+                                "accounts.$.lastSyncErrorMessage": err + "",
+                                "accounts.$.lastSyncWasSuccessful": false,
+                                "accounts.$.timestampLastSync": new Date(),
+                            },
+                        }).catch((saveError) => {
+                            console.log("Failed to update account lastSyncStatus.", saveError);
+                        });
+
+                    reject(err);
+                });
+            }).catch((err) => reject("Error saving new auth: " + err));
+
+        })
+        .catch((err) => {
+            reject(Error("Invalid credentials: " + err));
         });
     });
 };

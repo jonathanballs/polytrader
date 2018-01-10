@@ -13,18 +13,20 @@ import { Balance, DepositWithdrawal, Portfolio, PortfolioEvent } from "../";
 export default class Etherscan implements IWrapper {
     public walletAddress: string;
     public apiKey: string;
+    public userAuth;
 
     public readonly apiURL = "https://api.etherscan.io/api?";
     public exponent = 17; // Results from api are returned as integers which are 10e17
 
     constructor(serverAuth, userAuth) {
+        this.userAuth = userAuth;
         this.apiKey = serverAuth.apiKey;
         this.walletAddress = userAuth.walletAddress;
     }
 
     public validateCredentials() {
         if (ethereum_address.isAddress(this.walletAddress)) {
-            return Promise.resolve(true);
+            return Promise.resolve(this.userAuth);
         } else {
             return Promise.reject("Error: Not a valid Ethereum wallet address");
         }
