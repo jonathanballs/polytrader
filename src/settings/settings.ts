@@ -6,6 +6,7 @@ import * as passwordHasher from "password-hash";
 import * as qs from "qs";
 
 import { loginRequired, loginRequiredApi } from "../auth/auth";
+import PortfolioModel from "../models/portfolio";
 import UserModel from "../models/user";
 import queue from "../tasks";
 import services from "../wrappers/services";
@@ -174,7 +175,12 @@ router.delete("/api/accounts/:accountID/", loginRequiredApi, (req, res) => {
             if (err) {
                 res.status(400).send(err + "");
             } else {
-                res.send("OK");
+                // Also delete the portfolio history. We don't mind if it fails
+                PortfolioModel.findOne({
+                    accountID: mongoose.Types.ObjectId(req.params.accountID),
+                }).remove().exec()
+                .then(() => res.send("OK") )
+                .catch(() => res.send("OK") );
             }
         });
 });
