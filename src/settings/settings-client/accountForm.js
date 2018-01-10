@@ -69,7 +69,7 @@ export default class AccountForm extends React.Component {
             const redirectUrl = window.location.protocol + "//" + window.location.host + "/account/api/coinbasecallback"
             const permissionsRequired = ["wallet:accounts:read",
                 "wallet:addresses:read", "wallet:buys:read",
-                "wallet:checkouts:read", "wallet:contacts:read",
+                "wallet:checkouts:read",
                 "wallet:deposits:read", "wallet:notifications:read",
                 "wallet:orders:read", "wallet:payment-methods:read",
                 "wallet:sells:read", "wallet:transactions:read",

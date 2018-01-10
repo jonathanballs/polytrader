@@ -89,6 +89,9 @@ export default class AddAccountButton extends React.Component {
           break
       }
     }
+    if (this.state.currentAccountForm == "coinbase") {
+      accountButton = null;
+    }
 
     // Disable PropType warnings for CarouselItem
     CarouselItem.propTypes.children = PropTypes.any
@@ -134,7 +137,7 @@ export default class AddAccountButton extends React.Component {
           </div>
           <div className="modal-footer">
             {this.state.activeSlide == 1 ? <Button color="secondary" onClick={_ => { this.goToSlide(0) }}>Back</Button> : null}
-            <div className="col-md-6"></div>
+            { accountButton ? <div className="col-md-6"></div> : <div className="col-md-8"></div>}
             {accountButton}
             <Button color="secondary" onClick={this.toggleModal}>Close</Button>
           </div>

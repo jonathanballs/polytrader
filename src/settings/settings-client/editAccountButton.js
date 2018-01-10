@@ -81,6 +81,9 @@ export default class EditAccountButton extends React.Component {
         accountButton = <Button onClick={this.toggleModal} block={true} color="success"><i className="fa fa-check"></i> Success</Button>
         break
     }
+    if (this.props.service.key == "coinbase") {
+      accountButton = null;
+    }
 
     var deleteButton = null
     switch (this.state.deleteButtonState) {

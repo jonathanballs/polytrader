@@ -45,7 +45,7 @@ function validateAccountForm(req, res, next) {
         // Check that the service type is valid
         req.checkBody("service").notEmpty().isAscii()
             .isIn(services.map((s) => s.key));
-        if (req.validationErrors()) {
+        if (req.validationErrors() || req.body.service === "coinbase") {
             res.status(400).send("Error: Please submit a valid service type");
             return;
         }
