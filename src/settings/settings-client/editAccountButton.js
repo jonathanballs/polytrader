@@ -129,11 +129,11 @@ export default class EditAccountButton extends React.Component {
           </div>
           <div className="modal-body">
             <AccountForm
-              service={ this.props.service }
-              submissionState={ this.state.submissionState }
-              setSubmissionState={ this.setSubmissionState }
+              disabled={ this.state.submissionState === "loading" }
               errorMessage={ this.state.submissionErrorMessage }
-              formValues={ this.props.formValues } />
+              formValues={ this.props.formValues }
+              service={ this.props.service }
+              onChange={ () => {this.setState({submissionState: "none", submissionErrorMessage: null})} } />
           </div>
           <div className="modal-footer">
             {deleteButton}

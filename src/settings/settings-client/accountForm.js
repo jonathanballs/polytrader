@@ -4,12 +4,11 @@ import PropTypes from 'prop-types'
 import { Modal, Button, Carousel, CarouselItem } from 'reactstrap'
 import axios from 'axios'
 import qs from 'qs'
+import * as clone from 'clone'
 
 const propTypes = {
-    submissionState: PropTypes.oneOf(['none', 'failure', 'success', 'loading']).isRequired,
-    setSubmissionState: PropTypes.func,
-    errorMessage: PropTypes.string,
     disabled: PropTypes.bool,
+    errorMessage: PropTypes.string,
     formValues: PropTypes.object,
     onChange: PropTypes.func,
     service: PropTypes.shape({
@@ -27,43 +26,40 @@ export default class AccountForm extends React.Component {
 
     constructor(props) {
         super(props)
-        this.state = { formValues: {}}
+        this.state = {}
 
         if (this.props.formValues) {
-            // TODO: Assert that all formValues are present
-            this.state = { inputValues: this.props.formValues }
+            this.state = this.props.formValues;
         } else {
             // Generate an empty state
-            this.state = { inputValues: this.props.service.formFields.map((formField => {
+            this.state = this.props.service.formFields.map((formField => {
                 return { key: formField.name, value: formField.type === "text" ? "" : null }
             })).reduce((prev, curr) => {
                 prev[curr.key] = curr.value;
                 return prev;
-            }, {})}
+            }, {})
         }
 
         this.handleChange = this.handleChange.bind(this);
     }
 
+    // Handle changes to a form field
     handleChange(event) {
-        this.props.setSubmissionState('none');
         if (this.props.onChange) {
             this.props.onChange();
         }
 
         const target = event.target;
         const value = target.type === "text" ? target.value : { originalFilename: target.value };
-        this.setState((prevState) => {
-            prevState.inputValues[target.name] = value
-            return { inputValues: prevState.inputValues };
-        });
+        this.setState({[target.name]: value});
     }
 
     render() {
+
         // Turn form fields into text inputs and file buttons and populate them with
         // appropriate form values.
         var accountFormFields = this.props.service.formFields.map((ff, i) => {
-            const fieldValue = this.state.inputValues[ff.name];
+            const fieldValue = this.state[ff.name];
 
             let fileButton = null;
             if (ff.type === "file") {
@@ -79,7 +75,7 @@ export default class AccountForm extends React.Component {
                         className="form-control"
                         type={ ff.type }
                         defaultValue={ this.props.formValues ? this.props.formValues[ff.name] : undefined }
-                        disabled={ this.props.submissionState == 'loading' }
+                        disabled={ this.props.disabled }
                         name={ ff.name }
                         placeholder={ ff.placeholder }
                         onChange={this.handleChange}
@@ -141,9 +137,9 @@ export default class AccountForm extends React.Component {
 
             <div className="row">
                 <div className="col-md-12">
-                    {this.props.submissionState == 'failure' ?
+                    {this.props.errorMessage ?
                         <p className="add-account-error-message">{this.props.errorMessage}</p>
-                        : <p></p>}
+                        : null}
                 </div>
             </div>
         </div>

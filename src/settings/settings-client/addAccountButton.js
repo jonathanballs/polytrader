@@ -19,7 +19,6 @@ export default class AddAccountButton extends React.Component {
       submissionErrorMessage: '',
     }
 
-    this.setSubmissionState.bind(this)
   }
 
   toggleModal = () => {
@@ -65,10 +64,6 @@ export default class AddAccountButton extends React.Component {
       })
   }
 
-  setSubmissionState = (newState) => {
-    this.setState({submissionState: newState})
-  }
-
   render() {
     var accountButton = null;
     if (this.state.activeSlide == 1) {
@@ -112,8 +107,8 @@ export default class AddAccountButton extends React.Component {
     <CarouselItem key='2' src=''>
       <AccountForm
         service={this.props.serviceList.filter(s => s.key == this.state.currentAccountForm)[0]}
-        submissionState={this.state.submissionState}
-        setSubmissionState={this.setSubmissionState}
+        disabled={this.state.submissionState == "loading"}
+        onChange={() => {this.setState({submissionState: "none", submissionErrorMessage: null})}}
         errorMessage={this.state.submissionErrorMessage} />
     </CarouselItem>
     ]
