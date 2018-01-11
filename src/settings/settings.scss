@@ -46,6 +46,8 @@ $error-message-font: "Lucida Console", Monaco, monospace;
 	button.btn-file {
 		width: 50%;
 		z-index: -1;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 }
 

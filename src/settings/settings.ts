@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as express from "express";
+import * as fs from "fs";
 import * as mongoose from "mongoose";
 import * as multiparty from "multiparty";
 import * as passwordHasher from "password-hash";
@@ -18,6 +19,13 @@ export default router;
 // Validates account form submission
 function validateAccountForm(req, res, next) {
 
+    // This will be set if the form is for an already existing form
+    const isAccountUpdate = !!req.params.accountID;
+    let account = null;
+    if (req.params.accountID) {
+        account = req.user.getAccountByID(req.params.accountID);
+    }
+
     // Parse the multipart form
     const form = new multiparty.Form({
         maxFieldsSize: 100000, // 100KB
@@ -29,30 +37,52 @@ function validateAccountForm(req, res, next) {
             return;
         }
 
-        for (const key in fields) {
-            if (fields.hasOwnProperty(key)) {
-                req.body[key] = fields[key][0];
-            }
-        }
-
-        for (const key in files) {
-            // TODO delete files that are not part of the service
-            if (files.hasOwnProperty(key)) {
-                delete files[key][0].fieldName;
-                delete files[key][0].headers;
-                files[key][0].uploadDate = new Date();
-                req.body[key] = files[key][0];
-            }
-        }
-
-        // Check that the service type is valid
+        req.body.service = fields.service[0];
         req.checkBody("service").notEmpty().isAscii()
             .isIn(services.map((s) => s.key));
         if (req.validationErrors() || req.body.service === "coinbase") {
-            res.status(400).send("Error: Please submit a valid service type");
+            res.status(400).send(`Error: ${req.body.service} is not a valid service type`);
             return;
         }
         const service = services.filter((s) => s.key === req.body.service)[0];
+
+        // Check all text form fields
+        service.formFields.forEach((formField) => {
+            if (formField.type === "text" && fields[formField.name]) {
+                req.body[formField.name] = fields[formField.name][0];
+                req.checkBody(formField.name).notEmpty().isAscii();
+                req.sanitizeBody(formField.name).trim();
+            } else if (formField.type === "file") {
+                let fileField = files[formField.name];
+                // If the file is not sent then we should get the one that is already in db
+                if (fileField) {
+                    fileField = fileField[0];
+                    delete fileField.fieldName;
+                    delete fileField.headers;
+                    fileField.uploadDate = new Date();
+                } else if (account) {
+                    fileField = account.userAuth[formField.name];
+                }
+                req.body[formField.name] = fileField;
+                req.checkBody(formField.name).notEmpty();
+            }
+        });
+        if (req.validationErrors()) {
+            // Delete the files
+            for (const key in files) {
+                if (files.hasOwnProperty(key)) {
+                    files[key].forEach((f) => {
+                        try {
+                            fs.unlinkSync(files[key].path);
+                        } catch (rmerr) {
+                            console.log("Failed to delete file " + files[key].path + ": " + rmerr);
+                        }
+                    });
+                }
+            }
+            res.status(400).send("Error: Please fill in form details fully.");
+            return;
+        }
 
         // Assert that userAuth variables are submitted
         service.formFields.forEach((ff) => {
