@@ -11,6 +11,7 @@ const propTypes = {
     errorMessage: PropTypes.string,
     formValues: PropTypes.object,
     onChange: PropTypes.func,
+    onSubmit: PropTypes.func,
     service: PropTypes.shape({
         key: PropTypes.string,
         name: PropTypes.string,
@@ -41,6 +42,7 @@ export default class AccountForm extends React.Component {
         }
 
         this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     // Handle changes to a form field
@@ -52,6 +54,13 @@ export default class AccountForm extends React.Component {
         const target = event.target;
         const value = target.type === "text" ? target.value : { originalFilename: target.value };
         this.setState({[target.name]: value});
+    }
+
+    handleSubmit(event) {
+        if (this.props.onSubmit) {
+            this.props.onSubmit();
+        }
+        event.preventDefault();
     }
 
     render() {
@@ -131,7 +140,7 @@ export default class AccountForm extends React.Component {
                     <img className="exchange-logo" src={"/static/images/exchange-logos/" + this.props.service.key + ".png"} />
                 </div>
             </div>
-            <form onSubmit={e => { e.preventDefault(); }}>
+            <form onSubmit={this.handleSubmit}>
                 {accountFormFields}
             </form>
 

@@ -133,7 +133,13 @@ export default class EditAccountButton extends React.Component {
               errorMessage={ this.state.submissionErrorMessage }
               formValues={ this.props.formValues }
               service={ this.props.service }
-              onChange={ () => {this.setState({submissionState: "none", submissionErrorMessage: null})} } />
+              onChange={ () => {this.setState({submissionState: "none", submissionErrorMessage: null})} }
+              onSubmit={ () => {
+                if (this.state.submissionState === "none") {
+                  this.submitAccountForm()
+                }
+              }}
+              />
           </div>
           <div className="modal-footer">
             {deleteButton}

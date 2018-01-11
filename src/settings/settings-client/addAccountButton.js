@@ -109,6 +109,7 @@ export default class AddAccountButton extends React.Component {
         service={this.props.serviceList.filter(s => s.key == this.state.currentAccountForm)[0]}
         disabled={this.state.submissionState == "loading"}
         onChange={() => {this.setState({submissionState: "none", submissionErrorMessage: null})}}
+        onSubmit={ this.submitAccountForm }
         errorMessage={this.state.submissionErrorMessage} />
     </CarouselItem>
     ]
