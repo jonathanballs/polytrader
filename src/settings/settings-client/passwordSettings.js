@@ -30,7 +30,7 @@ export default class PasswordSettings extends React.Component {
     makeFormField(title, name, placeholder) {
 
         return (<div className="form-group row">
-            <label className="col-md-3 col-form-label" htmlFor="email">{ title }</label>
+            <label className="col-md-3 col-form-label" htmlFor={name}>{ title }</label>
             <div className="col-md-9">
                 <input className="form-control"
                     type="password"
