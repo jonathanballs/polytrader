@@ -137,7 +137,7 @@ export default class EditAccountButton extends React.Component {
           </div>
           <div className="modal-footer">
             {deleteButton}
-            <div className="col-md-6"></div>
+            <div className={accountButton ? "col-md-6" : "col-md-8"}></div>
             {accountButton}
             <Button color="secondary" onClick={this.toggleModal}>Close</Button>
           </div>

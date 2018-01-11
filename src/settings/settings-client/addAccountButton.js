@@ -135,7 +135,7 @@ export default class AddAccountButton extends React.Component {
 
           </div>
           <div className="modal-footer">
-            {this.state.activeSlide == 1 ? <Button color="secondary" onClick={_ => { this.goToSlide(0) }}>Back</Button> : null}
+            {this.state.activeSlide == 1 ? <Button block={true} color="secondary" onClick={_ => { this.goToSlide(0) }}>Back</Button> : null}
             { accountButton ? <div className="col-md-6"></div> : <div className="col-md-8"></div>}
             {accountButton}
             <Button color="secondary" onClick={this.toggleModal}>Close</Button>
