@@ -194,6 +194,22 @@ router.post("/api/accounts/:accountID/", loginRequiredApi,
 // DELETE an account
 router.delete("/api/accounts/:accountID/", loginRequiredApi, (req, res) => {
     const account = req.user.getAccountByID(req.params.accountID);
+    const service = services.filter((s) => s.key === account.service)[0];
+
+    // Delete any files associated with account
+    if (service) {
+        service.formFields
+            .filter((ff) => ff.type === "file")
+            .forEach((ff) => {
+                const path = account.userAuth[ff.name].path;
+                try {
+                    fs.unlinkSync(path);
+                    console.log("Deleted old account file ", path);
+                } catch (delErr) {
+                    console.log("Error deleting old account file ", path);
+                }
+            });
+    }
 
     if (account === null) {
         res.status(404).send("Unable to find account with ID " + req.params.accountID);
