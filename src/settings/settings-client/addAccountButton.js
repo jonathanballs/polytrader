@@ -50,8 +50,7 @@ export default class AddAccountButton extends React.Component {
     accountForm.formFields.forEach(ff => {
       if (ff.type == 'file') {
         formData.append(ff.name, document.getElementsByName(ff.name)[0].files[0])
-      }
-      else {
+      } else {
         formData.append(ff.name, document.getElementsByName(ff.name)[0].value)
       }
     })

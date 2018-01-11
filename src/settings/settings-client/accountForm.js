@@ -6,10 +6,12 @@ import axios from 'axios'
 import qs from 'qs'
 
 const propTypes = {
-    submissionState: PropTypes.oneOf(['none', 'failure', 'success', 'loading']),
+    submissionState: PropTypes.oneOf(['none', 'failure', 'success', 'loading']).isRequired,
     setSubmissionState: PropTypes.func,
     errorMessage: PropTypes.string,
+    disabled: PropTypes.bool,
     formValues: PropTypes.object,
+    onChange: PropTypes.func,
     service: PropTypes.shape({
         key: PropTypes.string,
         name: PropTypes.string,
@@ -18,47 +20,71 @@ const propTypes = {
             description: PropTypes.string,
             placeholder: PropTypes.string,
         }))
-    }),
+    }).isRequired,
 }
 
 export default class AccountForm extends React.Component {
 
     constructor(props) {
         super(props)
-        this.state = {
-            inputValues: this.props.formValues
-                ? this.props.formValues
-                : {}
+        this.state = { formValues: {}}
+
+        if (this.props.formValues) {
+            // TODO: Assert that all formValues are present
+            this.state = { inputValues: this.props.formValues }
+        } else {
+            // Generate an empty state
+            this.state = { inputValues: this.props.service.formFields.map((formField => {
+                return { key: formField.name, value: formField.type === "text" ? "" : null }
+            })).reduce((prev, curr) => {
+                prev[curr.key] = curr.value;
+                return prev;
+            }, {})}
         }
+
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    handleChange(event) {
+        this.props.setSubmissionState('none');
+        if (this.props.onChange) {
+            this.props.onChange();
+        }
+
+        const target = event.target;
+        const value = target.type === "text" ? target.value : { originalFilename: target.value };
+        this.setState((prevState) => {
+            prevState.inputValues[target.name] = value
+            return { inputValues: prevState.inputValues };
+        });
     }
 
     render() {
-
-        // Turn form fields into text inputs and file buttons
+        // Turn form fields into text inputs and file buttons and populate them with
+        // appropriate form values.
         var accountFormFields = this.props.service.formFields.map((ff, i) => {
+            const fieldValue = this.state.inputValues[ff.name];
+
+            let fileButton = null;
+            if (ff.type === "file") {
+                const buttonText = fieldValue ? fieldValue.originalFilename : "Select File";
+                fileButton = <button className="btn btn-secondary btn-file">{ buttonText }</button>
+            }
+
             return (
                 <div key={i} className="form-group row">
                 <label className="col-md-2 col-form-label" htmlFor={ff.name}>{ff.description}</label>
                 <div className="col-md-10">
-                    <input className="form-control"
-                        id="poloniexApiKey"
-                        type={ff.type ? ff.type : 'text'}
-                        defaultValue={this.props.formValues ? this.props.formValues[ff.name] : undefined}
-                        disabled={this.props.submissionState == 'loading'}
-                        name={ff.name}
-                        placeholder={ff.placeholder}
-                        onChange={evt => {
-                            this.props.setSubmissionState('none');
-                            this.state.inputValues[ff.name] = evt.target.value
-                        }}
+                    <input
+                        className="form-control"
+                        type={ ff.type }
+                        defaultValue={ this.props.formValues ? this.props.formValues[ff.name] : undefined }
+                        disabled={ this.props.submissionState == 'loading' }
+                        name={ ff.name }
+                        placeholder={ ff.placeholder }
+                        onChange={this.handleChange}
                         required />
-                    { ff.type == 'file'
-                        ? <button className="btn btn-secondary btn-file">
-                            { this.state.inputValues[ff.name]
-                                ? this.state.inputValues[ff.name].split('\\').reverse()[0].split('/').reverse()[0]
-                                : "Select File" }
-                          </button>
-                        : null }
+                    { fileButton }
                 </div>
                 </div>
             )

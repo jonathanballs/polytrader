@@ -20,7 +20,7 @@ function validateAccountForm(req, res, next) {
 
     // Parse the multipart form
     const form = new multiparty.Form({
-        maxFieldsSize: 100000,
+        maxFieldsSize: 100000, // 100KB
         uploadDir: "/upload",
     });
     form.parse(req, (err, fields, files) => {
@@ -36,9 +36,11 @@ function validateAccountForm(req, res, next) {
         }
 
         for (const key in files) {
+            // TODO delete files that are not part of the service
             if (files.hasOwnProperty(key)) {
                 delete files[key][0].fieldName;
                 delete files[key][0].headers;
+                files[key][0].uploadDate = new Date();
                 req.body[key] = files[key][0];
             }
         }
