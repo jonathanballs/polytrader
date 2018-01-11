@@ -36,14 +36,16 @@ $error-message-font: "Lucida Console", Monaco, monospace;
 	}
 
     input[type=file] {
+		position: absolute;
+		top: 0;
+		left: 0;
 		opacity: 0;
 		width: 50%;
 	}
 
 	button.btn-file {
-		position: absolute;
-		top: 2px;
 		width: 50%;
+		z-index: -1;
 	}
 }
 
