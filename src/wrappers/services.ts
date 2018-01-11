@@ -65,6 +65,14 @@ const services: [IService] = [
     },
 ];
 
+// Fill in defaults
+services.map((service) => {
+    service.formFields.map((formField) => {
+        formField.type = formField.type || "text";
+        formField.secret = formField.secret || false;
+    });
+});
+
 export let servicesClient = clone(services);
 servicesClient.forEach((s) => {
     delete s.serverAuth;
