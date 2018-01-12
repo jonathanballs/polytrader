@@ -8,12 +8,8 @@ You will need docker and docker-compose installed
     # Start the server
     $ docker-compose up
 
-    # Download the latest historical price information
-    # and load it into the database
-    $ docker-compose run price_updater update_cache
-    $ docker-compose run price_updater load_cache
-
     # Start watching files for changes
     $ webpack --watch
 
-This will build the necessary containers and launch them.
+This will build the necessary containers and launch them. You may have to wait for the currency histories to be loaded into the database. This can take several hours depending on your internet connection.
+
