@@ -120,10 +120,6 @@ router.get("/", loginRequired, (req, res) => {
     res.render("settings/settings", { user: req.user });
 });
 
-router.post("/api/email/", loginRequiredApi, (req, res) => {
-    return;
-});
-
 router.get("/api/services/", loginRequiredApi, (req, res) => {
     res.send(servicesClient);
 });
