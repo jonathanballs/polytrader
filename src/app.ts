@@ -32,6 +32,7 @@ const mongoUrl = `mongodb://${process.env.MONGO_USERNAME}:` +
 mongoose.connect(mongoUrl, {useMongoClient: true })
 .catch((err) => {
     console.log("Failed to authenticate with mongo at ", mongoUrl);
+    console.log(err);
     process.exit(1);
 });
 
