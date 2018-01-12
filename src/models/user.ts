@@ -77,28 +77,27 @@ linkedAccountSchema.methods.sync = function sync() {
                                 });
                         }).catch((err) => reject(err));
                     }).catch((err) => reject(err));
-                }).catch((err) => {
-
-                    // Save failure details to database
-                    UserModel.findOneAndUpdate(
-                        { "accounts._id": this._id },
-                        {
-                            $set: {
-                                "accounts.$.lastSyncErrorMessage": err + "",
-                                "accounts.$.lastSyncWasSuccessful": false,
-                                "accounts.$.timestampLastSync": new Date(),
-                            },
-                        }).catch((saveError) => {
-                            console.log("Failed to update account lastSyncStatus.", saveError);
-                        });
-
-                    reject(err);
-                });
-            }).catch((err) => reject("Error saving new auth: " + err));
-
+                }).catch((err) => { reject(err); });
+            }).catch((err) => reject(err));
         })
         .catch((err) => {
-            reject(Error("Invalid credentials: " + err));
+            // Save failure details to database
+            UserModel.findOneAndUpdate(
+                { "accounts._id": this._id },
+                {
+                    $set: {
+                        "accounts.$.lastSyncErrorMessage": err + "",
+                        "accounts.$.lastSyncWasSuccessful": false,
+                        "accounts.$.timestampLastSync": new Date(),
+                    },
+                })
+                .then(() => {
+                    resolve("Unable to sync but issue logged to db correctly.");
+                })
+                .catch((saveError) => {
+                    reject(new Error("Failed to sync account " + this._id +
+                        " and failed to save failure in database " + saveError));
+                });
         });
     });
 };

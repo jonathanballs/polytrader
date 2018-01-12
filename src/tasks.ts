@@ -19,7 +19,7 @@ queue.process("sync-account", (job, done) => {
         { "accounts.$": 1 },
     )
         .then((user) => {
-            user.accounts[0].sync();
+            return user.accounts[0].sync();
         })
         .then(() => {
             console.log(job.data.title, " DONE ");
