@@ -26,7 +26,7 @@ services:
         noauto_volume: true
         volumes:
             - dbdata:/data/db
-        command: mongod --auth
+        command: mongod --auth --bind_ip 0.0.0.0
 
     redis:
         image: redis:4.0.2
