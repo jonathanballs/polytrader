@@ -26,7 +26,7 @@ queue.process("sync-account", (job, done) => {
             done();
         })
         .catch((err) => {
-            console.log("Tried to update account with ID of", job.data.id,
+            console.log("Tried to update account with ID of", job.data.accountID,
                 "but recieved error: ", err);
             done();
         });

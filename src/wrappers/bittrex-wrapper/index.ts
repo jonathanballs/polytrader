@@ -57,8 +57,8 @@ export default class Bittrex implements IWrapper {
     }
 
     public validateCredentials(): Promise<any> {
-        // Keep it always true for now
         return new Promise((resolve, reject) => {
+            // First validate the file
             this.returnBalances().then(() => {
                 resolve(this.userAuth);
             }).catch((e) => reject(e));
@@ -138,18 +138,18 @@ export default class Bittrex implements IWrapper {
                     reject("Unable to find history file: " + this.userAuth.portfolioHistory.originalFilename);
                     return;
                 }
-                fs.createReadStream(filePath)
+                fs.createReadStream(filePath, {encoding: "utf16le"})
                     .pipe(csv({
                         headers: [
-                            "timestampClosed",
-                            "timestampOpened",
+                            "orderId",
                             "market",
                             "type",
-                            "ask",
-                            "unitsFilled",
                             "unitsTotal",
+                            "limit",
+                            "fees",
                             "rate",
-                            "cost"],
+                            "timestampOpened",
+                            "timestampClosed"],
                         quote: '"',
                     }))
                     .on("data", (data) => {
