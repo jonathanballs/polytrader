@@ -14,10 +14,11 @@ block content
       code=commitTime.replace(/^\s+|\s+$/g, '')
     else
       code undefined
+
+    | . Current Queue size is
+    code=queueLength
     | .
 
-  p Current Queue size is
-    code=queueLength
   h2 Services (#{services.length} in database)
   table.table
     thead
@@ -37,15 +38,16 @@ block content
 
   h2 Currencies (#{currencies.length} in database)
 
-  table.table
-    thead
-      tr
-        th Pair
-        th Oldest Timestamp
-        th Newest Timestamp
-    tbody
-      each currency in currencies
+  div(style="max-height: 30em; overflow-y: scroll;")
+    table.table
+      thead
         tr
-          td=currency.currencyPair
-          td=currency.oldestTimestamp.toISOString()
-          td=currency.newestTimestamp.toISOString()
+          th Pair
+          th Oldest Timestamp
+          th Newest Timestamp
+      tbody
+        each currency in currencies
+          tr
+            td=currency.currencyPair
+            td=currency.oldestTimestamp.toISOString()
+            td=currency.newestTimestamp.toISOString()
