@@ -13,6 +13,7 @@ import * as passport from "passport";
 import { Strategy } from "passport-local";
 import * as passwordHasher from "password-hash";
 import * as path from "path";
+import * as process from "process";
 
 import authRouter from "./auth/auth";
 import UserModel from "./models/user";
@@ -23,9 +24,16 @@ import "./tasks";
 import queue from "./tasks";
 import servicesList from "./wrappers/services";
 
+// Connect to mongo
 const MongoStore = ms(session);
 mongoose.Promise = global.Promise;
-mongoose.connect("mongodb://db/polytrader", { useMongoClient: true });
+const mongoUrl = `mongodb://${process.env.MONGO_USERNAME}:` +
+    `${process.env.MONGO_PASSWORD}@db/polytrader?authSource=admin`;
+mongoose.connect(mongoUrl, {useMongoClient: true })
+.catch((err) => {
+    console.log("Failed to authenticate with mongo at ", mongoUrl);
+    process.exit(1);
+});
 
 // Local strategy to fetch user from database
 passport.use(new Strategy({ usernameField: "email" }, (email, password, done) => {

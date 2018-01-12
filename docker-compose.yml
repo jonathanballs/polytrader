@@ -10,6 +10,9 @@ services:
             - ./dist:/usr/src/app/dist
             - ./test:/usr/src/app/test
             - ./static:/usr/src/app/static
+        environment:
+            - MONGO_USERNAME=polytrader
+            - MONGO_PASSWORD=password
 
     db:
         image: mongo:3.5

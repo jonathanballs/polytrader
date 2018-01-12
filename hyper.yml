@@ -15,6 +15,9 @@ services:
             - db
             - redis
         command: node dist/app.js
+        environment:
+            - MONGO_USERNAME=polytrader
+            - MONGO_PASSWORD=Kz0Gxri7qEnn5rmvqzAW
 
     db:
         image: mongo:3.5
@@ -23,6 +26,7 @@ services:
         noauto_volume: true
         volumes:
             - dbdata:/data/db
+        command: mongod --auth
 
     redis:
         image: redis:4.0.2
