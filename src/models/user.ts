@@ -26,7 +26,7 @@ const linkedAccountSchema = mongoose.Schema({
 
 linkedAccountSchema.methods.sync = function sync() {
 
-    return new Promise((resolve, reject) => {
+    const syncPromise = new Promise((resolve, reject) => {
         const service = servicesList.filter((s) => s.key === this.service)[0];
         const wrapper = new service.wrapper(service.serverAuth, this.userAuth);
 
@@ -80,7 +80,13 @@ linkedAccountSchema.methods.sync = function sync() {
                     }).catch((err) => reject(err));
                 }).catch((err) => reject(err));
             }).catch((err) => reject(err));
-        }).catch((err) => {
+        }).catch((err) => reject(err));
+    });
+
+    return new Promise((resolve, reject) => {
+        syncPromise
+        .then((a) => resolve(a))
+        .catch((err) => {
             // Save failure details to database
             UserModel.findOneAndUpdate(
                 { "accounts._id": this._id },

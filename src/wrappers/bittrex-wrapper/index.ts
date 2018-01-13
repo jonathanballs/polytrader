@@ -135,7 +135,8 @@ export default class Bittrex implements IWrapper {
             const filePath = this.userAuth.portfolioHistory.path;
             fs.exists(filePath, (exists) => {
                 if (!exists) {
-                    reject("Unable to find history file: " + this.userAuth.portfolioHistory.originalFilename);
+                    reject(Error("Unable to find history file: "
+                        + this.userAuth.portfolioHistory.originalFilename));
                     return;
                 }
                 fs.createReadStream(filePath, {encoding: "utf16le"})
