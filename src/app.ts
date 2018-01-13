@@ -176,11 +176,7 @@ const currencies = JSON.parse(fs.readFileSync("dist/currencies.json").toString()
 let currencyIdx = Math.round(Math.random() * currencies.length - 1);
 
 setInterval(() => {
-    if (currencyIdx >= currencies.length) {
-        currencyIdx = 0;
-    }
-
-    const c = currencies[currencyIdx];
+    const c = currencies[currencyIdx % (currencies.length - 1)];
     queue.create("update-price-history", {
         currency: c,
         title: "Updating price history for " + c.symbol,

@@ -302,13 +302,24 @@ router.post("/api/user/", loginRequiredApi, (req, res) => {
         return;
     }
 
-    const email = req.body.email;
-    UserModel.update({ _id: req.user._id }, {
-        email,
-    }, (err, numAffected, rawResponse) => {
-        res.send("SUCCESS");
-    });
+    UserModel.findOne({ email: req.body.email })
+    .then((user) => {
+        console.log(user);
+        if (user && user._id !== req.user._id) {
+            res.status(400).send("A user with that email already exists");
+            return;
+        }
 
+        const email = req.body.email;
+        UserModel.update({ _id: req.user._id }, {
+            email,
+        }, (err, numAffected, rawResponse) => {
+            res.send("SUCCESS");
+        });
+    }).catch((err) => {
+        res.status(500).send("An internal error occurred");
+        return;
+    });
 });
 
 router.post("/api/password", loginRequiredApi, (req, res) => {
