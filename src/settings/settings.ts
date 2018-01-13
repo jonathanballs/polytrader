@@ -147,13 +147,13 @@ router.get("/api/services/", loginRequiredApi, (req, res) => {
 
 // Get info on all accounts
 router.get("/api/accounts/", loginRequiredApi, (req, res) => {
-    res.send(req.user.accounts);
+    res.send(req.user.accounts.map((a) => a.sanitized()));
 });
 
 // GET an account
 router.get("/api/accounts/:accountID/", loginRequiredApi,
         handleLinkedAccount, (req, res) => {
-    res.send((req as any).account);
+    res.send((req as any).account.sanitized());
 });
 
 // UPDATE an account

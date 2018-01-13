@@ -18,9 +18,9 @@ interface IService {
     formFields: Array<{
         name: string
         description: string
-        placeholder: string
-        type?: string, // Optional. Assume text
-        secret?: boolean,
+        placeholder?: string // Assume same as desc
+        type?: string, // Assume text
+        secret?: boolean, // Assume false
     }>;
     serverAuth: { [key: string]: string };
     wrapper: IWrapperConstructor;
@@ -38,7 +38,13 @@ const services: [IService] = [
         wrapper: Bittrex,
     },
     {
-        formFields: [],
+        formFields: [
+            { name: "accessToken", description: "OAuth Access Token", secret: true },
+            { name: "refreshToken", description: "OAuth Refresh Token", secret: true },
+            { name: "expiresIn", description: "OAuth Token Lifespan", secret: true },
+            { name: "tokenType", description: "OAuth Token Type", secret: true },
+            { name: "scope", description: "OAuth Permissions Scope", secret: true },
+        ],
         key: "coinbase",
         name: "Coinbase",
         serverAuth: {
@@ -70,6 +76,7 @@ services.map((service) => {
     service.formFields.map((formField) => {
         formField.type = formField.type || "text";
         formField.secret = formField.secret || false;
+        formField.placeholder = formField.placeholder || formField.description;
     });
 });
 
@@ -77,6 +84,7 @@ export let servicesClient = clone(services);
 servicesClient.forEach((s) => {
     delete s.serverAuth;
     delete s.wrapper;
+    s.formFields = s.formFields.filter((ff) => !ff.secret);
 });
 
 export default services;

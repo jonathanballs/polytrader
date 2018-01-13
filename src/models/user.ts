@@ -24,6 +24,16 @@ const linkedAccountSchema = mongoose.Schema({
     userAuth: mongoose.Schema.Types.Mixed,
 });
 
+// Return account info with secret fields removed
+linkedAccountSchema.methods.sanitized = function sanitized() {
+    const ret = clone(this.toObject());
+    const service = servicesList.filter((s) => s.key === this.service)[0];
+    ret.userAuth = service.formFields.filter((ff) => !ff.secret).reduce((prev, curr) => {
+        return {[curr.name]: this.userAuth[curr.name], ...prev};
+    }, {});
+    return ret;
+};
+
 linkedAccountSchema.methods.sync = function sync() {
 
     const syncPromise = new Promise((resolve, reject) => {
