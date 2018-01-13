@@ -18,21 +18,21 @@ function execute(command, callback) {
 }
 
 router.get("/", (req, res) => {
-    // Get currency information
+    // These environment variables are created by travis and won't exist in dev
+    // environments
+    const commitHash = process.env.COMMIT_HASH;
+    const buildTimestamp = process.env.BUILD_TIMESTAMP;
+
     PriceModel.getCurrencyStats().then((currencies) => {
-        execute("git rev-parse HEAD", (commitHash) => {
-            execute("git --no-pager log -1 --format=%cd", (commitTime) => {
-                queue.inactiveCount("update-price-history", (err, queueLength) => {
-                    queue.inactiveCount("sync-account", (err1, userQueueLength) => {
-                        res.render("status/status", {
-                            commitHash,
-                            commitTime,
-                            currencies,
-                            queueLength,
-                            services,
-                            userQueueLength,
-                        });
-                    });
+        queue.inactiveCount("update-price-history", (err, queueLength) => {
+            queue.inactiveCount("sync-account", (err1, userQueueLength) => {
+                res.render("status/status", {
+                    buildTimestamp,
+                    commitHash,
+                    currencies,
+                    queueLength,
+                    services,
+                    userQueueLength,
                 });
             });
         });

@@ -22,6 +22,8 @@ after_success:
         docker tag polytrader_polytrader $REPO
         docker push $REPO
 
+        echo "COMMIT_HASH=${TRAVIS_COMMIT::8}\nBUILD_TIMESTAMP=\"$(date)\"" > polytrader.env
+
         wget https://hyper-install.s3.amazonaws.com/hyper-linux-x86_64.tar.gz
         tar xzf hyper-linux-x86_64.tar.gz
         ./hyper config --accesskey $HYPER_ACCESS_KEY --secretkey $HYPER_SECRET_KEY --default-region eu-central-1
