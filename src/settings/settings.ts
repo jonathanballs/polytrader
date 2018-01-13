@@ -115,6 +115,27 @@ function validateAccountForm(req, res, next) {
     });
 }
 
+// Finds user account and the associated service
+function handleLinkedAccount(req, res, next) {
+    req.account = req.user.getAccountByID(req.params.accountID);
+    if (!req.account) {
+        res.status(400).send("Unable to find account with ID "
+            + req.params.accountID);
+        return;
+    }
+
+    // Find the service. This should never fail unless a service was removed
+    // from polytrader.
+    req.service = services.filter((s) => s.key === req.account.service)[0];
+    if (!req.service) {
+        res.status(500).send("An internal error occurred. We \
+        could not find a service for this account");
+        return;
+    }
+
+    next();
+}
+
 // Account settings for choosing an api key
 router.get("/", loginRequired, (req, res) => {
     res.render("settings/settings", { user: req.user });
@@ -130,87 +151,65 @@ router.get("/api/accounts/", loginRequiredApi, (req, res) => {
 });
 
 // GET an account
-router.get("/api/accounts/:accountID/", loginRequiredApi, (req, res) => {
-    const account = req.user.getAccountByID(req.params.accountID);
-
-    if (typeof (account) === "undefined") {
-        res.status(404).send("Unable to find account with ID " + req.params.accountID);
-    } else {
-        res.send(account);
-    }
+router.get("/api/accounts/:accountID/", loginRequiredApi,
+        handleLinkedAccount, (req, res) => {
+    res.send((req as any).account);
 });
 
 // UPDATE an account
 router.post("/api/accounts/:accountID/", loginRequiredApi,
-    validateAccountForm, (req, res) => {
+        validateAccountForm, handleLinkedAccount, (req, res) => {
 
-        const account = req.user.getAccountByID(req.params.accountID);
-        if (account === null) {
-            res.status(404).send("Unable to find account with ID " +
-                req.params.accountID);
-            return;
-        }
+    const updateSet = (req as any).service.formFields.reduce((acc, ff) => {
+        // e.g. { "accounts.$.apiKey": "1234-5678" }
+        acc["accounts.$." + ff.name] = req.body[ff.name];
+        return acc;
+    }, {});
 
-        const service = services.filter((s) => s.key === req.body.service)[0];
-        const updateSet = service.formFields.reduce((acc, ff) => {
-            // e.g. { "accounts.$.apiKey": "1234-5678" }
-            acc["accounts.$." + ff.name] = req.body[ff.name];
-            return acc;
-        }, {});
+    UserModel.findOneAndUpdate(
+        {
+            "_id": req.user._id,
+            "accounts._id": mongoose.Types.ObjectId(req.params.accountID),
+        },
+        {
+            $set: updateSet,
+        },
+        (err, user) => {
+            if (err) {
+                res.status(400).send(err + "");
+                return;
+            }
+            res.send(req.user.accounts);
 
-        UserModel.findOneAndUpdate(
-            {
-                "_id": req.user._id,
-                "accounts._id": mongoose.Types.ObjectId(req.params.accountID),
-            },
-            {
-                $set: updateSet,
-            },
-            (err, user) => {
-                if (err) {
-                    res.status(400).send(err + "");
-                    return;
-                }
-                res.send(req.user.accounts);
-
-                queue.create("sync-account", {
-                    accountID: req.params.accountID,
-                    title: "Syncing " + service.key +
-                    " account for " + req.user.email,
-                }).save((saveErr) => {
-                    if (saveErr) {
-                        console.log("Error creating sync-account task on " +
-                            " when user updates account: ", saveErr);
-                    }
-                });
-            },
-        );
-    });
-
-// DELETE an account
-router.delete("/api/accounts/:accountID/", loginRequiredApi, (req, res) => {
-    const account = req.user.getAccountByID(req.params.accountID);
-    const service = services.filter((s) => s.key === account.service)[0];
-
-    // Delete any files associated with account
-    if (service) {
-        service.formFields
-            .filter((ff) => ff.type === "file")
-            .forEach((ff) => {
-                const path = account.userAuth[ff.name].path;
-                try {
-                    fs.unlinkSync(path);
-                    console.log("Deleted old account file ", path);
-                } catch (delErr) {
-                    console.log("Error deleting old account file ", path);
+            queue.create("sync-account", {
+                accountID: req.params.accountID,
+                title: "Syncing " + (req as any).service.key +
+                " account for " + req.user.email,
+            }).save((saveErr) => {
+                if (saveErr) {
+                    console.log("Error creating sync-account task on " +
+                        " when user updates account: ", saveErr);
                 }
             });
-    }
+        },
+    );
+});
 
-    if (account === null) {
-        res.status(404).send("Unable to find account with ID " + req.params.accountID);
-        return;
-    }
+// DELETE an account
+router.delete("/api/accounts/:accountID/", loginRequiredApi,
+        handleLinkedAccount, (req, res) => {
+
+    (req as any).service.formFields
+        .filter((ff) => ff.type === "file")
+        .forEach((ff) => {
+            const path = (req as any).account.userAuth[ff.name].path;
+            try {
+                fs.unlinkSync(path);
+                console.log("Deleted old account file ", path);
+            } catch (delErr) {
+                console.log("Error deleting old account file ", path);
+            }
+        });
 
     UserModel.findOneAndUpdate({ _id: req.user._id },
         {
@@ -274,7 +273,21 @@ router.post("/api/accounts/", loginRequiredApi, validateAccountForm, (req, res) 
             });
 
             res.send("OK");
-        });
+        },
+    );
+});
+
+// SYNC an account
+router.post("/api/accounts/:accountID/sync", loginRequiredApi,
+        handleLinkedAccount, (req, res) => {
+    // Get the service type and create a user auth object for it
+    (req as any).account.sync()
+    .then(() => {
+        res.send("OK");
+    })
+    .catch(() => {
+        res.status(500).send("Internal Error");
+    });
 });
 
 router.get("/api/user/", loginRequiredApi, (req, res) => {

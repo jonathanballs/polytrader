@@ -23,12 +23,15 @@ router.get("/", (req, res) => {
         execute("git rev-parse HEAD", (commitHash) => {
             execute("git --no-pager log -1 --format=%cd", (commitTime) => {
                 queue.inactiveCount("update-price-history", (err, queueLength) => {
-                    res.render("status/status", {
-                        commitHash,
-                        commitTime,
-                        currencies,
-                        queueLength,
-                        services,
+                    queue.inactiveCount("sync-account", (err1, userQueueLength) => {
+                        res.render("status/status", {
+                            commitHash,
+                            commitTime,
+                            currencies,
+                            queueLength,
+                            services,
+                            userQueueLength,
+                        });
                     });
                 });
             });

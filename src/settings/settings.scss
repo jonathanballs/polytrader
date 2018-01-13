@@ -16,6 +16,18 @@ $error-message-font: "Lucida Console", Monaco, monospace;
 		white-space: nowrap;
 		overflow: hidden;
 	}
+
+	.account-action-buttons > button {
+		width: 50%;
+		border-left: 1px solid;
+		border-color: #c1c1c1;
+	}
+
+	.account-action-buttons > button:first-child {
+		border-left: 0px;
+		border-right: 1px solid;
+		border-color: #c1c1c1;
+	}
 }
 
 .add-account-modal {

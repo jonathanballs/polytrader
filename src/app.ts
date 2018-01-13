@@ -139,7 +139,7 @@ queue.inactive((err, ids) => {
     ids.forEach((id) => {
         kue.Job.get(id, (err1, job) => {
             if (err1) {
-                console.log("Error getting job id ", id);
+                console.log("Error killing job id ", id);
             } else {
                 job.remove();
             }
@@ -155,7 +155,8 @@ setInterval(() => {
         "accounts.timestampLastSync": { $lt: fiveMinutesAgo },
     })
         .then((users) => users.forEach((u) => {
-            u.accounts.forEach((a) => {
+            u.accounts.filter((a) => a.timestampLastSync < fiveMinutesAgo)
+                    .forEach((a) => {
 
                 queue.create("sync-account", {
                     accountID: a._id,

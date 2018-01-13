@@ -111,12 +111,7 @@ export default class EditAccountButton extends React.Component {
     }
 
     return (
-      <div>
-        <Button block={true}
-          color="secondary"
-          onClick={this.toggleModal}
-        >Edit</Button>
-
+      <button className="btn btn-secondary" onClick={this.toggleModal}>Edit
         <Modal
           className="add-account-modal"
           onClosed={(() => { this.setState({ submissionState: 'none', deleteButtonState: 'none' }) }).bind(this)}
@@ -149,7 +144,7 @@ export default class EditAccountButton extends React.Component {
           </div>
 
         </Modal>
-      </div>
+      </button>
     )
   }
 }
