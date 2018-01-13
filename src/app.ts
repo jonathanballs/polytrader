@@ -154,21 +154,21 @@ setInterval(() => {
     UserModel.find({
         "accounts.timestampLastSync": { $lt: fiveMinutesAgo },
     })
-        .then((users) => users.forEach((u) => {
-            u.accounts.filter((a) => a.timestampLastSync < fiveMinutesAgo)
-                    .forEach((a) => {
+    .then((users) => users.forEach((u) => {
+        u.accounts.filter((a) => a.timestampLastSync < fiveMinutesAgo)
+                .forEach((a) => {
 
-                queue.create("sync-account", {
-                    accountID: a._id,
-                    title: "Syncing " + a.service + " account for " + u.email,
-                }).save((err) => {
-                    if (err) {
-                        console.log("Error adding job to queue: ", err);
-                    }
-                });
-
+            queue.create("sync-account", {
+                accountID: a._id,
+                title: "Syncing " + a.service + " account for " + u.email,
+            }).save((err) => {
+                if (err) {
+                    console.log("Error adding job to queue: ", err);
+                }
             });
-        }));
+
+        });
+    }));
 }, 5000);
 
 // Update currencies
