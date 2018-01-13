@@ -51,6 +51,7 @@ router.post("/signup", (req, res) => {
         if (!user) {
             new UserModel({
                 email,
+                isSuperUser: false,
                 loginTimestamp: Date.now(),
                 passwordHash: passwordHasher.generate(password1),
                 signupTimestamp: Date.now(),

@@ -121,6 +121,7 @@ linkedAccountSchema.methods.sync = function sync() {
 const userSchema = new mongoose.Schema({
     accounts: [linkedAccountSchema],
     email: String,
+    isSuperUser: Boolean,
     loginTimestamp: Date,
     passwordHash: String,
     signupTimestamp: Date,
