@@ -209,7 +209,8 @@ export default class Bittrex implements IWrapper {
                                 .sort((a, b) => a.timestamp.getTime() -
                                     b.timestamp.getTime());
                             resolve(ret);
-                        });
+                        })
+                        .catch((err) => reject(err));
                     });
             });
 

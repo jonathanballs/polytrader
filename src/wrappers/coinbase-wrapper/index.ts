@@ -88,7 +88,8 @@ export default class Coinbase implements IWrapper {
                             .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
                         resolve(history);
-                    });
+                    })
+                    .catch((err1) => reject(err1));
 
             });
         });

@@ -100,7 +100,7 @@ queue.process("update-price-history", (job, done) => {
                     .catch((err) => reject(err));
                 })
                 .catch((err) => {
-                    reject(err);
+                    reject(err + "");
                 });
             });
         });
