@@ -18,6 +18,7 @@ services:
         environment:
             - MONGO_USERNAME=polytrader
             - MONGO_PASSWORD=Kz0Gxri7qEnn5rmvqzAW
+            - NODE_ENV=production
 
     db:
         image: mongo:3.5
