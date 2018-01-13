@@ -5,13 +5,13 @@ block content
   hr
   p Polytrader version
     if commitHash
-      code=commitHash.substring(0, 9)
+      code=commitHash
     else
       code undefined
     |  built on
 
-    if commitTime
-      code=commitTime.replace(/^\s+|\s+$/g, '')
+    if buildTimestamp
+      code=buildTimestamp
     else
       code undefined
 

@@ -6,8 +6,8 @@ RUN mkdir /upload
 
 # Copy package.json and install deps
 COPY package.json .
-RUN npm install
-RUN npm install -g webpack
+RUN npm install --silent
+RUN npm install --silent -g webpack
 
 # Copy application files over and build
 COPY . .
