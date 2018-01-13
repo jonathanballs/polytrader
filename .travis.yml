@@ -15,19 +15,21 @@ script:
     - docker-compose run polytrader npm test
 
 after_success:
-    - REPO=polytrader/polytrader
-    - POLYTRADER_IP=185.207.112.102
+    - if [ "$TRAVIS_BRANCH" == "master" ]; then
+        REPO=polytrader/polytrader
+        POLYTRADER_IP=185.207.112.102
 
-    - docker tag polytrader_polytrader $REPO
-    - docker push $REPO
+        docker tag polytrader_polytrader $REPO
+        docker push $REPO
 
-    - wget https://hyper-install.s3.amazonaws.com/hyper-linux-x86_64.tar.gz
-    - tar xzf hyper-linux-x86_64.tar.gz
-    - ./hyper config --accesskey $HYPER_ACCESS_KEY --secretkey $HYPER_SECRET_KEY --default-region eu-central-1
-    - ./hyper login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
-    - ./hyper pull $REPO
-    - ./hyper compose down -p polytrader
-    - ./hyper compose up -f hyper.yml -d
+        wget https://hyper-install.s3.amazonaws.com/hyper-linux-x86_64.tar.gz
+        tar xzf hyper-linux-x86_64.tar.gz
+        ./hyper config --accesskey $HYPER_ACCESS_KEY --secretkey $HYPER_SECRET_KEY --default-region eu-central-1
+        ./hyper login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
+        ./hyper pull $REPO
+        ./hyper compose down -p polytrader
+        ./hyper compose up -f hyper.yml -d
+      fi
 
 notifications:
     email: false
