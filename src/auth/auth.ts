@@ -16,6 +16,18 @@ export function loginRequiredApi(req, res, next) {
     req.user ? next() : res.status(401).send("Error: You are not signed into polytrader.");
 }
 
+export function superUserRequired(req, res, next) {
+    // req["user"] is the user
+    (req.user && req.user.isSuperUser)
+        ? next()
+        : res.redirect("/auth/login?next=" + encodeURIComponent(req.originalUrl));
+}
+export function superUserRequiredApi(req, res, next) {
+    // req["user"] is the user
+    (req.user && req.user.isSuperUser) ? next() : res.status(401).send("Error: You are not signed into polytrader.");
+}
+
+
 router.post("/signup", (req, res) => {
 
     // Check passwords are the same

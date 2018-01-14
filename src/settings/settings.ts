@@ -304,7 +304,6 @@ router.post("/api/user/", loginRequiredApi, (req, res) => {
 
     UserModel.findOne({ email: req.body.email })
     .then((user) => {
-        console.log(user);
         if (user && user._id !== req.user._id) {
             res.status(400).send("A user with that email already exists");
             return;

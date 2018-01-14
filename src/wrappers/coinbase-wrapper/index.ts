@@ -8,6 +8,7 @@ import * as coinbase from "coinbase";
 import * as qs from "qs";
 import * as request from "request";
 import IWrapper from "../";
+import { PTAuthenticationError, PTConnectionError, PTParseError } from "../../errors";
 
 import { Balance, DepositWithdrawal, Portfolio, PortfolioEvent } from "../";
 
@@ -44,7 +45,13 @@ export default class Coinbase implements IWrapper {
                     }
                 });
             }).catch((err) => {
-                reject(err);
+                if (err.response) {
+                    reject(new PTAuthenticationError(err.response));
+                } else if (err.request) {
+                    reject(new PTConnectionError(err.request));
+                } else {
+                    reject(err);
+                }
             });
         });
     }

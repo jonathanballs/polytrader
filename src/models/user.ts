@@ -5,6 +5,7 @@ import * as mongoose from "mongoose";
 
 import { Balance, Portfolio } from "../wrappers";
 import servicesList from "../wrappers/services";
+import LogModel from "./log";
 import PortfolioEventHistoryModel from "./portfolio";
 
 // User schema
@@ -18,7 +19,7 @@ const linkedAccountSchema = mongoose.Schema({
     balances: [mongoose.Schema.Types.Mixed],
     lastSyncErrorMessage: String,
     lastSyncWasSuccessful: Boolean,
-    service: String, // Rename this to serviceKey
+    service: String, // TODO: Rename this to serviceKey
     timestampCreated: Date,
     timestampLastSync: Date,
     userAuth: mongoose.Schema.Types.Mixed,
@@ -97,23 +98,50 @@ linkedAccountSchema.methods.sync = function sync() {
         syncPromise
         .then((a) => resolve(a))
         .catch((err) => {
+            const userErrorMessage = err.message ? err.message : "Polytrader Internal Error";
+
             // Save failure details to database
-            UserModel.findOneAndUpdate(
+            const accountUpdate = UserModel.findOneAndUpdate(
                 { "accounts._id": this._id },
                 {
                     $set: {
-                        "accounts.$.lastSyncErrorMessage": err + "",
+                        "accounts.$.lastSyncErrorMessage": userErrorMessage,
                         "accounts.$.lastSyncWasSuccessful": false,
                         "accounts.$.timestampLastSync": new Date(),
                     },
-                })
-                .then(() => {
-                    resolve("Unable to sync but issue logged to db correctly.");
-                })
-                .catch((saveError) => {
-                    reject(new Error("Failed to sync account " + this._id +
-                        " and failed to save failure in database " + saveError));
-                });
+                },
+            );
+
+
+            let cache = [];
+            const saveableError = JSON.stringify(err, (key, value) => {
+                if (typeof value === "object" && value !== null) {
+                    if (cache.indexOf(value) !== -1) {
+                        // Circular reference found, discard key
+                        return;
+                    }
+                    // Store value in our collection
+                    cache.push(value);
+                }
+                return value;
+            });
+            cache = null; // Enable garbage collection
+
+            const logUpdate = new LogModel({
+                accountID: this._id,
+                date: new Date(),
+                error: saveableError,
+                success: false,
+            }).save();
+
+            Promise.all([accountUpdate, logUpdate])
+            .then(() => {
+                resolve("Unable to sync but issue logged to db correctly.");
+            })
+            .catch((saveError) => {
+                reject(new Error("Failed to sync account " + this._id +
+                    " and failed to save failure in database " + saveError));
+            });
         });
     });
 };

@@ -18,18 +18,18 @@ queue.process("sync-account", (job, done) => {
         { "accounts._id": job.data.accountID },
         { "accounts.$": 1 },
     )
-        .then((user) => {
-            return user.accounts[0].sync();
-        })
-        .then(() => {
-            console.log(job.data.title, " DONE ");
-            done();
-        })
-        .catch((err) => {
-            console.log("Tried to update account with ID of", job.data.accountID,
-                "but recieved error: ", err);
-            done();
-        });
+    .then((user) => {
+        return user.accounts[0].sync();
+    })
+    .then(() => {
+        console.log(job.data.title, " DONE ");
+        done();
+    })
+    .catch((err) => {
+        console.log("Tried to update account with ID of", job.data.accountID,
+            "but recieved error: ", err);
+        done();
+    });
 });
 
 const POLONIEX_PRICE_HISTORY_URL = "https://poloniex.com/public?" +

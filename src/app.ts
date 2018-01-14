@@ -31,8 +31,7 @@ const mongoUrl = `mongodb://${process.env.MONGO_USERNAME}:` +
     `${process.env.MONGO_PASSWORD}@db/polytrader?authSource=admin`;
 mongoose.connect(mongoUrl, {useMongoClient: true })
 .catch((err) => {
-    console.log("Failed to authenticate with mongo at ", mongoUrl);
-    console.log(err);
+    console.log("Failed to authenticate with mongo at ", mongoUrl, err);
     process.exit(1);
 });
 

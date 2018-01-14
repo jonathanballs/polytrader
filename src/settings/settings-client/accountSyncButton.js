@@ -24,6 +24,11 @@ export default class AccountSyncButton extends React.Component {
             if (this.props.onSyncFinish) {
                 this.props.onSyncFinish();
             }
+        }).catch((err) => {
+            this.setState({isSyncing: false});
+            if (this.props.onSyncFinish) {
+                this.props.onSyncFinish();
+            }
         });
     }
 
