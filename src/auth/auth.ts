@@ -99,6 +99,6 @@ router.get("/login", (req, res) => {
 });
 
 router.post("/login", passport.authenticate(
-    "local", { successRedirect: "/", failureRedirect: "/login" }));
+    "local", { successRedirect: "/", failureRedirect: "/auth/login" }));
 
 export default router;
