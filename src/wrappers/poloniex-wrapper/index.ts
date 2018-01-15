@@ -6,6 +6,7 @@ import * as clone from "clone";
 import * as crypto from "crypto";
 import * as moment from "moment";
 import * as request from "request";
+import { PTAuthenticationError, PTConnectionError, PTParseError } from "../../errors";
 
 import IWrapper from "../";
 import { Balance, DepositWithdrawal, Portfolio, PortfolioEvent, Trade } from "../";
@@ -116,14 +117,9 @@ export default class Poloniex implements IWrapper {
         this.apiSecret = userAuth.apiSecret;
     }
 
-    public validateCredentials() {
-        return new Promise<any>((resolve, reject) => {
-            this.returnBalances().then((balances) => {
-                resolve(this.userAuth);
-            }).catch((e) => {
-                reject(e);
-            });
-        });
+    public async validateCredentials() {
+        await this.returnBalances();
+        return this.userAuth;
     }
 
     // Make an API request
@@ -255,12 +251,13 @@ export default class Poloniex implements IWrapper {
     // TRADING API METHODS
     // These methods require api keys in order to work
     //
-    public returnBalances() {
+    public async returnBalances() {
         return new Promise<Balance[]>((resolve, reject) => {
             this._private("returnBalances", {}, (err, balances) => {
                 const error = err || balances.error;
-                if (err) {
-                    reject(Error(err));
+
+                if (error) {
+                    reject(Error(error));
                     return;
                 }
 
@@ -283,7 +280,7 @@ export default class Poloniex implements IWrapper {
     }
 
     // Returns the deposit and withdrawal history for the user
-    public returnDepositsWithdrawals(start: Date, end: Date) {
+    public async returnDepositsWithdrawals(start: Date, end: Date) {
 
         const reqOptions = {
             end: Math.floor(end.getTime() / 1000),
@@ -373,7 +370,7 @@ export default class Poloniex implements IWrapper {
     // multiple api methods to provide more complex data.
     //
 
-    public returnHistory(startDate: Date = new Date(0)): Promise<PortfolioEvent[]> {
+    public async returnHistory(startDate: Date = new Date(0)): Promise<PortfolioEvent[]> {
 
         type RawEvent = Withdrawal | Deposit | UserTrade;
         function isWithdrawal(e: RawEvent): e is Withdrawal {
@@ -388,69 +385,61 @@ export default class Poloniex implements IWrapper {
             return (e as UserTrade).globalTradeID !== undefined;
         }
 
-        return new Promise<PortfolioEvent[]>((resolve, reject) => {
-            this.returnDepositsWithdrawals(startDate, new Date()).then((depositsWithdrawals) => {
-                this.returnUserTradeHistory().then((userTrades) => {
-                    this.returnCurrencies().then((currencies) => {
+        const depositsWithdrawals = await this.returnDepositsWithdrawals(startDate, new Date());
+        const userTrades = await this.returnUserTradeHistory();
+        const currencies = await this.returnCurrencies();
 
-                        let rawEvents: RawEvent[] = depositsWithdrawals.deposits;
-                        rawEvents = rawEvents.concat(depositsWithdrawals.withdrawals);
-                        rawEvents = rawEvents.concat(userTrades);
+        let rawEvents: RawEvent[] = depositsWithdrawals.deposits;
+        rawEvents = rawEvents.concat(depositsWithdrawals.withdrawals);
+        rawEvents = rawEvents.concat(userTrades);
 
-                        const portfolioEvents: PortfolioEvent[] = rawEvents.map((ev) => {
-                            if (isWithdrawal(ev) || isDeposit(ev)) {
-                                const depositsWithdrawal: DepositWithdrawal = {
-                                    address: ev.address,
-                                    amount: ev.amount,
-                                    currency: ev.currency,
-                                    fees: isWithdrawal(ev) ? currencies[ev.currency].txFee : "0.0",
-                                    txid: "TODO",
-                                };
+        const portfolioEvents: PortfolioEvent[] = rawEvents.map((ev) => {
+            if (isWithdrawal(ev) || isDeposit(ev)) {
+                const depositsWithdrawal: DepositWithdrawal = {
+                    address: ev.address,
+                    amount: ev.amount,
+                    currency: ev.currency,
+                    fees: isWithdrawal(ev) ? currencies[ev.currency].txFee : "0.0",
+                    txid: "TODO",
+                };
 
-                                const portfolioEvent: PortfolioEvent = {
-                                    data: depositsWithdrawal,
-                                    permanent: ev.status.includes("COMPLETE"),
-                                    timestamp: ev.timestamp,
-                                    type: isDeposit(ev) ? "deposit" : "withdrawal",
-                                };
+                const portfolioEvent: PortfolioEvent = {
+                    data: depositsWithdrawal,
+                    permanent: ev.status.includes("COMPLETE"),
+                    timestamp: ev.timestamp,
+                    type: isDeposit(ev) ? "deposit" : "withdrawal",
+                };
 
-                                return portfolioEvent;
-                            } else if (isUserTrade(ev)) {
-                                const isSale = ev.type === TradeType.Sell;
+                return portfolioEvent;
+            } else if (isUserTrade(ev)) {
+                const isSale = ev.type === TradeType.Sell;
 
-                                const trade: Trade = {
-                                    boughtAmount: isSale ? ev.total : ev.amount,
-                                    boughtCurrency: isSale ? ev.base : ev.quote,
-                                    fees: Big(isSale ? ev.total : ev.amount).times(ev.fee).toFixed(15),
-                                    rate: ev.rate,
-                                    soldAmount: isSale ? ev.amount : ev.total,
-                                    soldCurrency: isSale ? ev.quote : ev.base,
-                                };
+                const trade: Trade = {
+                    boughtAmount: isSale ? ev.total : ev.amount,
+                    boughtCurrency: isSale ? ev.base : ev.quote,
+                    fees: Big(isSale ? ev.total : ev.amount).times(ev.fee).toFixed(15),
+                    rate: ev.rate,
+                    soldAmount: isSale ? ev.amount : ev.total,
+                    soldCurrency: isSale ? ev.quote : ev.base,
+                };
 
-                                const portfolioEvent: PortfolioEvent = {
-                                    data: trade,
-                                    permanent: true,
-                                    timestamp: ev.timestamp,
-                                    type: "trade",
-                                };
+                const portfolioEvent: PortfolioEvent = {
+                    data: trade,
+                    permanent: true,
+                    timestamp: ev.timestamp,
+                    type: "trade",
+                };
 
-                                return portfolioEvent;
-                            } else {
-                                console.log("WARNING: Unknown event" + JSON.stringify(ev));
-                            }
-                        });
-
-                        portfolioEvents.sort((a, b) => {
-                            return a.timestamp.getTime() - b.timestamp.getTime();
-                        });
-
-                        resolve(portfolioEvents);
-
-                    }).catch((err) => reject(err));
-                }).catch((err) => reject(err));
-            }).catch((err) => {
-                reject(err);
-            });
+                return portfolioEvent;
+            } else {
+                console.log("WARNING: Unknown event" + JSON.stringify(ev));
+            }
         });
+
+        portfolioEvents.sort((a, b) => {
+            return a.timestamp.getTime() - b.timestamp.getTime();
+        });
+
+        return portfolioEvents;
     }
 }
