@@ -4,8 +4,9 @@
 import * as Big from "big.js";
 import * as clone from "clone";
 import * as crypto from "crypto";
+import * as joi from "joi";
 import * as moment from "moment";
-import * as request from "request";
+import * as request from "request-promise-native";
 import { PTAuthenticationError, PTConnectionError, PTParseError } from "../../errors";
 
 import IWrapper from "../";
@@ -118,12 +119,12 @@ export default class Poloniex implements IWrapper {
     }
 
     public async validateCredentials() {
-        await this.returnBalances();
+        const a = await this.returnBalances();
         return this.userAuth;
     }
 
     // Make an API request
-    public _request(options, callback) {
+    public async _request(options, responseSchema?): Promise<any> {
 
         if (!("headers" in options)) {
             options.headers = {};
@@ -133,37 +134,24 @@ export default class Poloniex implements IWrapper {
         options.headers["User-Agent"] = this.USER_AGENT;
         options.strictSSL = this.STRICT_SSL;
 
-        request(options, (err, response, body) => {
-            // Empty response
-            if (!err && (typeof body === "undefined" || body === null)) {
-                err = "Empty response";
-            }
+        const resp = await request(options);
+        if (resp.error) {
+            throw(new Error(resp.error));
+        }
 
-            callback(err, body);
-        });
-
-        return this;
+        // Test schema
+        return resp;
     }
 
     // Make a public API request
-    public _public(command, parameters, callback) {
-        let options;
-
-        if (typeof parameters === "function") {
-            callback = parameters;
-            parameters = {};
-        }
-
-        parameters = parameters || {};
+    public async _public(command, parameters: any = {}) {
         parameters.command = command;
-        options = {
+        const options = {
             method: "GET",
-            qs: parameters,
+            qs: {command, ...parameters},
             url: this.PUBLIC_API_URL,
         };
-
-        options.qs.command = command;
-        return this._request(options, callback);
+        return await this._request(options);
     }
 
     // Make a private API request
@@ -186,7 +174,13 @@ export default class Poloniex implements IWrapper {
             url: this.PRIVATE_API_URL,
         };
 
-        return this._request(options, callback);
+        this._request(options)
+        .then((resp) => {
+            callback(null, resp);
+        })
+        .catch((err) => {
+            callback(err, null);
+        });
     }
 
     // The secret is encapsulated and never exposed
@@ -224,27 +218,19 @@ export default class Poloniex implements IWrapper {
     }
 
     // Returns a list of all currencies
-    public returnCurrencies() {
-        return new Promise<{ [currency: string]: Currency }>((resolve, reject) => {
-            this._public("returnCurrencies", {}, (err, currencies) => {
-                const error = err || currencies.error;
-                if (err) {
-                    reject(Error(err));
-                    return;
-                }
+    public async returnCurrencies() {
+        const currencies = await this._public("returnCurrencies");
 
-                for (const currency in currencies) {
-                    if (currencies.hasOwnProperty(currency)) {
-                        const c = currencies[currency];
+        for (const currency in currencies) {
+            if (currencies.hasOwnProperty(currency)) {
+                const c = currencies[currency];
 
-                        c.disabled = !!c.disabled;
-                        c.txFee = String(c.txFee);
-                    }
-                }
+                c.disabled = !!c.disabled;
+                c.txFee = String(c.txFee);
+            }
+        }
 
-                resolve(currencies);
-            });
-        });
+        return currencies;
     }
 
     //
@@ -254,12 +240,13 @@ export default class Poloniex implements IWrapper {
     public async returnBalances() {
         return new Promise<Balance[]>((resolve, reject) => {
             this._private("returnBalances", {}, (err, balances) => {
-                const error = err || balances.error;
 
+                const error = err || balances.error;
                 if (error) {
                     reject(Error(error));
                     return;
                 }
+
 
                 const ret: Balance[] = new Array();
                 for (const currency in balances) {
