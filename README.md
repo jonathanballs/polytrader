@@ -1,5 +1,7 @@
 # polytrader
-[![Build Status](https://travis-ci.com/bonniejools/polytrader.svg?token=VAYBPkwVgL1ZLFqJKe6n&branch=master)](https://travis-ci.com/bonniejools/polytrader)
+[![Build Status](https://travis-ci.com/jonathanballs/polytrader.svg?token=VAYBPkwVgL1ZLFqJKe6n&branch=master)](https://travis-ci.com/jonathanballs/polytrader)
+
+![polytrader](static/screenshot.png)
 
 A simple website to analyse poloniex trading history
 
